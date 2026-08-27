@@ -30,8 +30,14 @@ export async function updateSession(request: NextRequest) {
     || request.nextUrl.pathname.startsWith('/attiva');
   const isPublicRoute = request.nextUrl.pathname === '/'
     || request.nextUrl.pathname.startsWith('/portale');
+  // Le route API (comprese le funzioni Python come /api/generate) gestiscono
+  // da sole l'autenticazione — via cookie per quelle Next.js, via un
+  // access_token nel corpo della richiesta per quelle Python, che non hanno
+  // accesso ai cookie della sessione browser. Un redirect qui le romperebbe
+  // sempre, dato che questa richiesta non porta con sé i cookie del browser.
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api/');
 
-  if (!user && !isAuthRoute && !isPublicRoute) {
+  if (!user && !isAuthRoute && !isPublicRoute && !isApiRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/accedi';
     return NextResponse.redirect(url);
