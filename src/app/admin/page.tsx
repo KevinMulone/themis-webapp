@@ -33,6 +33,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [log, setLog] = useState<string[]>([]);
+  const [otpResult, setOtpResult] = useState<{ email: string; otp: string } | null>(null);
 
   function addLog(msg: string) {
     setLog((l) => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...l]);
@@ -64,6 +65,17 @@ export default function AdminPage() {
     const body = await res.json();
     if (res.ok) addLog(`Email di reimpostazione password inviata a ${body.email}.`);
     else addLog(`Errore invio reset a ${s.email}: ${body.error}`);
+  }
+
+  async function handleGenerateOtp(s: Studio) {
+    const res = await fetch(`/api/admin/studios/${s.id}/generate-otp`, { method: 'POST' });
+    const body = await res.json();
+    if (res.ok) {
+      setOtpResult({ email: body.email, otp: body.otp });
+      addLog(`Codice di riserva generato per ${body.email}.`);
+    } else {
+      addLog(`Errore generazione codice per ${s.email}: ${body.error}`);
+    }
   }
 
   async function handleToggleStatus(s: Studio) {
@@ -149,6 +161,9 @@ export default function AdminPage() {
                         <button onClick={() => handleSendResetPassword(s)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">
                           Invia reset password
                         </button>
+                        <button onClick={() => handleGenerateOtp(s)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">
+                          Genera codice di riserva
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -157,6 +172,20 @@ export default function AdminPage() {
             </table>
           )}
         </div>
+
+        {otpResult && (
+          <div className="mb-6 rounded-xl border border-amber-700 bg-amber-950/40 p-6">
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Codice di riserva per {otpResult.email}</h2>
+              <button onClick={() => setOtpResult(null)} className="text-xs text-neutral-400 hover:text-neutral-200">Chiudi</button>
+            </div>
+            <p className="mb-3 text-xs text-neutral-400">
+              Comunica questo codice al cliente (telefono, WhatsApp, email personale): lo inserirà nella pagina
+              &quot;Imposta una nuova password&quot; se il link ricevuto via email non funziona. Vale pochi minuti.
+            </p>
+            <p className="text-2xl font-mono font-bold tracking-widest text-amber-400">{otpResult.otp}</p>
+          </div>
+        )}
 
         <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6">
           <h2 className="mb-3 text-sm font-semibold">Log</h2>
