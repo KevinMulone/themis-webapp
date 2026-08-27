@@ -31,6 +31,15 @@ type Testimone = {
   contatti: string | null; dichiarazione: string | null; note: string | null;
 };
 type Documento = { id: string; nome_file: string; data_generazione: string };
+type Patrocinio = {
+  id: string; matter_id: string;
+  data_istanza: string | null; stato_istanza: string | null; data_delibera: string | null;
+  numero_rg_procedimento: string | null; data_decreto_liquidazione: string | null;
+  importo_liquidato_cent: number | null; data_comunicazione_decreto: string | null;
+  opposizione_proposta: boolean; data_opposizione: string | null;
+  fattura_emessa: boolean; data_fattura: string | null; numero_fattura: string | null;
+  pagamento_incassato: boolean; data_incasso: string | null; note: string | null;
+};
 
 export default function MatterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = usePromise(params);
@@ -47,6 +56,9 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const [regolaId, setRegolaId] = useState('');
   const [dataRiferimento, setDataRiferimento] = useState('');
   const [scadenzaMsg, setScadenzaMsg] = useState('');
+  const [patrocinio, setPatrocinio] = useState<Patrocinio | null>(null);
+  const [savedPatrocinio, setSavedPatrocinio] = useState(false);
+  const [patrocinioError, setPatrocinioError] = useState('');
 
   async function loadDocumenti() {
     const { data } = await supabase.from('documenti').select('id, nome_file, data_generazione').eq('matter_id', id).order('data_generazione', { ascending: false });
@@ -81,6 +93,12 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         const { data: t } = await supabase.from('testimoni').select('*').eq('sinistro_id', s.id).order('created_at');
         setTestimoni(t || []);
       }
+    }
+    if (m.metodo_pagamento === 'gratuito_patrocinio') {
+      const { data: p } = await supabase.from('patrocini_spese_stato').select('*').eq('matter_id', id).single();
+      setPatrocinio(p);
+    } else {
+      setPatrocinio(null);
     }
   }
 
@@ -154,6 +172,31 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     if (error) { setScadenzaMsg(`Errore: ${error.message}`); return; }
     setScadenzaMsg(`Aggiunta al calendario in data ${dataCalcolata.toLocaleDateString('it-IT')}.`);
     setTimeout(() => setScadenzaMsg(''), 4000);
+  }
+
+  async function handleSavePatrocinio(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formEl = e.currentTarget;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const form = new FormData(formEl);
+    const payload: Record<string, unknown> = { studio_id: user.id, matter_id: id };
+    form.forEach((value, key) => {
+      if (key === 'opposizione_proposta' || key === 'fattura_emessa' || key === 'pagamento_incassato') return;
+      payload[key] = value === '' ? null : value;
+    });
+    payload.opposizione_proposta = form.get('opposizione_proposta') === 'on';
+    payload.fattura_emessa = form.get('fattura_emessa') === 'on';
+    payload.pagamento_incassato = form.get('pagamento_incassato') === 'on';
+    if (payload.importo_liquidato_cent) {
+      payload.importo_liquidato_cent = Math.round(Number(payload.importo_liquidato_cent) * 100);
+    }
+    const { error } = await supabase.from('patrocini_spese_stato').upsert(payload, { onConflict: 'matter_id' });
+    if (error) { setPatrocinioError(error.message); return; }
+    setPatrocinioError('');
+    setSavedPatrocinio(true);
+    setTimeout(() => setSavedPatrocinio(false), 2000);
+    load();
   }
 
   async function handleArchive() {
@@ -239,6 +282,61 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         )}
       </div>
 
+      {matter.metodo_pagamento === 'gratuito_patrocinio' && (
+        <form onSubmit={handleSavePatrocinio} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold text-neutral-900">Patrocinio a spese dello Stato</h2>
+            {savedPatrocinio && <span className="text-sm text-green-700">Salvato</span>}
+          </div>
+          {patrocinioError && <p className="mb-3 text-sm text-red-600">{patrocinioError}</p>}
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Data istanza di ammissione" name="data_istanza" type="date" defaultValue={patrocinio?.data_istanza} />
+            <div>
+              <label className="mb-1 block text-xs text-neutral-500">Stato istanza</label>
+              <select name="stato_istanza" defaultValue={patrocinio?.stato_istanza ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
+                <option value="">Non specificato</option>
+                <option value="depositata">Depositata</option>
+                <option value="ammessa">Ammessa</option>
+                <option value="respinta">Respinta</option>
+              </select>
+            </div>
+            <Field label="Data delibera del Consiglio dell'Ordine" name="data_delibera" type="date" defaultValue={patrocinio?.data_delibera} />
+            <Field label="Numero R.G. procedimento" name="numero_rg_procedimento" defaultValue={patrocinio?.numero_rg_procedimento} />
+            <Field label="Data decreto di liquidazione" name="data_decreto_liquidazione" type="date" defaultValue={patrocinio?.data_decreto_liquidazione} />
+            <Field
+              label="Importo liquidato (€)" name="importo_liquidato_cent" type="number" step="any"
+              defaultValue={patrocinio?.importo_liquidato_cent != null ? (patrocinio.importo_liquidato_cent / 100).toFixed(2) : undefined}
+            />
+            <Field label="Data comunicazione decreto" name="data_comunicazione_decreto" type="date" defaultValue={patrocinio?.data_comunicazione_decreto} />
+            <div className="flex items-end gap-2 pb-2">
+              <input type="checkbox" name="opposizione_proposta" defaultChecked={patrocinio?.opposizione_proposta} id="opposizione_proposta" />
+              <label htmlFor="opposizione_proposta" className="text-xs text-neutral-500">Opposizione proposta</label>
+            </div>
+            <Field label="Data opposizione (se proposta)" name="data_opposizione" type="date" defaultValue={patrocinio?.data_opposizione} />
+            <div className="flex items-end gap-2 pb-2">
+              <input type="checkbox" name="fattura_emessa" defaultChecked={patrocinio?.fattura_emessa} id="fattura_emessa" />
+              <label htmlFor="fattura_emessa" className="text-xs text-neutral-500">Fattura emessa</label>
+            </div>
+            <Field label="Numero fattura" name="numero_fattura" defaultValue={patrocinio?.numero_fattura} />
+            <Field label="Data fattura" name="data_fattura" type="date" defaultValue={patrocinio?.data_fattura} />
+            <div className="flex items-end gap-2 pb-2">
+              <input type="checkbox" name="pagamento_incassato" defaultChecked={patrocinio?.pagamento_incassato} id="pagamento_incassato" />
+              <label htmlFor="pagamento_incassato" className="text-xs text-neutral-500">Pagamento incassato</label>
+            </div>
+            <Field label="Data incasso" name="data_incasso" type="date" defaultValue={patrocinio?.data_incasso} />
+            <div className="col-span-2">
+              <label className="mb-1 block text-xs text-neutral-500">Note</label>
+              <textarea name="note" defaultValue={patrocinio?.note ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+            </div>
+          </div>
+          <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
+            <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
+              Salva
+            </button>
+          </div>
+        </form>
+      )}
+
       <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 font-semibold text-neutral-900">Scadenze legali suggerite</h2>
         <p className="mb-3 text-xs text-neutral-500">
@@ -309,7 +407,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
               <Field label="Numero sinistro compagnia" name="numero_sinistro_compagnia" defaultValue={sinistro.numero_sinistro_compagnia} />
               <Field label="Liquidatore" name="liquidatore_nome" defaultValue={sinistro.liquidatore_nome} />
               <Field label="Contatti liquidatore" name="liquidatore_contatti" defaultValue={sinistro.liquidatore_contatti} />
-              <Field label="IP %" name="ip_percentuale" type="number" defaultValue={sinistro.ip_percentuale?.toString()} />
+              <Field label="IP %" name="ip_percentuale" type="number" step="any" defaultValue={sinistro.ip_percentuale?.toString()} />
               <Field label="ITT giorni" name="itt_giorni" type="number" defaultValue={sinistro.itt_giorni?.toString()} />
               <div>
                 <label className="mb-1 block text-xs text-neutral-500">Stato negoziazione</label>
@@ -381,13 +479,13 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   );
 }
 
-function Field({ label, name, defaultValue, type = 'text' }: {
-  label: string; name: string; defaultValue?: string | null; type?: string;
+function Field({ label, name, defaultValue, type = 'text', step }: {
+  label: string; name: string; defaultValue?: string | null; type?: string; step?: string;
 }) {
   return (
     <div>
       <label className="mb-1 block text-xs text-neutral-500">{label}</label>
-      <input type={type} name={name} defaultValue={defaultValue ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+      <input type={type} name={name} step={step} defaultValue={defaultValue ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
     </div>
   );
 }

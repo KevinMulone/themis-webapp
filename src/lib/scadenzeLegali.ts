@@ -119,6 +119,12 @@ export const GRUPPI_SCADENZE: GruppoScadenze[] = [
     ],
   },
   {
+    categoria: 'Gratuito patrocinio',
+    regole: [
+      { id: 'pss_opposizione_decreto', label: 'Opposizione al decreto di liquidazione del compenso', giorni: 20, sospensioneFeriale: true, riferimento: 'Art. 170, comma 1, D.P.R. 115/2002 (rinvio all\'art. 15 D.Lgs. 150/2011) — 20 gg dalla comunicazione del decreto' },
+    ],
+  },
+  {
     categoria: 'Penale',
     regole: [
       { id: 'pen_querela', label: 'Termine per proporre querela', giorni: 90, sospensioneFeriale: false, riferimento: 'Art. 124 c.p. — 3 mesi dalla notizia del fatto (termine sostanziale, salvo termini speciali per singoli reati, es. 12 mesi per violenza sessuale)' },
