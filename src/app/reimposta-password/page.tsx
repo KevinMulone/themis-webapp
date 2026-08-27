@@ -7,7 +7,15 @@ import { createClient } from '@/lib/supabase/client';
 export default function ReimpostaPasswordPage() {
   const router = useRouter();
   const supabase = createClient();
-  const [ready, setReady] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [sessionReady, setSessionReady] = useState(false);
+  const [linkFailed, setLinkFailed] = useState(false);
+
+  const [otpEmail, setOtpEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
@@ -16,7 +24,18 @@ export default function ReimpostaPasswordPage() {
 
   useEffect(() => {
     let settled = false;
-    const succeed = () => { if (!settled) { settled = true; setReady(true); } };
+    const succeed = () => {
+      if (settled) return;
+      settled = true;
+      setSessionReady(true);
+      setChecking(false);
+    };
+    const fail = () => {
+      if (settled) return;
+      settled = true;
+      setLinkFailed(true);
+      setChecking(false);
+    };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) succeed();
@@ -24,13 +43,7 @@ export default function ReimpostaPasswordPage() {
 
     (async () => {
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
-      const linkError = hashParams.get('error_description');
-      if (linkError) {
-        settled = true;
-        setError(decodeURIComponent(linkError.replace(/\+/g, ' ')));
-        setReady(true);
-        return;
-      }
+      if (hashParams.get('error_description')) { fail(); return; }
 
       const url = new URL(window.location.href);
       const code = url.searchParams.get('code');
@@ -45,15 +58,23 @@ export default function ReimpostaPasswordPage() {
         if (session) { succeed(); return; }
         await new Promise((r) => setTimeout(r, 400));
       }
-      if (!settled) {
-        settled = true;
-        setError('Il link non è valido o è scaduto. Richiedine uno nuovo.');
-        setReady(true);
-      }
+      fail();
     })();
 
     return () => subscription.unsubscribe();
   }, [supabase]);
+
+  async function handleVerifyOtp(e: React.FormEvent) {
+    e.preventDefault();
+    setOtpError('');
+    if (!otpEmail || otpCode.length < 6) { setOtpError('Inserisci email e codice.'); return; }
+    setVerifyingOtp(true);
+    const { error: err } = await supabase.auth.verifyOtp({ email: otpEmail, token: otpCode, type: 'recovery' });
+    setVerifyingOtp(false);
+    if (err) { setOtpError('Codice errato o scaduto.'); return; }
+    setSessionReady(true);
+    setLinkFailed(false);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -74,11 +95,11 @@ export default function ReimpostaPasswordPage() {
         <h1 className="text-2xl font-bold text-neutral-900">Themis</h1>
         <p className="mb-6 mt-1 text-sm text-neutral-500">Imposta una nuova password</p>
 
-        {!ready ? (
+        {checking ? (
           <p className="text-sm text-neutral-500">Caricamento...</p>
         ) : done ? (
           <p className="text-sm text-green-700">Password aggiornata. Ti reindirizziamo all&apos;accesso...</p>
-        ) : (
+        ) : sessionReady ? (
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <input
               type="password" placeholder="Nuova password" autoComplete="new-password"
@@ -98,6 +119,33 @@ export default function ReimpostaPasswordPage() {
               {loading ? 'Salvataggio...' : 'Imposta password'}
             </button>
           </form>
+        ) : (
+          <>
+            {linkFailed && (
+              <p className="mb-3 text-sm text-red-600">
+                Il link non è valido o è già stato usato (a volte il programma di posta lo apre da solo per controllarlo). Usa invece il codice ricevuto nella stessa email:
+              </p>
+            )}
+            <form onSubmit={handleVerifyOtp} className="flex flex-col gap-3">
+              <input
+                type="email" placeholder="La tua email" autoComplete="username"
+                value={otpEmail} onChange={(e) => setOtpEmail(e.target.value)}
+                className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              />
+              <input
+                type="text" inputMode="numeric" placeholder="Codice numerico dall'email"
+                value={otpCode} onChange={(e) => setOtpCode(e.target.value.trim())}
+                className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              />
+              {otpError && <p className="text-sm text-red-600">{otpError}</p>}
+              <button
+                type="submit" disabled={verifyingOtp}
+                className="mt-2 rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-50"
+              >
+                {verifyingOtp ? 'Verifica...' : 'Verifica codice'}
+              </button>
+            </form>
+          </>
         )}
       </div>
     </div>
