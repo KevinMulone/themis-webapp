@@ -3,6 +3,16 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import LogoutButton from '@/components/LogoutButton';
 
+function giorniRimanenti(expiresAt: string | null): string | null {
+  if (!expiresAt) return null;
+  const diffMs = new Date(expiresAt).getTime() - new Date(new Date().toISOString().slice(0, 10)).getTime();
+  const days = Math.round(diffMs / 86400000);
+  if (days < 0) return 'scaduto';
+  if (days === 0) return 'scade oggi';
+  if (days === 1) return 'scade domani';
+  return `scade tra ${days} giorni`;
+}
+
 const NAV = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/clienti', label: 'Clienti' },
@@ -49,8 +59,14 @@ export default async function StudioLayout({ children }: { children: React.React
             </Link>
           ))}
         </nav>
-        <div className="border-t border-neutral-200 p-3">
+        <div className="border-t border-neutral-200 p-3 text-center">
+          {giorniRimanenti(studio.subscription_expires_at) && (
+            <p className="mb-2 text-[11px] text-neutral-400">
+              Abbonamento: {giorniRimanenti(studio.subscription_expires_at)}
+            </p>
+          )}
           <LogoutButton />
+          <p className="mt-3 text-[10px] text-neutral-300">Created by Kevin M. D.</p>
         </div>
       </aside>
       <main className="flex-1 overflow-y-auto p-6">{children}</main>

@@ -56,7 +56,8 @@ export default function AdminPage() {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ subscription_expires_at: newExpiry, subscription_status: 'active' }),
     });
-    if (res.ok) { addLog(`${s.email}: esteso a +${days} giorni (nuova scadenza ${newExpiry}).`); load(); }
+    const verbo = days >= 0 ? `esteso a +${days}` : `ridotto di ${Math.abs(days)}`;
+    if (res.ok) { addLog(`${s.email}: ${verbo} giorni (nuova scadenza ${newExpiry}).`); load(); }
     else addLog(`Errore su ${s.email}`);
   }
 
@@ -78,8 +79,7 @@ export default function AdminPage() {
     }
   }
 
-  async function handleToggleStatus(s: Studio) {
-    const newStatus = s.subscription_status === 'active' ? 'suspended' : 'active';
+  async function handleSetStatus(s: Studio, newStatus: 'active' | 'suspended') {
     const res = await fetch(`/api/admin/studios/${s.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ subscription_status: newStatus }),
@@ -128,48 +128,59 @@ export default function AdminPage() {
         <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
           <h2 className="mb-3 text-sm font-semibold">Studi registrati ({studios.length})</h2>
           {loading ? <p className="text-sm text-neutral-500">Caricamento...</p> : (
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[1050px] text-sm">
               <thead className="text-left text-xs uppercase text-neutral-500">
                 <tr>
-                  <th className="pb-2">Studio</th><th>Email</th><th>Piano</th><th>Stato</th>
-                  <th>Scadenza</th><th>Ultimo accesso</th><th>Azioni</th>
+                  <th className="px-3 py-2">Studio</th><th className="px-3 py-2">Email</th>
+                  <th className="px-3 py-2">Piano</th><th className="px-3 py-2">Stato</th>
+                  <th className="px-3 py-2">Scadenza</th><th className="px-3 py-2">Ultimo accesso</th>
+                  <th className="px-3 py-2">Azioni</th>
                 </tr>
               </thead>
               <tbody>
                 {studios.map((s) => (
-                  <tr key={s.id} className="border-t border-neutral-800">
-                    <td className="py-2">{s.nome_studio || '—'}</td>
-                    <td>{s.email}</td>
-                    <td>{s.plan || '—'}</td>
-                    <td className={s.subscription_status === 'active' ? 'text-green-400' : 'text-red-400'}>{s.subscription_status}</td>
-                    <td>
+                  <tr key={s.id} className="border-t border-neutral-800 align-top">
+                    <td className="px-3 py-3">{s.nome_studio || '—'}</td>
+                    <td className="px-3 py-3">{s.email}</td>
+                    <td className="px-3 py-3">{s.plan || '—'}</td>
+                    <td className={`px-3 py-3 ${s.subscription_status === 'active' ? 'text-green-400' : 'text-red-400'}`}>{s.subscription_status}</td>
+                    <td className="px-3 py-3 whitespace-nowrap">
                       {s.subscription_expires_at || '—'}
                       {s.subscription_expires_at && <span className="ml-1 text-neutral-500">({giorniRimanenti(s.subscription_expires_at)})</span>}
                     </td>
-                    <td className="text-neutral-400">{formatDateTime(s.last_sign_in_at)}</td>
-                    <td>
-                      <div className="flex flex-wrap gap-1">
-                        <button onClick={() => handleExtend(s, 30)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">+30gg</button>
-                        <button onClick={() => handleExtend(s, 90)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">+90gg</button>
-                        <button onClick={() => handleExtend(s, 365)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">+365gg</button>
-                        <button
-                          onClick={() => handleToggleStatus(s)}
-                          className={`rounded px-2 py-0.5 text-xs ${s.subscription_status === 'active' ? 'bg-red-900 hover:bg-red-800' : 'bg-green-900 hover:bg-green-800'}`}
-                        >
-                          {s.subscription_status === 'active' ? 'Sospendi' : 'Riattiva'}
-                        </button>
-                        <button onClick={() => handleSendResetPassword(s)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">
-                          Invia reset password
-                        </button>
-                        <button onClick={() => handleGenerateOtp(s)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">
-                          Genera codice di riserva
-                        </button>
+                    <td className="px-3 py-3 whitespace-nowrap text-neutral-400">{formatDateTime(s.last_sign_in_at)}</td>
+                    <td className="px-3 py-3">
+                      <div className="flex w-max flex-col gap-1">
+                        <div className="flex gap-1">
+                          <button onClick={() => handleExtend(s, -365)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">-365gg</button>
+                          <button onClick={() => handleExtend(s, -90)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">-90gg</button>
+                          <button onClick={() => handleExtend(s, -30)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">-30gg</button>
+                          <button onClick={() => handleExtend(s, 30)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">+30gg</button>
+                          <button onClick={() => handleExtend(s, 90)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">+90gg</button>
+                          <button onClick={() => handleExtend(s, 365)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">+365gg</button>
+                        </div>
+                        <div className="flex gap-1">
+                          <button onClick={() => handleSetStatus(s, 'suspended')} className="rounded bg-red-900 px-2 py-0.5 text-xs hover:bg-red-800">
+                            Sospendi
+                          </button>
+                          <button onClick={() => handleSetStatus(s, 'active')} className="rounded bg-green-900 px-2 py-0.5 text-xs hover:bg-green-800">
+                            Riattiva
+                          </button>
+                          <button onClick={() => handleSendResetPassword(s)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">
+                            Invia reset password
+                          </button>
+                          <button onClick={() => handleGenerateOtp(s)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">
+                            Genera codice di riserva
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 
