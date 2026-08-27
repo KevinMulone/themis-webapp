@@ -1,28 +1,272 @@
 """Genera un documento .docx da un template + i dati di una pratica.
 
-Funzione serverless Python (Vercel Python Runtime): riusa direttamente
-_docgen.py (identico a backend/docgen.py) per non riscrivere la logica di
-sostituzione dei placeholder, già collaudata. Verifica sempre l'identità di
-chi chiama tramite Supabase Auth (mai fidandosi di un ID studio passato dal
-client) e non fa altro che questo più leggere/scrivere lo Storage cifrato:
-non ha accesso diretto al database applicativo oltre alle query dirette a
-Postgrest necessarie per raccogliere il contesto del documento.
+Funzione serverless Python (Vercel Python Runtime). Tutto in UN SOLO file:
+Vercel non include automaticamente altri file .py della stessa cartella nel
+pacchetto di una funzione, quindi qualunque `from _modulo import x` fallisce
+con ModuleNotFoundError a runtime (verificato con un test diagnostico
+dedicato) — niente import locali, mai.
+
+Verifica sempre l'identità di chi chiama tramite Supabase Auth (mai fidandosi
+di un ID studio passato dal client) e non fa altro che questo più
+leggere/scrivere lo Storage cifrato: non ha accesso diretto al database
+applicativo oltre alle query dirette a Postgrest necessarie per raccogliere
+il contesto del documento.
 """
+import base64
 import json
 import os
+import re
 import tempfile
+import urllib.error
+import urllib.request
 import uuid
+from datetime import datetime
 from http.server import BaseHTTPRequestHandler
 
-from _auth import get_user_id
-from _doc_encryption import decrypt_bytes, encrypt_bytes, SYSTEM_SCOPE
-from _docgen import format_value, generate_document
-from _storage import download_object, rest_get, rest_post, upload_object
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Pt
+
+SUPABASE_URL = os.environ.get('NEXT_PUBLIC_SUPABASE_URL', '')
+ANON_KEY = os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY', '')
+SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
+BUCKET = 'documents'
+
+# ---------- cifratura (stessa di src/lib/crypto/docEncryption.ts) ----------
+
+HKDF_SALT = b'themis-doc-key'
+IV_LENGTH = 12
+SYSTEM_SCOPE = 'system'
+
+
+def _master_key():
+    return base64.b64decode(os.environ['DOCUMENT_ENCRYPTION_MASTER_KEY'])
+
+
+def derive_key(scope: str) -> bytes:
+    hkdf = HKDF(algorithm=hashes.SHA256(), length=32, salt=HKDF_SALT, info=scope.encode('utf-8'))
+    return hkdf.derive(_master_key())
+
+
+def encrypt_bytes(plaintext: bytes, scope: str) -> bytes:
+    key = derive_key(scope)
+    iv = os.urandom(IV_LENGTH)
+    return iv + AESGCM(key).encrypt(iv, plaintext, None)
+
+
+def decrypt_bytes(blob: bytes, scope: str) -> bytes:
+    key = derive_key(scope)
+    iv = blob[:IV_LENGTH]
+    return AESGCM(key).decrypt(iv, blob[IV_LENGTH:], None)
+
+
+# ---------- auth (verifica il token contro Supabase, mai fidarsi del client) ----------
+
+def get_user_id(access_token: str):
+    if not access_token:
+        return None
+    req = urllib.request.Request(f'{SUPABASE_URL}/auth/v1/user')
+    req.add_header('apikey', ANON_KEY)
+    req.add_header('Authorization', f'Bearer {access_token}')
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return json.loads(resp.read().decode('utf-8')).get('id')
+    except urllib.error.HTTPError:
+        return None
+
+
+# ---------- storage / rest (via service role key) ----------
+
+def download_object(storage_path: str) -> bytes:
+    req = urllib.request.Request(f'{SUPABASE_URL}/storage/v1/object/{BUCKET}/{storage_path}')
+    req.add_header('apikey', SERVICE_ROLE_KEY)
+    req.add_header('Authorization', f'Bearer {SERVICE_ROLE_KEY}')
+    with urllib.request.urlopen(req) as resp:
+        return resp.read()
+
+
+def upload_object(storage_path: str, data: bytes):
+    req = urllib.request.Request(f'{SUPABASE_URL}/storage/v1/object/{BUCKET}/{storage_path}', data=data, method='POST')
+    req.add_header('apikey', SERVICE_ROLE_KEY)
+    req.add_header('Authorization', f'Bearer {SERVICE_ROLE_KEY}')
+    req.add_header('Content-Type', 'application/octet-stream')
+    req.add_header('x-upsert', 'true')
+    with urllib.request.urlopen(req) as resp:
+        resp.read()
+
+
+def rest_get(path: str):
+    req = urllib.request.Request(f'{SUPABASE_URL}{path}')
+    req.add_header('apikey', SERVICE_ROLE_KEY)
+    req.add_header('Authorization', f'Bearer {SERVICE_ROLE_KEY}')
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read().decode('utf-8') or '[]')
+
+
+def rest_post(path: str, body):
+    data = json.dumps(body).encode('utf-8')
+    req = urllib.request.Request(f'{SUPABASE_URL}{path}', data=data, method='POST')
+    req.add_header('apikey', SERVICE_ROLE_KEY)
+    req.add_header('Authorization', f'Bearer {SERVICE_ROLE_KEY}')
+    req.add_header('Content-Type', 'application/json')
+    req.add_header('Prefer', 'return=representation')
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read().decode('utf-8') or '[]')
 
 
 def _first(rows):
     return rows[0] if rows else None
 
+
+# ---------- generazione docx (identico a backend/docgen.py) ----------
+
+PLACEHOLDER_PATTERN = re.compile(r'\{\{\s*([a-zA-Z0-9_]+)\s*\}\}')
+
+
+def _iter_paragraphs(parent):
+    for p in parent.paragraphs:
+        yield p
+    tables = getattr(parent, 'tables', None)
+    if tables:
+        for table in tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    yield from _iter_paragraphs(cell)
+
+
+def _iter_all_paragraphs(doc):
+    yield from _iter_paragraphs(doc)
+    for section in doc.sections:
+        yield from _iter_paragraphs(section.header)
+        yield from _iter_paragraphs(section.footer)
+
+
+def replace_placeholders_in_paragraph(paragraph, context):
+    used = set()
+    while True:
+        runs = paragraph.runs
+        if not runs:
+            break
+        texts = [r.text for r in runs]
+        full_text = ''.join(texts)
+        match = PLACEHOLDER_PATTERN.search(full_text)
+        if not match:
+            break
+        key = match.group(1)
+        start, end = match.start(), match.end()
+
+        offsets = []
+        pos = 0
+        for t in texts:
+            offsets.append((pos, pos + len(t)))
+            pos += len(t)
+
+        covered = [i for i, (s, e) in enumerate(offsets) if e > start and s < end]
+        if not covered:
+            break
+        first_idx, last_idx = covered[0], covered[-1]
+
+        prefix = texts[first_idx][:start - offsets[first_idx][0]]
+        suffix = texts[last_idx][end - offsets[last_idx][0]:]
+
+        if key in context:
+            value = str(context[key])
+            used.add(key)
+        else:
+            value = match.group(0)
+
+        if first_idx == last_idx:
+            runs[first_idx].text = prefix + value + suffix
+        else:
+            runs[first_idx].text = prefix + value
+            for i in covered[1:-1]:
+                runs[i].text = ''
+            runs[last_idx].text = suffix
+
+        if key not in context:
+            break
+    return used
+
+
+def replace_placeholders_in_doc(doc, context):
+    used = set()
+    for paragraph in _iter_all_paragraphs(doc):
+        used |= replace_placeholders_in_paragraph(paragraph, context)
+    return used
+
+
+def _clear_header_content(header):
+    hdr_element = header._element
+    for child in list(hdr_element):
+        if child.tag.endswith('}p') or child.tag.endswith('}tbl'):
+            hdr_element.remove(child)
+    return header.add_paragraph()
+
+
+def apply_letterhead(doc, image_path):
+    for section in doc.sections:
+        section.header.is_linked_to_previous = False
+        paragraph = _clear_header_content(section.header)
+        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        available_width = section.page_width - section.left_margin - section.right_margin
+        run = paragraph.add_run()
+        run.add_picture(image_path, width=available_width)
+
+
+def apply_typography(doc, font_family=None, font_size_pt=None, line_spacing=None):
+    for paragraph in _iter_paragraphs(doc):
+        if line_spacing is not None:
+            paragraph.paragraph_format.line_spacing = line_spacing
+        for run in paragraph.runs:
+            if font_family:
+                run.font.name = font_family
+            if font_size_pt:
+                run.font.size = Pt(font_size_pt)
+
+
+def generate_document(template_path, output_path, context, letterhead_path=None,
+                       font_family=None, font_size_pt=None, line_spacing=None):
+    doc = Document(template_path)
+    used = replace_placeholders_in_doc(doc, context)
+    if letterhead_path:
+        apply_letterhead(doc, letterhead_path)
+    if font_family or font_size_pt or line_spacing:
+        apply_typography(doc, font_family, font_size_pt, line_spacing)
+    doc.save(output_path)
+    return used
+
+
+def format_value(value, tipo_campo):
+    if value is None or value == '':
+        return ''
+    if tipo_campo == 'data':
+        try:
+            return datetime.strptime(str(value), '%Y-%m-%d').strftime('%d/%m/%Y')
+        except ValueError:
+            return str(value)
+    if tipo_campo == 'importo':
+        try:
+            cents = int(value)
+        except (TypeError, ValueError):
+            return str(value)
+        euros = cents / 100
+        formatted = f'{euros:,.2f}'.replace(',', '#').replace('.', ',').replace('#', '.')
+        return f'{formatted} €'
+    if tipo_campo == 'numero':
+        try:
+            f = float(value)
+        except (TypeError, ValueError):
+            return str(value)
+        if f == int(f):
+            return str(int(f))
+        return str(f).replace('.', ',')
+    return str(value)
+
+
+# ---------- endpoint ----------
 
 def _handle(body):
     access_token = body.get('access_token')
