@@ -14,6 +14,7 @@ export default function GeneraPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [matterId, setMatterId] = useState('');
   const [templateId, setTemplateId] = useState('');
+  const [templateSearch, setTemplateSearch] = useState('');
   const [placeholders, setPlaceholders] = useState<Placeholder[]>([]);
   const [manualValues, setManualValues] = useState<Record<string, string>>({});
   const [outputFilename, setOutputFilename] = useState('documento.docx');
@@ -74,9 +75,21 @@ export default function GeneraPage() {
         </div>
         <div className="mb-4">
           <label className="mb-1 block text-xs text-neutral-500">Modello</label>
-          <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
-            <option value="">Seleziona...</option>
-            {templates.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
+          <input
+            type="text"
+            placeholder="Cerca un modello per nome o categoria..."
+            value={templateSearch}
+            onChange={(e) => setTemplateSearch(e.target.value)}
+            className="mb-2 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          />
+          <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} size={8} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
+            {templates
+              .filter((t) => {
+                const q = templateSearch.trim().toLowerCase();
+                if (!q) return true;
+                return t.nome.toLowerCase().includes(q) || (t.categoria || '').toLowerCase().includes(q);
+              })
+              .map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
           </select>
         </div>
 

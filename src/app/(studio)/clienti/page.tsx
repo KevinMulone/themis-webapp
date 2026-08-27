@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { TIPI_SOGGETTO, clientLabel } from '@/lib/constants';
+import { TIPI_SOGGETTO, TIPI_PRATICA, labelFromOptions, clientLabel } from '@/lib/constants';
 
 type Client = {
   id: string;
@@ -36,6 +36,8 @@ export default function ClientiPage() {
   const [inviteModal, setInviteModal] = useState<{
     client: Partial<Client>; email: string; link: string | null; error: string | null; copied: boolean;
   } | null>(null);
+  const [clientDocs, setClientDocs] = useState<{ id: string; nome_file: string; data_generazione: string; tipo_pratica: string }[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -49,6 +51,31 @@ export default function ClientiPage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  async function loadClientDocs(clientId: string) {
+    setLoadingDocs(true);
+    const { data } = await supabase
+      .from('documenti')
+      .select('id, nome_file, data_generazione, matters!inner(client_id, tipo_pratica)')
+      .eq('matters.client_id', clientId)
+      .order('data_generazione', { ascending: false });
+    type Row = { id: string; nome_file: string; data_generazione: string; matters: { tipo_pratica: string } | { tipo_pratica: string }[] };
+    setClientDocs(
+      ((data as Row[]) || []).map((d) => ({
+        id: d.id,
+        nome_file: d.nome_file,
+        data_generazione: d.data_generazione,
+        tipo_pratica: Array.isArray(d.matters) ? d.matters[0]?.tipo_pratica : d.matters.tipo_pratica,
+      })),
+    );
+    setLoadingDocs(false);
+  }
+
+  function openEdit(c: Partial<Client>) {
+    setEditing(c);
+    setClientDocs([]);
+    if (c.id) loadClientDocs(c.id);
+  }
 
   const filtered = clients.filter((c) => {
     if (!search) return true;
@@ -78,6 +105,26 @@ export default function ClientiPage() {
   async function handleArchive(id: string) {
     if (!confirm('Archiviare questo cliente?')) return;
     await supabase.from('clients').update({ archiviato: true }).eq('id', id);
+    setEditing(null);
+    load();
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm(
+      'Eliminare definitivamente questo cliente?\n\n' +
+      'ATTENZIONE: verranno cancellate per sempre anche tutte le sue pratiche e i documenti ' +
+      'generati collegati. Non è reversibile.\n\n' +
+      'Se vuoi solo nasconderlo dall\'elenco mantenendo lo storico, usa "Archivia" invece.',
+    )) return;
+    const { error } = await supabase.from('clients').delete().eq('id', id);
+    if (error) {
+      if (error.code === '23503') {
+        alert('Impossibile eliminare: questo cliente ha pratiche o documenti collegati. Elimina prima quelli, oppure usa "Archivia".');
+      } else {
+        alert(error.message);
+      }
+      return;
+    }
     setEditing(null);
     load();
   }
@@ -155,7 +202,7 @@ export default function ClientiPage() {
                 <tr
                   key={c.id}
                   className="cursor-pointer border-t border-neutral-100 hover:bg-neutral-50"
-                  onClick={() => setEditing(c)}
+                  onClick={() => openEdit(c)}
                 >
                   <td className="px-4 py-2">{clientLabel(c)}</td>
                   <td className="px-4 py-2">{c.codice_fiscale || c.partita_iva}</td>
@@ -216,6 +263,38 @@ export default function ClientiPage() {
                   className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
                 />
               </div>
+              {editing.id && (
+                <div className="col-span-2 border-t border-neutral-200 pt-4">
+                  <p className="mb-2 text-xs font-semibold text-neutral-500">
+                    Documenti generati per questo cliente
+                  </p>
+                  {loadingDocs ? (
+                    <p className="text-sm text-neutral-400">Caricamento...</p>
+                  ) : clientDocs.length === 0 ? (
+                    <p className="text-sm text-neutral-400">Nessun documento generato finora.</p>
+                  ) : (
+                    <ul className="max-h-40 divide-y divide-neutral-100 overflow-y-auto text-sm">
+                      {clientDocs.map((d) => (
+                        <li key={d.id} className="flex items-center justify-between py-1.5">
+                          <div>
+                            <div>{d.nome_file}</div>
+                            <div className="text-xs text-neutral-400">
+                              {labelFromOptions(TIPI_PRATICA, d.tipo_pratica)} · {new Date(d.data_generazione).toLocaleDateString('it-IT')}
+                            </div>
+                          </div>
+                          <a
+                            href={`/api/documenti/${d.id}/download`}
+                            className="rounded-md border border-neutral-300 px-2 py-1 text-xs hover:bg-neutral-50"
+                          >
+                            Scarica
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+
               <div className="col-span-2 mt-2 flex justify-end gap-2 border-t border-neutral-200 pt-4">
                 {editing.id && (
                   <>
@@ -232,6 +311,13 @@ export default function ClientiPage() {
                       className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50"
                     >
                       Archivia
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(editing.id!)}
+                      className="rounded-md bg-red-700 px-4 py-2 text-sm font-semibold text-white hover:bg-red-800"
+                    >
+                      Elimina
                     </button>
                   </>
                 )}
