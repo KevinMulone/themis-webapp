@@ -33,6 +33,9 @@ export default function ClientiPage() {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Partial<Client> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [inviteModal, setInviteModal] = useState<{
+    client: Partial<Client>; email: string; link: string | null; error: string | null; copied: boolean;
+  } | null>(null);
 
   async function load() {
     setLoading(true);
@@ -77,6 +80,36 @@ export default function ClientiPage() {
     await supabase.from('clients').update({ archiviato: true }).eq('id', id);
     setEditing(null);
     load();
+  }
+
+  function handleInvitePortal(client: Partial<Client>) {
+    if (!client.id) return;
+    setInviteModal({ client, email: client.email || '', link: null, error: null, copied: false });
+  }
+
+  async function handleGenerateInviteLink() {
+    if (!inviteModal || !inviteModal.client.id) return;
+    const email = inviteModal.email.trim();
+    if (!email) { setInviteModal({ ...inviteModal, error: 'Inserisci un indirizzo email.' }); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const code = crypto.randomUUID().replace(/-/g, '');
+    const { error } = await supabase.from('portal_invites').insert({
+      studio_id: user.id, code, client_id: inviteModal.client.id, nome_cliente: clientLabel(inviteModal.client), email,
+    });
+    if (error) { setInviteModal({ ...inviteModal, error: error.message }); return; }
+    const link = `${window.location.origin}/portale?invite=${code}`;
+    setInviteModal({ ...inviteModal, email, link, error: null, copied: false });
+  }
+
+  async function handleCopyInviteLink() {
+    if (!inviteModal?.link) return;
+    try {
+      await navigator.clipboard.writeText(inviteModal.link);
+      setInviteModal({ ...inviteModal, copied: true });
+    } catch {
+      setInviteModal({ ...inviteModal, error: 'Copia non riuscita: seleziona e copia il link manualmente.' });
+    }
   }
 
   const isPF = (editing?.tipo_soggetto ?? 'persona_fisica') === 'persona_fisica';
@@ -185,13 +218,22 @@ export default function ClientiPage() {
               </div>
               <div className="col-span-2 mt-2 flex justify-end gap-2 border-t border-neutral-200 pt-4">
                 {editing.id && (
-                  <button
-                    type="button"
-                    onClick={() => handleArchive(editing.id!)}
-                    className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50"
-                  >
-                    Archivia
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleInvitePortal(editing)}
+                      className="mr-auto rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
+                    >
+                      Invita al portale
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleArchive(editing.id!)}
+                      className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                    >
+                      Archivia
+                    </button>
+                  </>
                 )}
                 <button
                   type="button"
@@ -208,6 +250,74 @@ export default function ClientiPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {inviteModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
+            <h2 className="mb-4 text-lg font-bold text-neutral-900">
+              Invita {clientLabel(inviteModal.client)} al portale
+            </h2>
+
+            {!inviteModal.link ? (
+              <>
+                <label className="mb-1 block text-xs text-neutral-500">Email del cliente</label>
+                <input
+                  type="email"
+                  autoFocus
+                  value={inviteModal.email}
+                  onChange={(e) => setInviteModal({ ...inviteModal, email: e.target.value, error: null })}
+                  className="mb-3 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                  placeholder="cliente@esempio.it"
+                />
+                {inviteModal.error && <p className="mb-3 text-sm text-red-600">{inviteModal.error}</p>}
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setInviteModal(null)}
+                    className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
+                  >
+                    Annulla
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleGenerateInviteLink}
+                    className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900"
+                  >
+                    Genera link
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="mb-2 text-sm text-neutral-600">Copia questo link e mandalo al cliente:</p>
+                <input
+                  readOnly
+                  value={inviteModal.link}
+                  onFocus={(e) => e.currentTarget.select()}
+                  className="mb-3 w-full rounded-md border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm"
+                />
+                {inviteModal.error && <p className="mb-3 text-sm text-red-600">{inviteModal.error}</p>}
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setInviteModal(null)}
+                    className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
+                  >
+                    Chiudi
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyInviteLink}
+                    className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900"
+                  >
+                    {inviteModal.copied ? 'Copiato!' : 'Copia link'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
