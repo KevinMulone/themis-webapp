@@ -15,10 +15,44 @@ export default function ReimpostaPasswordPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) { setError('Il link non è valido o è scaduto. Richiedine uno nuovo.'); }
-      setReady(true);
+    let settled = false;
+    const succeed = () => { if (!settled) { settled = true; setReady(true); } };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) succeed();
     });
+
+    (async () => {
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const linkError = hashParams.get('error_description');
+      if (linkError) {
+        settled = true;
+        setError(decodeURIComponent(linkError.replace(/\+/g, ' ')));
+        setReady(true);
+        return;
+      }
+
+      const url = new URL(window.location.href);
+      const code = url.searchParams.get('code');
+      if (code) await supabase.auth.exchangeCodeForSession(code);
+
+      // Il rilevamento del token dal link (hash o code) avviene in modo asincrono
+      // dentro il client e i tempi variano; controlliamo a intervalli per qualche
+      // secondo invece di arrenderci dopo un singolo timeout troppo corto.
+      for (let i = 0; i < 15; i++) {
+        if (settled) return;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) { succeed(); return; }
+        await new Promise((r) => setTimeout(r, 400));
+      }
+      if (!settled) {
+        settled = true;
+        setError('Il link non è valido o è scaduto. Richiedine uno nuovo.');
+        setReady(true);
+      }
+    })();
+
+    return () => subscription.unsubscribe();
   }, [supabase]);
 
   async function handleSubmit(e: React.FormEvent) {
