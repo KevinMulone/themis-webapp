@@ -27,7 +27,9 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/accedi')
     || request.nextUrl.pathname.startsWith('/registrati')
-    || request.nextUrl.pathname.startsWith('/attiva');
+    || request.nextUrl.pathname.startsWith('/attiva')
+    || request.nextUrl.pathname.startsWith('/reimposta-password')
+    || request.nextUrl.pathname.startsWith('/account-sospeso');
   const isPublicRoute = request.nextUrl.pathname === '/'
     || request.nextUrl.pathname.startsWith('/portale');
   // Le route API (comprese le funzioni Python come /api/generate) gestiscono

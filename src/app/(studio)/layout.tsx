@@ -19,11 +19,17 @@ export default async function StudioLayout({ children }: { children: React.React
 
   const { data: studio } = await supabase
     .from('studios')
-    .select('nome_studio, plan, subscription_status')
+    .select('nome_studio, plan, subscription_status, subscription_expires_at')
     .eq('id', user.id)
     .single();
 
   if (!studio || studio.plan === null) redirect('/attiva');
+
+  const today = new Date().toISOString().slice(0, 10);
+  const expired = !!studio.subscription_expires_at && studio.subscription_expires_at < today;
+  if (studio.subscription_status !== 'active' || expired) {
+    redirect(`/account-sospeso?motivo=${expired ? 'scaduto' : 'sospeso'}`);
+  }
 
   return (
     <div className="flex min-h-screen bg-neutral-50">

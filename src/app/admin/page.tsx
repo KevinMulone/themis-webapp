@@ -5,12 +5,27 @@ import { useEffect, useState } from 'react';
 type Studio = {
   id: string; nome_studio: string | null; email: string; plan: string | null;
   subscription_status: string; subscription_expires_at: string | null;
+  last_sign_in_at: string | null;
 };
 
 function addDays(base: string | null, days: number): string {
   const start = base && base > new Date().toISOString().slice(0, 10) ? new Date(base) : new Date();
   start.setDate(start.getDate() + days);
   return start.toISOString().slice(0, 10);
+}
+
+function giorniRimanenti(expiresAt: string | null): string {
+  if (!expiresAt) return '—';
+  const diffMs = new Date(expiresAt).getTime() - new Date(new Date().toISOString().slice(0, 10)).getTime();
+  const days = Math.round(diffMs / 86400000);
+  if (days < 0) return `scaduto da ${Math.abs(days)}gg`;
+  if (days === 0) return 'scade oggi';
+  return `${days}gg`;
+}
+
+function formatDateTime(iso: string | null): string {
+  if (!iso) return 'mai';
+  return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
 export default function AdminPage() {
@@ -42,6 +57,13 @@ export default function AdminPage() {
     });
     if (res.ok) { addLog(`${s.email}: esteso a +${days} giorni (nuova scadenza ${newExpiry}).`); load(); }
     else addLog(`Errore su ${s.email}`);
+  }
+
+  async function handleSendResetPassword(s: Studio) {
+    const res = await fetch(`/api/admin/studios/${s.id}/reset-password`, { method: 'POST' });
+    const body = await res.json();
+    if (res.ok) addLog(`Email di reimpostazione password inviata a ${body.email}.`);
+    else addLog(`Errore invio reset a ${s.email}: ${body.error}`);
   }
 
   async function handleToggleStatus(s: Studio) {
@@ -96,7 +118,10 @@ export default function AdminPage() {
           {loading ? <p className="text-sm text-neutral-500">Caricamento...</p> : (
             <table className="w-full text-sm">
               <thead className="text-left text-xs uppercase text-neutral-500">
-                <tr><th className="pb-2">Studio</th><th>Email</th><th>Piano</th><th>Stato</th><th>Scadenza</th><th>Azioni</th></tr>
+                <tr>
+                  <th className="pb-2">Studio</th><th>Email</th><th>Piano</th><th>Stato</th>
+                  <th>Scadenza</th><th>Ultimo accesso</th><th>Azioni</th>
+                </tr>
               </thead>
               <tbody>
                 {studios.map((s) => (
@@ -105,7 +130,11 @@ export default function AdminPage() {
                     <td>{s.email}</td>
                     <td>{s.plan || '—'}</td>
                     <td className={s.subscription_status === 'active' ? 'text-green-400' : 'text-red-400'}>{s.subscription_status}</td>
-                    <td>{s.subscription_expires_at || '—'}</td>
+                    <td>
+                      {s.subscription_expires_at || '—'}
+                      {s.subscription_expires_at && <span className="ml-1 text-neutral-500">({giorniRimanenti(s.subscription_expires_at)})</span>}
+                    </td>
+                    <td className="text-neutral-400">{formatDateTime(s.last_sign_in_at)}</td>
                     <td>
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => handleExtend(s, 30)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">+30gg</button>
@@ -116,6 +145,9 @@ export default function AdminPage() {
                           className={`rounded px-2 py-0.5 text-xs ${s.subscription_status === 'active' ? 'bg-red-900 hover:bg-red-800' : 'bg-green-900 hover:bg-green-800'}`}
                         >
                           {s.subscription_status === 'active' ? 'Sospendi' : 'Riattiva'}
+                        </button>
+                        <button onClick={() => handleSendResetPassword(s)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">
+                          Invia reset password
                         </button>
                       </div>
                     </td>

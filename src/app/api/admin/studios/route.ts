@@ -9,5 +9,12 @@ export async function GET() {
   const admin = createAdminClient();
   const { data, error } = await admin.from('studios').select('*').order('created_at', { ascending: false });
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-  return NextResponse.json({ studios: data });
+
+  const { data: usersPage } = await admin.auth.admin.listUsers({ perPage: 1000 });
+  const lastSignInById = new Map(
+    (usersPage?.users || []).map((u) => [u.id, u.last_sign_in_at]),
+  );
+  const studios = (data || []).map((s) => ({ ...s, last_sign_in_at: lastSignInById.get(s.id) || null }));
+
+  return NextResponse.json({ studios });
 }
