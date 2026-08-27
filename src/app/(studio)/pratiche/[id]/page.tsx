@@ -7,6 +7,7 @@ import {
   TIPI_PRATICA, STATI_PRATICA, TIPI_SINISTRO, STATI_NEGOZIAZIONE, METODI_PAGAMENTO,
   labelFromOptions, clientLabel,
 } from '@/lib/constants';
+import { GRUPPI_SCADENZE, calcolaScadenza, toIsoLocale, type RegolaScadenza } from '@/lib/scadenzeLegali';
 
 type Matter = {
   id: string; client_id: string; tipo_pratica: string; stato: string;
@@ -43,6 +44,9 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const [saved, setSaved] = useState(false);
   const [documenti, setDocumenti] = useState<Documento[]>([]);
   const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [regolaId, setRegolaId] = useState('');
+  const [dataRiferimento, setDataRiferimento] = useState('');
+  const [scadenzaMsg, setScadenzaMsg] = useState('');
 
   async function loadDocumenti() {
     const { data } = await supabase.from('documenti').select('id, nome_file, data_generazione').eq('matter_id', id).order('data_generazione', { ascending: false });
@@ -122,6 +126,34 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     if (!confirm('Eliminare questo testimone?')) return;
     await supabase.from('testimoni').delete().eq('id', tid);
     load();
+  }
+
+  function trovaRegola(id: string): RegolaScadenza | null {
+    for (const gruppo of GRUPPI_SCADENZE) {
+      const trovata = gruppo.regole.find((r) => r.id === id);
+      if (trovata) return trovata;
+    }
+    return null;
+  }
+
+  const regolaSelezionata = trovaRegola(regolaId);
+  const dataCalcolata = regolaSelezionata && dataRiferimento
+    ? calcolaScadenza(new Date(`${dataRiferimento}T00:00:00`), regolaSelezionata.giorni, regolaSelezionata.sospensioneFeriale)
+    : null;
+
+  async function handleAddScadenza() {
+    if (!regolaSelezionata || !dataCalcolata) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const iso = toIsoLocale(dataCalcolata);
+    const { error } = await supabase.from('eventi').insert({
+      studio_id: user.id, matter_id: id, titolo: regolaSelezionata.label,
+      tipo: 'termine_processuale', data: iso, all_day: false, ora_inizio: '09:00',
+      note: `${regolaSelezionata.riferimento}. Data di riferimento: ${dataRiferimento}. Verificare sempre eccezioni al caso concreto.`,
+    });
+    if (error) { setScadenzaMsg(`Errore: ${error.message}`); return; }
+    setScadenzaMsg(`Aggiunta al calendario in data ${dataCalcolata.toLocaleDateString('it-IT')}.`);
+    setTimeout(() => setScadenzaMsg(''), 4000);
   }
 
   async function handleArchive() {
@@ -205,6 +237,59 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-3 font-semibold text-neutral-900">Scadenze legali suggerite</h2>
+        <p className="mb-3 text-xs text-neutral-500">
+          Suggerimenti con riferimento normativo, da verificare sempre sul caso concreto: la sospensione
+          feriale (1-31 agosto) è applicata dove pertinente, esclusa per lavoro e previdenza.
+        </p>
+        <div className="mb-3 grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Tipo di termine</label>
+            <select
+              value={regolaId} onChange={(e) => setRegolaId(e.target.value)}
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            >
+              <option value="">Seleziona...</option>
+              {GRUPPI_SCADENZE.map((g) => (
+                <optgroup key={g.categoria} label={g.categoria}>
+                  {g.regole.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
+                </optgroup>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Data di riferimento</label>
+            <input
+              type="date" value={dataRiferimento} onChange={(e) => setDataRiferimento(e.target.value)}
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+
+        {regolaSelezionata && (
+          <div className="mb-3 rounded-md bg-neutral-50 p-3 text-xs text-neutral-600">
+            <p className="mb-1 font-semibold text-neutral-700">{regolaSelezionata.riferimento}</p>
+            <p>Termine: {regolaSelezionata.giorni} giorni{regolaSelezionata.sospensioneFeriale ? ', con sospensione feriale se applicabile' : ' (materia esclusa dalla sospensione feriale)'}</p>
+            {dataCalcolata && (
+              <p className="mt-2 text-sm font-bold text-bordeaux-800">
+                Scadenza calcolata: {dataCalcolata.toLocaleDateString('it-IT', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' })}
+              </p>
+            )}
+          </div>
+        )}
+
+        {scadenzaMsg && <p className="mb-3 text-sm text-green-700">{scadenzaMsg}</p>}
+
+        <button
+          onClick={handleAddScadenza}
+          disabled={!dataCalcolata}
+          className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+        >
+          Aggiungi al calendario
+        </button>
       </div>
 
       {matter.tipo_pratica === 'sinistro' && sinistro && (

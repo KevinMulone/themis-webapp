@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { toIsoLocale, oggiIso } from '@/lib/dateUtils';
 
 type Studio = {
   id: string; nome_studio: string | null; email: string; plan: string | null;
@@ -9,14 +10,14 @@ type Studio = {
 };
 
 function addDays(base: string | null, days: number): string {
-  const start = base && base > new Date().toISOString().slice(0, 10) ? new Date(base) : new Date();
+  const start = base && base > oggiIso() ? new Date(base) : new Date();
   start.setDate(start.getDate() + days);
-  return start.toISOString().slice(0, 10);
+  return toIsoLocale(start);
 }
 
 function giorniRimanenti(expiresAt: string | null): string {
   if (!expiresAt) return '—';
-  const diffMs = new Date(expiresAt).getTime() - new Date(new Date().toISOString().slice(0, 10)).getTime();
+  const diffMs = new Date(expiresAt).getTime() - new Date(oggiIso()).getTime();
   const days = Math.round(diffMs / 86400000);
   if (days < 0) return `scaduto da ${Math.abs(days)}gg`;
   if (days === 0) return 'scade oggi';

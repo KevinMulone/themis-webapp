@@ -2,10 +2,11 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import LogoutButton from '@/components/LogoutButton';
+import { oggiIso } from '@/lib/dateUtils';
 
 function giorniRimanenti(expiresAt: string | null): string | null {
   if (!expiresAt) return null;
-  const diffMs = new Date(expiresAt).getTime() - new Date(new Date().toISOString().slice(0, 10)).getTime();
+  const diffMs = new Date(expiresAt).getTime() - new Date(oggiIso()).getTime();
   const days = Math.round(diffMs / 86400000);
   if (days < 0) return 'scaduto';
   if (days === 0) return 'scade oggi';
@@ -36,7 +37,7 @@ export default async function StudioLayout({ children }: { children: React.React
 
   if (!studio || studio.plan === null) redirect('/attiva');
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = oggiIso();
   const expired = !!studio.subscription_expires_at && studio.subscription_expires_at < today;
   if (studio.subscription_status !== 'active' || expired) {
     redirect(`/account-sospeso?motivo=${expired ? 'scaduto' : 'sospeso'}`);

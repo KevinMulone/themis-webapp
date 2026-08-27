@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { toIsoLocale } from '@/lib/dateUtils';
 
 const OFFSET_CHOICES: [number, string][] = [
   [15, '15 minuti prima'], [60, '1 ora prima'], [1440, '1 giorno prima'],
@@ -89,8 +90,8 @@ function PortalePageInner() {
     setBooking(true);
     const { data: rules } = await supabase.from('availability_rules').select('*').eq('studio_id', portalClient.studio_id) as { data: AvailabilityRule[] | null };
     const today = new Date();
-    const from = today.toISOString().slice(0, 10);
-    const to = new Date(today.getTime() + 30 * 86400000).toISOString().slice(0, 10);
+    const from = toIsoLocale(today);
+    const to = toIsoLocale(new Date(today.getTime() + 30 * 86400000));
     const { data: taken } = await supabase.rpc('get_taken_slots', { p_studio_id: portalClient.studio_id, p_from: from, p_to: to });
     const takenSet = new Set((taken || []).map((t: { data: string; ora_inizio: string }) => `${t.data}_${t.ora_inizio.slice(0, 5)}`));
 
@@ -100,7 +101,7 @@ function PortalePageInner() {
       const dow = (d.getDay() + 6) % 7;
       const rule = (rules || []).find((r) => r.day_of_week === dow);
       if (!rule) continue;
-      const iso = d.toISOString().slice(0, 10);
+      const iso = toIsoLocale(d);
       const slots: string[] = [];
       let [h, m] = rule.start_time.split(':').map(Number);
       const [endH, endM] = rule.end_time.split(':').map(Number);

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { oggiIso } from '@/lib/dateUtils';
 
 const REMEMBER_KEY = 'themis_remembered_email';
 
@@ -51,7 +52,7 @@ export default function AccediPage() {
       setError('Abbonamento non attivo. Contatta lo studio per riattivarlo.');
       return;
     }
-    if (studio.subscription_expires_at && studio.subscription_expires_at < new Date().toISOString().slice(0, 10)) {
+    if (studio.subscription_expires_at && studio.subscription_expires_at < oggiIso()) {
       setError(`Abbonamento scaduto il ${studio.subscription_expires_at}.`);
       return;
     }
