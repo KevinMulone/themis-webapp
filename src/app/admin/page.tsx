@@ -119,7 +119,7 @@ export default function AdminPage() {
             <input name="password" type="text" placeholder="Password iniziale" required className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm" />
             <input name="plan" placeholder="Piano" defaultValue="monthly" className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm" />
             <input name="days" type="number" placeholder="Giorni validità" defaultValue={30} className="col-span-2 rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm" />
-            <button type="submit" disabled={creating} className="col-span-2 rounded-md bg-amber-700 px-4 py-2 text-sm font-semibold hover:bg-amber-800 disabled:opacity-50">
+            <button type="submit" disabled={creating} className="col-span-2 rounded-md bg-gold-600 px-4 py-2 text-sm font-semibold hover:bg-bordeaux-700 disabled:opacity-50">
               {creating ? 'Creazione...' : 'Crea studio'}
             </button>
           </form>
@@ -185,7 +185,7 @@ export default function AdminPage() {
         </div>
 
         {otpResult && (
-          <div className="mb-6 rounded-xl border border-amber-700 bg-amber-950/40 p-6">
+          <div className="mb-6 rounded-xl border border-gold-600 bg-bordeaux-950/40 p-6">
             <div className="mb-2 flex items-center justify-between">
               <h2 className="text-sm font-semibold">Codice di riserva per {otpResult.email}</h2>
               <button onClick={() => setOtpResult(null)} className="text-xs text-neutral-400 hover:text-neutral-200">Chiudi</button>
@@ -194,7 +194,7 @@ export default function AdminPage() {
               Comunica questo codice al cliente (telefono, WhatsApp, email personale): lo inserirà nella pagina
               &quot;Imposta una nuova password&quot; se il link ricevuto via email non funziona. Vale pochi minuti.
             </p>
-            <p className="text-2xl font-mono font-bold tracking-widest text-amber-400">{otpResult.otp}</p>
+            <p className="text-2xl font-mono font-bold tracking-widest text-gold-400">{otpResult.otp}</p>
           </div>
         )}
 

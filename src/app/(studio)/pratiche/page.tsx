@@ -59,7 +59,7 @@ export default function PraticheePage() {
         <h1 className="text-2xl font-bold text-neutral-900">Pratiche</h1>
         <button
           onClick={() => setCreating(true)}
-          className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900"
+          className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
         >
           + Nuova pratica
         </button>
@@ -86,7 +86,7 @@ export default function PraticheePage() {
               {matters.map((m) => (
                 <tr key={m.id} className="border-t border-neutral-100 hover:bg-neutral-50">
                   <td className="px-4 py-2">
-                    <Link href={`/pratiche/${m.id}`} className="text-amber-800 hover:underline">
+                    <Link href={`/pratiche/${m.id}`} className="text-bordeaux-700 hover:underline">
                       {clientLabel(m.clients)}
                     </Link>
                   </td>
@@ -136,7 +136,7 @@ export default function PraticheePage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900"
+                  className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
                 >
                   Crea
                 </button>

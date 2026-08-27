@@ -34,7 +34,7 @@ export default function AttivaPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
       <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-neutral-900">Themis</h1>
+        <h1 className="text-2xl font-bold text-bordeaux-800">Themis</h1>
         <p className="mb-6 mt-1 text-sm text-neutral-500">Attiva il tuo account</p>
         <p className="mb-4 text-sm text-neutral-600">
           Inserisci la chiave di licenza che ti è stata fornita per attivare l&apos;abbonamento.
@@ -50,7 +50,7 @@ export default function AttivaPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-50"
+            className="mt-2 rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
           >
             {loading ? 'Attivazione...' : 'Attiva'}
           </button>

@@ -160,7 +160,7 @@ export default function ImpostazioniPage() {
           <p className={`mt-3 text-sm ${passwordMsg.type === 'ok' ? 'text-green-700' : 'text-red-600'}`}>{passwordMsg.text}</p>
         )}
         <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
-          <button type="submit" disabled={changingPassword} className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-50">
+          <button type="submit" disabled={changingPassword} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
             {changingPassword ? 'Salvataggio...' : 'Aggiorna password'}
           </button>
         </div>
@@ -210,7 +210,7 @@ export default function ImpostazioniPage() {
           </div>
         </div>
         <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
-          <button type="submit" className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900">
+          <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
             Salva
           </button>
         </div>
@@ -251,7 +251,7 @@ export default function ImpostazioniPage() {
           />
         </div>
         <div className="flex justify-end border-t border-neutral-200 pt-4">
-          <button onClick={handleSaveHours} disabled={savingHours} className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-50">
+          <button onClick={handleSaveHours} disabled={savingHours} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
             {savingHours ? 'Salvataggio...' : 'Salva orari'}
           </button>
         </div>
@@ -270,7 +270,7 @@ export default function ImpostazioniPage() {
                 <div>{t.nome}</div>
                 <div className="text-xs text-neutral-400">{labelFromOptions(TIPI_PRATICA, t.categoria || '')}</div>
               </div>
-              <span className={`rounded-full px-2 py-0.5 text-xs ${t.studio_id ? 'bg-blue-50 text-blue-700' : 'bg-neutral-100 text-neutral-500'}`}>
+              <span className={`rounded-full px-2 py-0.5 text-xs ${t.studio_id ? 'bg-bordeaux-50 text-bordeaux-700' : 'bg-gold-100 text-gold-700'}`}>
                 {t.studio_id ? 'Personalizzato' : 'Di sistema'}
               </span>
             </li>
@@ -296,7 +296,7 @@ export default function ImpostazioniPage() {
             <input name="descrizione" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2 flex justify-end">
-            <button type="submit" disabled={uploadingTemplate} className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-50">
+            <button type="submit" disabled={uploadingTemplate} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
               {uploadingTemplate ? 'Caricamento...' : 'Carica modello'}
             </button>
           </div>

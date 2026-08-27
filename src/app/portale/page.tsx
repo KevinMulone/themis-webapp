@@ -152,7 +152,7 @@ function PortalePageInner() {
             <form onSubmit={handleRegister} className="flex flex-col gap-3">
               <input name="password" type="password" placeholder="Almeno 8 caratteri" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
               {error && <p className="text-sm text-red-600">{error}</p>}
-              <button type="submit" className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900">Crea account</button>
+              <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Crea account</button>
             </form>
           </div>
         )}
@@ -170,7 +170,7 @@ function PortalePageInner() {
               <input name="email" type="email" placeholder="Email" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
               <input name="password" type="password" placeholder="Password" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
               {error && <p className="text-sm text-red-600">{error}</p>}
-              <button type="submit" className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900">Entra</button>
+              <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Entra</button>
             </form>
           </div>
         )}
@@ -196,7 +196,7 @@ function PortalePageInner() {
                   ))}
                 </ul>
               )}
-              <button onClick={handleShowSlots} disabled={booking} className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-50">
+              <button onClick={handleShowSlots} disabled={booking} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
                 Prenota un appuntamento
               </button>
             </div>
@@ -237,7 +237,7 @@ function PortalePageInner() {
                 </div>
                 {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
                 <div className="flex gap-2">
-                  <button onClick={handleConfirmBooking} className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900">Prenota</button>
+                  <button onClick={handleConfirmBooking} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Prenota</button>
                   <button onClick={() => setChosenSlot(null)} className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50">Annulla</button>
                 </div>
               </div>

@@ -50,7 +50,7 @@ export default function RegistratiPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
       <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-neutral-900">Themis</h1>
+        <h1 className="text-2xl font-bold text-bordeaux-800">Themis</h1>
         <p className="mb-6 mt-1 text-sm text-neutral-500">Crea l&apos;account del tuo studio</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
@@ -79,14 +79,14 @@ export default function RegistratiPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-50"
+            className="mt-2 rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
           >
             {loading ? 'Registrazione...' : 'Registrati'}
           </button>
         </form>
         <p className="mt-4 text-center text-sm text-neutral-500">
           Hai già un account?{' '}
-          <Link href="/accedi" className="text-amber-800 hover:underline">
+          <Link href="/accedi" className="text-bordeaux-700 hover:underline">
             Accedi
           </Link>
         </p>

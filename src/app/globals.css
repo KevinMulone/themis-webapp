@@ -10,6 +10,23 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-bordeaux-50: #fbf1f3;
+  --color-bordeaux-100: #f5dbe1;
+  --color-bordeaux-400: #bf5170;
+  --color-bordeaux-500: #9e3255;
+  --color-bordeaux-600: #7c2440;
+  --color-bordeaux-700: #6b1d39;
+  --color-bordeaux-800: #57172e;
+  --color-bordeaux-900: #451224;
+  --color-bordeaux-950: #2e0c18;
+
+  --color-gold-100: #f9edc7;
+  --color-gold-300: #eabf4c;
+  --color-gold-400: #e0b34a;
+  --color-gold-500: #c9932a;
+  --color-gold-600: #a5741f;
+  --color-gold-700: #7f591c;
 }
 
 @media (prefers-color-scheme: dark) {

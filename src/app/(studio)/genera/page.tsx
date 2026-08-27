@@ -109,7 +109,7 @@ export default function GeneraPage() {
         <button
           onClick={handleGenerate}
           disabled={generating}
-          className="w-full rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-50"
+          className="w-full rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
         >
           {generating ? 'Generazione...' : 'Genera'}
         </button>
@@ -117,7 +117,7 @@ export default function GeneraPage() {
         {result && (
           <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm">
             Documento generato: {result.nome_file}.{' '}
-            <a href={`/api/documenti/${result.documento_id}/download`} className="font-semibold text-amber-800 hover:underline">
+            <a href={`/api/documenti/${result.documento_id}/download`} className="font-semibold text-bordeaux-700 hover:underline">
               Scarica
             </a>
           </div>

@@ -126,14 +126,14 @@ export default function CalendarioPage() {
             <div
               key={i}
               onClick={() => setFormDate(iso)}
-              className={`min-h-24 cursor-pointer bg-white p-1.5 text-xs ${c.otherMonth ? 'opacity-40' : ''} ${iso === todayIso ? 'ring-2 ring-inset ring-amber-500' : ''}`}
+              className={`min-h-24 cursor-pointer bg-white p-1.5 text-xs ${c.otherMonth ? 'opacity-40' : ''} ${iso === todayIso ? 'ring-2 ring-inset ring-gold-500' : ''}`}
             >
               <div className="mb-1 font-semibold">{c.date.getDate()}</div>
               {dayEvents.map((ev) => (
                 <div
                   key={ev.id}
                   onClick={(e) => { e.stopPropagation(); setDetail(ev); }}
-                  className="mb-1 truncate rounded bg-amber-100 px-1 py-0.5 text-amber-900"
+                  className="mb-1 truncate rounded bg-gold-100 px-1 py-0.5 text-bordeaux-800"
                   title={ev.titolo}
                 >
                   {!ev.all_day && ev.ora_inizio && `${ev.ora_inizio.slice(0, 5)} `}{ev.titolo}
@@ -187,7 +187,7 @@ export default function CalendarioPage() {
               </div>
               <div className="mt-2 flex justify-end gap-2 border-t border-neutral-200 pt-4">
                 <button type="button" onClick={() => setFormDate(null)} className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50">Annulla</button>
-                <button type="submit" className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900">Salva</button>
+                <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Salva</button>
               </div>
             </form>
           </div>

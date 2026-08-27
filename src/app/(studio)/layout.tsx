@@ -44,8 +44,8 @@ export default async function StudioLayout({ children }: { children: React.React
   return (
     <div className="flex min-h-screen bg-neutral-50">
       <aside className="flex w-56 flex-shrink-0 flex-col border-r border-neutral-200 bg-white">
-        <div className="border-b border-neutral-200 px-5 py-4">
-          <h1 className="text-lg font-bold text-neutral-900">Themis</h1>
+        <div className="border-b-2 border-gold-500 px-5 py-4">
+          <h1 className="text-lg font-bold text-bordeaux-800">Themis</h1>
           <p className="text-xs text-neutral-500">{studio.nome_studio}</p>
         </div>
         <nav className="flex flex-1 flex-col gap-1 p-3">
@@ -53,7 +53,7 @@ export default async function StudioLayout({ children }: { children: React.React
             <Link
               key={item.href}
               href={item.href}
-              className="rounded-md px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-100"
+              className="rounded-md px-3 py-2 text-sm text-neutral-700 hover:bg-gold-100 hover:text-bordeaux-800"
             >
               {item.label}
             </Link>

@@ -120,7 +120,7 @@ export default function ClientiPage() {
         <h1 className="text-2xl font-bold text-neutral-900">Clienti</h1>
         <button
           onClick={() => setEditing({ ...EMPTY })}
-          className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900"
+          className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
         >
           + Nuovo cliente
         </button>
@@ -244,7 +244,7 @@ export default function ClientiPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900"
+                  className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
                 >
                   Salva
                 </button>
@@ -284,7 +284,7 @@ export default function ClientiPage() {
                   <button
                     type="button"
                     onClick={handleGenerateInviteLink}
-                    className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900"
+                    className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
                   >
                     Genera link
                   </button>
@@ -311,7 +311,7 @@ export default function ClientiPage() {
                   <button
                     type="button"
                     onClick={handleCopyInviteLink}
-                    className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900"
+                    className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
                   >
                     {inviteModal.copied ? 'Copiato!' : 'Copia link'}
                   </button>
