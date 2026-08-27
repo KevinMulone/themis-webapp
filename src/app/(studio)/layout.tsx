@@ -8,6 +8,8 @@ const NAV = [
   { href: '/clienti', label: 'Clienti' },
   { href: '/pratiche', label: 'Pratiche' },
   { href: '/calendario', label: 'Calendario' },
+  { href: '/genera', label: 'Genera Atto' },
+  { href: '/impostazioni', label: 'Impostazioni' },
 ];
 
 export default async function StudioLayout({ children }: { children: React.ReactNode }) {

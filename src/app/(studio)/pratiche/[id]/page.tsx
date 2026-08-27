@@ -29,6 +29,7 @@ type Testimone = {
   id: string; sinistro_id: string; nome: string | null; cognome: string | null;
   contatti: string | null; dichiarazione: string | null; note: string | null;
 };
+type Documento = { id: string; nome_file: string; data_generazione: string };
 
 export default function MatterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = usePromise(params);
@@ -40,8 +41,30 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const [testimoni, setTestimoni] = useState<Testimone[]>([]);
   const [addingTestimone, setAddingTestimone] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [documenti, setDocumenti] = useState<Documento[]>([]);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+
+  async function loadDocumenti() {
+    const { data } = await supabase.from('documenti').select('id, nome_file, data_generazione').eq('matter_id', id).order('data_generazione', { ascending: false });
+    setDocumenti(data || []);
+  }
+
+  async function handleUploadDocumento(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingDoc(true);
+    const form = new FormData();
+    form.append('file', file);
+    form.append('matter_id', id);
+    const res = await fetch('/api/documenti/upload', { method: 'POST', body: form });
+    setUploadingDoc(false);
+    if (!res.ok) { const b = await res.json(); alert(b.error || 'Errore caricamento'); return; }
+    e.target.value = '';
+    loadDocumenti();
+  }
 
   async function load() {
+    loadDocumenti();
     const { data: m } = await supabase.from('matters').select('*').eq('id', id).single();
     if (!m) return;
     setMatter(m);
@@ -159,6 +182,30 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           </button>
         </div>
       </form>
+
+      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-semibold text-neutral-900">Documenti</h2>
+          <label className="cursor-pointer rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50">
+            {uploadingDoc ? 'Caricamento...' : '+ Carica documento'}
+            <input type="file" className="hidden" onChange={handleUploadDocumento} disabled={uploadingDoc} />
+          </label>
+        </div>
+        {documenti.length === 0 ? (
+          <p className="text-sm text-neutral-500">Nessun documento caricato per questa pratica.</p>
+        ) : (
+          <ul className="divide-y divide-neutral-100 text-sm">
+            {documenti.map((d) => (
+              <li key={d.id} className="flex items-center justify-between py-2">
+                <span>{d.nome_file}</span>
+                <a href={`/api/documenti/${d.id}/download`} className="text-xs font-semibold text-amber-800 hover:underline">
+                  Scarica
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {matter.tipo_pratica === 'sinistro' && sinistro && (
         <>
