@@ -19,6 +19,7 @@ const NAV = [
   { href: '/clienti', label: 'Clienti' },
   { href: '/pratiche', label: 'Pratiche' },
   { href: '/calendario', label: 'Calendario' },
+  { href: '/pec', label: 'PEC' },
   { href: '/genera', label: 'Genera Atto' },
   { href: '/calcolo-danno', label: 'Calcolo Danno' },
   { href: '/parcelle', label: 'Parcelle' },
