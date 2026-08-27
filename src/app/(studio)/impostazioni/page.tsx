@@ -22,6 +22,8 @@ export default function ImpostazioniPage() {
   const [slotMinutes, setSlotMinutes] = useState(30);
   const [days, setDays] = useState<DayRule[]>(Array.from({ length: 7 }, () => ({ ...DEFAULT_DAY })));
   const [savingHours, setSavingHours] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordMsg, setPasswordMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const templateFileRef = useRef<HTMLInputElement>(null);
   const letterheadFileRef = useRef<HTMLInputElement>(null);
 
@@ -92,6 +94,28 @@ export default function ImpostazioniPage() {
     alert('Impostazioni salvate');
   }
 
+  async function handleChangePassword(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPasswordMsg(null);
+    const form = new FormData(e.currentTarget);
+    const newPassword = form.get('new_password') as string;
+    const confirmPassword = form.get('confirm_password') as string;
+    if (newPassword.length < 8) {
+      setPasswordMsg({ type: 'error', text: 'La password deve avere almeno 8 caratteri.' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMsg({ type: 'error', text: 'Le due password non coincidono.' });
+      return;
+    }
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setChangingPassword(false);
+    if (error) { setPasswordMsg({ type: 'error', text: error.message }); return; }
+    setPasswordMsg({ type: 'ok', text: 'Password aggiornata.' });
+    (e.target as HTMLFormElement).reset();
+  }
+
   function updateDay(index: number, patch: Partial<DayRule>) {
     setDays((prev) => prev.map((d, i) => (i === index ? { ...d, ...patch } : d)));
   }
@@ -119,6 +143,28 @@ export default function ImpostazioniPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-6 text-2xl font-bold text-neutral-900">Impostazioni</h1>
+
+      <form onSubmit={handleChangePassword} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-3 font-semibold text-neutral-900">Cambia password</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Nuova password</label>
+            <input name="new_password" type="password" autoComplete="new-password" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Conferma password</label>
+            <input name="confirm_password" type="password" autoComplete="new-password" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+          </div>
+        </div>
+        {passwordMsg && (
+          <p className={`mt-3 text-sm ${passwordMsg.type === 'ok' ? 'text-green-700' : 'text-red-600'}`}>{passwordMsg.text}</p>
+        )}
+        <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
+          <button type="submit" disabled={changingPassword} className="rounded-md bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-900 disabled:opacity-50">
+            {changingPassword ? 'Salvataggio...' : 'Aggiorna password'}
+          </button>
+        </div>
+      </form>
 
       <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 font-semibold text-neutral-900">Intestazione documenti</h2>

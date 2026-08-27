@@ -1,16 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+
+const REMEMBER_KEY = 'themis_remembered_email';
 
 export default function AccediPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const remembered = localStorage.getItem(REMEMBER_KEY);
+    if (remembered) setEmail(remembered);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -23,6 +31,9 @@ export default function AccediPage() {
       setError('Email o password errati.');
       return;
     }
+
+    if (rememberMe) localStorage.setItem(REMEMBER_KEY, email);
+    else localStorage.removeItem(REMEMBER_KEY);
 
     const { data: studio } = await supabase
       .from('studios')
@@ -69,6 +80,10 @@ export default function AccediPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <label className="flex items-center gap-2 text-sm text-neutral-600">
+            <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+            Ricordami per il prossimo accesso
+          </label>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
