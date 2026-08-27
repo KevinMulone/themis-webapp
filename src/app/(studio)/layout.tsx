@@ -21,6 +21,7 @@ const NAV = [
   { href: '/calendario', label: 'Calendario' },
   { href: '/genera', label: 'Genera Atto' },
   { href: '/calcolo-danno', label: 'Calcolo Danno' },
+  { href: '/parcelle', label: 'Parcelle' },
   { href: '/patrocinio', label: 'Patrocinio Stato' },
   { href: '/impostazioni', label: 'Impostazioni' },
 ];
