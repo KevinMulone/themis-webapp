@@ -20,6 +20,10 @@ export async function POST(request: Request) {
     cancel_url: `${siteUrl}/attiva?checkout=cancel`,
     metadata: { plan },
     subscription_data: { metadata: { plan } },
+    // Il "merchant of record"/gestione tasse di Stripe (attivo di default su
+    // questo account) richiederebbe un tax_code su ogni prodotto: non ci
+    // serve per questo caso d'uso, lo disattiviamo esplicitamente.
+    managed_payments: { enabled: false },
   });
 
   return NextResponse.json({ url: session.url });

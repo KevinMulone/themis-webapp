@@ -45,18 +45,28 @@ function AttivaPageInner() {
 
   async function handleAbbonati(piano: string) {
     setPianoInCorso(piano);
-    const res = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan: piano }),
-    });
-    const body = await res.json();
-    if (!res.ok || !body.url) {
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: piano }),
+      });
+      let body: { url?: string; error?: string } = {};
+      try {
+        body = await res.json();
+      } catch {
+        // La risposta non era JSON (es. una pagina di errore generica del server).
+      }
+      if (!res.ok || !body.url) {
+        setPianoInCorso(null);
+        alert(body.error || `Impossibile avviare il pagamento (errore ${res.status})`);
+        return;
+      }
+      window.location.href = body.url;
+    } catch {
       setPianoInCorso(null);
-      alert(body.error || 'Impossibile avviare il pagamento');
-      return;
+      alert('Impossibile contattare il server. Riprova.');
     }
-    window.location.href = body.url;
   }
 
   return (
