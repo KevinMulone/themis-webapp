@@ -13,6 +13,7 @@ type Evento = {
   all_day: boolean; luogo: string | null; note: string | null;
 };
 type Matter = { id: string; client_id: string; tipo_pratica: string; clients?: { nome: string | null; cognome: string | null; ragione_sociale: string | null; tipo_soggetto: string } };
+type Appointment = { id: string; data: string; ora_inizio: string; ora_fine: string; nome_cliente: string | null; stato: string };
 
 function toIso(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -24,9 +25,11 @@ export default function CalendarioPage() {
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1); // 1-12
   const [events, setEvents] = useState<Evento[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [matters, setMatters] = useState<Matter[]>([]);
   const [formDate, setFormDate] = useState<string | null>(null);
   const [detail, setDetail] = useState<Evento | null>(null);
+  const [appointmentDetail, setAppointmentDetail] = useState<Appointment | null>(null);
 
   async function load() {
     const from = `${year}-${String(month).padStart(2, '0')}-01`;
@@ -34,6 +37,9 @@ export default function CalendarioPage() {
     const to = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
     const { data } = await supabase.from('eventi').select('*').gte('data', from).lte('data', to).order('data').order('ora_inizio');
     setEvents(data || []);
+    const { data: appts } = await supabase.from('appointments').select('id, data, ora_inizio, ora_fine, nome_cliente, stato')
+      .gte('data', from).lte('data', to).in('stato', ['in_attesa', 'confermato']).order('data').order('ora_inizio');
+    setAppointments(appts || []);
     const { data: m } = await supabase.from('matters').select('id, client_id, tipo_pratica, clients(nome, cognome, ragione_sociale, tipo_soggetto)').neq('stato', 'archiviata');
     setMatters((m as unknown as Matter[]) || []);
   }
@@ -49,6 +55,8 @@ export default function CalendarioPage() {
 
   const eventsByDay: Record<string, Evento[]> = {};
   events.forEach((ev) => { (eventsByDay[ev.data] ||= []).push(ev); });
+  const appointmentsByDay: Record<string, Appointment[]> = {};
+  appointments.forEach((a) => { (appointmentsByDay[a.data] ||= []).push(a); });
 
   const firstOfMonth = new Date(year, month - 1, 1);
   const daysInMonth = new Date(year, month, 0).getDate();
@@ -94,10 +102,10 @@ export default function CalendarioPage() {
     load();
   }
 
-  function handleSync() {
-    // La sincronizzazione con le prenotazioni online del portale clienti
-    // arriva in una fase successiva di questo piano.
-    alert('La sincronizzazione con le prenotazioni online arriverà a breve.');
+  async function handleUpdateAppointment(id: string, stato: string) {
+    await supabase.from('appointments').update({ stato }).eq('id', id);
+    setAppointmentDetail(null);
+    load();
   }
 
   return (
@@ -107,9 +115,6 @@ export default function CalendarioPage() {
         <button onClick={() => changeMonth(-1)} className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50">« Precedente</button>
         <h2 className="text-lg font-semibold">{MESI[month - 1]} {year}</h2>
         <div className="flex gap-2">
-          <button onClick={handleSync} className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50">
-            Sincronizza prenotazioni online
-          </button>
           <button onClick={() => { setYear(today.getFullYear()); setMonth(today.getMonth() + 1); }} className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50">Oggi</button>
           <button onClick={() => changeMonth(1)} className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50">Successivo »</button>
         </div>
@@ -123,6 +128,7 @@ export default function CalendarioPage() {
           {cells.map((c, i) => {
             const iso = toIso(c.date);
             const dayEvents = eventsByDay[iso] || [];
+            const dayAppointments = appointmentsByDay[iso] || [];
             return (
               <div
                 key={i}
@@ -138,6 +144,16 @@ export default function CalendarioPage() {
                     title={ev.titolo}
                   >
                     {!ev.all_day && ev.ora_inizio && `${ev.ora_inizio.slice(0, 5)} `}{ev.titolo}
+                  </div>
+                ))}
+                {dayAppointments.map((a) => (
+                  <div
+                    key={a.id}
+                    onClick={(e) => { e.stopPropagation(); setAppointmentDetail(a); }}
+                    className={`mb-1 truncate rounded px-1 py-0.5 ${a.stato === 'in_attesa' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}
+                    title={`${a.stato === 'in_attesa' ? 'In attesa: ' : ''}${a.nome_cliente || 'Prenotazione'}`}
+                  >
+                    {a.ora_inizio.slice(0, 5)} {a.stato === 'in_attesa' ? '? ' : ''}{a.nome_cliente || 'Prenotazione'}
                   </div>
                 ))}
               </div>
@@ -210,6 +226,31 @@ export default function CalendarioPage() {
             <div className="mt-4 flex justify-end gap-2 border-t border-neutral-200 pt-4">
               <button onClick={() => handleDelete(detail.id)} className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Elimina</button>
               <button onClick={() => setDetail(null)} className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50">Chiudi</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {appointmentDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-6 shadow-lg">
+            <h2 className="mb-4 text-lg font-bold text-neutral-900">Prenotazione online</h2>
+            <div className="space-y-1 text-sm text-neutral-700">
+              <p><strong>Cliente:</strong> {appointmentDetail.nome_cliente || '-'}</p>
+              <p><strong>Data:</strong> {appointmentDetail.data}</p>
+              <p><strong>Ora:</strong> {appointmentDetail.ora_inizio.slice(0, 5)} - {appointmentDetail.ora_fine.slice(0, 5)}</p>
+              <p><strong>Stato:</strong> {appointmentDetail.stato === 'in_attesa' ? 'In attesa di conferma' : 'Confermato'}</p>
+            </div>
+            <div className="mt-4 flex flex-wrap justify-end gap-2 border-t border-neutral-200 pt-4">
+              {appointmentDetail.stato === 'in_attesa' ? (
+                <>
+                  <button onClick={() => handleUpdateAppointment(appointmentDetail.id, 'rifiutato')} className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Rifiuta</button>
+                  <button onClick={() => handleUpdateAppointment(appointmentDetail.id, 'confermato')} className="rounded-md bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">Accetta</button>
+                </>
+              ) : (
+                <button onClick={() => handleUpdateAppointment(appointmentDetail.id, 'cancellato')} className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Annulla appuntamento</button>
+              )}
+              <button onClick={() => setAppointmentDetail(null)} className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50">Chiudi</button>
             </div>
           </div>
         </div>

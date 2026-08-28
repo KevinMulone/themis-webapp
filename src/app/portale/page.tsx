@@ -10,10 +10,24 @@ const OFFSET_CHOICES: [number, string][] = [
   [10080, '1 settimana prima'], [20160, '2 settimane prima'],
 ];
 
+const LABEL_STATO: Record<string, string> = {
+  in_attesa: 'In attesa di conferma', confermato: 'Confermato', rifiutato: 'Rifiutato',
+};
+const STILE_STATO: Record<string, string> = {
+  in_attesa: 'bg-gold-100 text-gold-700', confermato: 'bg-green-100 text-green-700', rifiutato: 'bg-red-100 text-red-700',
+};
+
 type Invite = { email: string; nome_cliente: string | null; used: boolean };
 type PortalClient = { studio_id: string; nome_cliente: string | null };
-type Appointment = { id: string; data: string; ora_inizio: string; ora_fine: string };
+type Appointment = { id: string; data: string; ora_inizio: string; ora_fine: string; stato: string };
 type AvailabilityRule = { day_of_week: number; start_time: string; end_time: string; slot_minutes: number };
+type Slot = { ora: string; occupato: boolean };
+
+function formattaData(iso: string): string {
+  const d = new Date(`${iso}T00:00:00`);
+  const giorni = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
+  return `${giorni[d.getDay()]} ${iso.split('-').reverse().slice(0, 2).join('/')}`;
+}
 
 function PortalePageInner() {
   const supabase = createClient();
@@ -26,7 +40,9 @@ function PortalePageInner() {
   const [invite, setInvite] = useState<Invite | null>(null);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [booking, setBooking] = useState(false);
-  const [slotsByDay, setSlotsByDay] = useState<Record<string, string[]>>({});
+  const [slotsByDay, setSlotsByDay] = useState<Record<string, Slot[]>>({});
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+  const [slotMinutes, setSlotMinutes] = useState(30);
   const [chosenSlot, setChosenSlot] = useState<{ data: string; ora: string } | null>(null);
   const [offsets, setOffsets] = useState<number[]>([]);
   const [error, setError] = useState('');
@@ -51,8 +67,8 @@ function PortalePageInner() {
   }, [session, portalClient]);
 
   async function loadAppointments() {
-    const { data } = await supabase.from('appointments').select('id, data, ora_inizio, ora_fine')
-      .eq('portal_client_id', session!.id).eq('stato', 'prenotato').order('data').order('ora_inizio');
+    const { data } = await supabase.from('appointments').select('id, data, ora_inizio, ora_fine, stato')
+      .eq('portal_client_id', session!.id).in('stato', ['in_attesa', 'confermato', 'rifiutato']).order('data').order('ora_inizio');
     setAppointments(data || []);
   }
 
@@ -89,46 +105,52 @@ function PortalePageInner() {
     if (!portalClient) return;
     setBooking(true);
     const { data: rules } = await supabase.from('availability_rules').select('*').eq('studio_id', portalClient.studio_id) as { data: AvailabilityRule[] | null };
+    const minuti = rules && rules.length > 0 ? rules[0].slot_minutes : 30;
+    setSlotMinutes(minuti);
     const today = new Date();
     const from = toIsoLocale(today);
     const to = toIsoLocale(new Date(today.getTime() + 30 * 86400000));
     const { data: taken } = await supabase.rpc('get_taken_slots', { p_studio_id: portalClient.studio_id, p_from: from, p_to: to });
     const takenSet = new Set((taken || []).map((t: { data: string; ora_inizio: string }) => `${t.data}_${t.ora_inizio.slice(0, 5)}`));
 
-    const byDay: Record<string, string[]> = {};
+    const byDay: Record<string, Slot[]> = {};
     for (let i = 1; i <= 30; i++) {
       const d = new Date(today.getTime() + i * 86400000);
       const dow = (d.getDay() + 6) % 7;
       const rule = (rules || []).find((r) => r.day_of_week === dow);
       if (!rule) continue;
       const iso = toIsoLocale(d);
-      const slots: string[] = [];
+      const slots: Slot[] = [];
       let [h, m] = rule.start_time.split(':').map(Number);
       const [endH, endM] = rule.end_time.split(':').map(Number);
       while (h < endH || (h === endH && m < endM)) {
         const label = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        if (!takenSet.has(`${iso}_${label}`)) slots.push(label);
+        slots.push({ ora: label, occupato: takenSet.has(`${iso}_${label}`) });
         m += rule.slot_minutes;
         while (m >= 60) { m -= 60; h += 1; }
       }
       if (slots.length > 0) byDay[iso] = slots;
     }
     setSlotsByDay(byDay);
+    const primoGiorno = Object.keys(byDay)[0] ?? null;
+    setSelectedDay(primoGiorno);
     setBooking(false);
   }
 
   async function handleConfirmBooking() {
     if (!chosenSlot || !portalClient || !session) return;
     const [h, m] = chosenSlot.ora.split(':').map(Number);
-    const endMinutes = h * 60 + m + 30;
+    const endMinutes = h * 60 + m + slotMinutes;
     const oraFine = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
     const { error: err } = await supabase.from('appointments').insert({
       studio_id: portalClient.studio_id, portal_client_id: session.id, nome_cliente: portalClient.nome_cliente,
       data: chosenSlot.data, ora_inizio: chosenSlot.ora, ora_fine: oraFine, reminder_offsets_minutes: offsets,
+      stato: 'in_attesa',
     });
     if (err) { setError('Slot appena occupato da qualcun altro, scegline un altro.'); handleShowSlots(); return; }
     setChosenSlot(null);
     setSlotsByDay({});
+    setSelectedDay(null);
     loadAppointments();
   }
 
@@ -143,7 +165,7 @@ function PortalePageInner() {
   return (
     <div className="min-h-screen bg-neutral-50 p-4">
       <div className="mx-auto max-w-lg">
-        <h1 className="mb-1 text-xl font-bold text-neutral-900">Themis — Portale clienti</h1>
+        <h1 className="mb-1 text-xl font-display font-semibold text-neutral-900">Themis — Portale clienti</h1>
         <p className="mb-6 text-sm text-neutral-500">Gestisci e prenota i tuoi appuntamenti con lo studio.</p>
 
         {!session && invite && !invite.used && (
@@ -190,9 +212,18 @@ function PortalePageInner() {
               ) : (
                 <ul className="mb-4 divide-y divide-neutral-100 text-sm">
                   {appointments.map((a) => (
-                    <li key={a.id} className="flex items-center justify-between py-2">
-                      <span>{a.data.split('-').reverse().join('/')} alle {a.ora_inizio.slice(0, 5)}</span>
-                      <button onClick={() => handleCancel(a.id)} className="rounded-md border border-red-300 px-3 py-1 text-xs text-red-700 hover:bg-red-50">Cancella</button>
+                    <li key={a.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                      <span>
+                        {a.data.split('-').reverse().join('/')} alle {a.ora_inizio.slice(0, 5)}
+                        <span className={`ml-2 rounded-full px-2 py-0.5 text-xs ${STILE_STATO[a.stato] || 'bg-neutral-100 text-neutral-600'}`}>
+                          {LABEL_STATO[a.stato] || a.stato}
+                        </span>
+                      </span>
+                      {a.stato !== 'rifiutato' ? (
+                        <button onClick={() => handleCancel(a.id)} className="rounded-md border border-red-300 px-3 py-1 text-xs text-red-700 hover:bg-red-50">Cancella</button>
+                      ) : (
+                        <button onClick={() => handleCancel(a.id)} className="rounded-md border border-neutral-300 px-3 py-1 text-xs text-neutral-600 hover:bg-neutral-50">Rimuovi</button>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -205,18 +236,41 @@ function PortalePageInner() {
             {Object.keys(slotsByDay).length > 0 && !chosenSlot && (
               <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
                 <h2 className="mb-3 font-semibold">Scegli un orario</h2>
-                {Object.entries(slotsByDay).map(([iso, slots]) => (
-                  <div key={iso} className="mb-3">
-                    <div className="mb-1 text-xs font-semibold text-neutral-500">{iso.split('-').reverse().join('/')}</div>
-                    <div className="flex flex-wrap gap-2">
-                      {slots.map((s) => (
-                        <button key={s} onClick={() => setChosenSlot({ data: iso, ora: s })} className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50">
-                          {s}
-                        </button>
-                      ))}
-                    </div>
+
+                <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+                  {Object.keys(slotsByDay).map((iso) => (
+                    <button
+                      key={iso}
+                      onClick={() => setSelectedDay(iso)}
+                      className={`flex-shrink-0 rounded-md border px-3 py-1.5 text-xs font-medium ${
+                        selectedDay === iso ? 'border-bordeaux-700 bg-bordeaux-700 text-white' : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50'
+                      }`}
+                    >
+                      {formattaData(iso)}
+                    </button>
+                  ))}
+                </div>
+
+                {selectedDay && (
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                    {slotsByDay[selectedDay].map((s) => (
+                      <button
+                        key={s.ora}
+                        disabled={s.occupato}
+                        onClick={() => setChosenSlot({ data: selectedDay, ora: s.ora })}
+                        title={s.occupato ? 'Orario già occupato' : undefined}
+                        className={
+                          s.occupato
+                            ? 'cursor-not-allowed rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-sm text-red-400 line-through'
+                            : 'rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 hover:border-bordeaux-700 hover:bg-bordeaux-700 hover:text-white'
+                        }
+                      >
+                        {s.ora}
+                      </button>
+                    ))}
                   </div>
-                ))}
+                )}
+                <p className="mt-3 text-[11px] text-neutral-400">In rosso gli orari già occupati, da un altro appuntamento o dall&apos;agenda dello studio.</p>
               </div>
             )}
 
@@ -236,9 +290,12 @@ function PortalePageInner() {
                     </label>
                   ))}
                 </div>
+                <p className="mb-3 rounded-md bg-gold-100 px-3 py-2 text-xs text-gold-700">
+                  La richiesta resta in attesa di conferma dello studio: la vedrai confermata (o rifiutata) tra i tuoi appuntamenti.
+                </p>
                 {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
                 <div className="flex gap-2">
-                  <button onClick={handleConfirmBooking} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Prenota</button>
+                  <button onClick={handleConfirmBooking} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Invia richiesta</button>
                   <button onClick={() => setChosenSlot(null)} className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50">Annulla</button>
                 </div>
               </div>
