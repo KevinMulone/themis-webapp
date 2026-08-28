@@ -224,6 +224,17 @@ export default function ImpostazioniPage() {
     window.location.href = body.url;
   }
 
+  function handleEntraComeAmministratore() {
+    // Non è una vera barriera di sicurezza (è codice lato client, quindi
+    // ispezionabile): la protezione reale resta il controllo server-side in
+    // /admin, che verifica l'email dell'account collegato. Questo PIN serve
+    // solo a non rendere l'ingresso ovvio a chi guarda lo schermo.
+    const pin = prompt('Password amministratore');
+    if (pin === null) return;
+    if (pin !== '13052003') { alert('Password errata'); return; }
+    window.location.href = '/admin';
+  }
+
   async function handleRichiediRimborso() {
     if (!confirm('Vuoi davvero richiedere il rimborso? Il tuo account verrà sospeso subito: potrai tornare a usarlo solo riacquistando un abbonamento.')) return;
     setRefundLoading(true);
@@ -571,6 +582,14 @@ export default function ImpostazioniPage() {
             </button>
           </div>
         </form>
+      </div>
+
+      <div className="flex justify-center py-6">
+        <button
+          onClick={handleEntraComeAmministratore}
+          aria-label="Accesso avanzato"
+          className="h-2 w-2 rounded-full bg-neutral-200 hover:bg-neutral-300"
+        />
       </div>
     </div>
   );
