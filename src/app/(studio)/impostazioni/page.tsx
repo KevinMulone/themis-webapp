@@ -225,13 +225,18 @@ export default function ImpostazioniPage() {
   }
 
   async function handleRichiediRimborso() {
-    if (!confirm('Vuoi davvero richiedere il rimborso? Riceveremo la tua richiesta e ti contatteremo per procedere.')) return;
+    if (!confirm('Vuoi davvero richiedere il rimborso? Il tuo account verrà sospeso subito: potrai tornare a usarlo solo riacquistando un abbonamento.')) return;
     setRefundLoading(true);
     const res = await fetch('/api/refund-request', { method: 'POST' });
     const body = await res.json();
-    setRefundLoading(false);
-    if (!res.ok) { alert(body.error || 'Impossibile inviare la richiesta'); return; }
-    setAbbonamento((a) => (a ? { ...a, refund_requested_at: new Date().toISOString() } : a));
+    if (!res.ok) {
+      setRefundLoading(false);
+      alert(body.error || 'Impossibile inviare la richiesta');
+      return;
+    }
+    // L'account è stato appena sospeso lato server: reindirizza subito,
+    // non ha senso restare su una pagina che non potrà più usare.
+    window.location.href = '/account-sospeso?motivo=sospeso';
   }
 
   function updateDay(index: number, patch: Partial<DayRule>) {

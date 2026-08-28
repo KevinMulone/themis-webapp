@@ -32,7 +32,13 @@ export async function POST() {
     return NextResponse.json({ error: 'La finestra di 4 giorni per richiedere il rimborso è scaduta' }, { status: 400 });
   }
 
-  await admin.from('studios').update({ refund_requested_at: new Date().toISOString() }).eq('id', user.id);
+  // Kevin ha chiesto che la richiesta di rimborso sospenda subito l'account:
+  // il cliente non deve poter continuare a usare il servizio mentre aspetta
+  // che il rimborso venga elaborato manualmente.
+  await admin.from('studios').update({
+    refund_requested_at: new Date().toISOString(),
+    subscription_status: 'suspended',
+  }).eq('id', user.id);
 
   await sendRefundRequestEmail({
     nomeStudio: studio.nome_studio,

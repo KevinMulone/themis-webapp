@@ -30,7 +30,12 @@ export default function PoliticaRimborsiPage() {
         <p>
           La richiesta si effettua dal proprio account, in <strong>Impostazioni → Abbonamento</strong>, tramite il
           pulsante &quot;Chiedi il rimborso&quot; — visibile solo entro la finestra dei 4 giorni e solo una volta.
-          Riceveremo la richiesta e ti contatteremo per completare il rimborso e la disdetta dell&apos;abbonamento.
+          Riceveremo la richiesta e ti contatteremo per completare il rimborso.
+        </p>
+        <p>
+          <strong>L&apos;invio della richiesta sospende immediatamente l&apos;accesso all&apos;account</strong>: da
+          quel momento non è più possibile utilizzare Themis, in attesa che il rimborso venga elaborato. Per
+          tornare a usare il servizio sarà necessario sottoscrivere un nuovo abbonamento.
         </p>
 
         <h2 className="pt-2 font-semibold text-neutral-900">Cosa non è coperto</h2>
