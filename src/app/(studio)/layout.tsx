@@ -28,7 +28,13 @@ const NAV = [
 
 export default async function StudioLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Il middleware (src/lib/supabase/middleware.ts) ha già verificato la
+  // sessione con Supabase Auth un istante prima, per questa stessa
+  // richiesta, con una vera chiamata di rete. Rifarla qui raddoppierebbe
+  // inutilmente la latenza di ogni navigazione: getSession() legge il
+  // cookie già firmato, senza un secondo giro di rete.
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) redirect('/accedi');
 
   const { data: studio } = await supabase

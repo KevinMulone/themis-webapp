@@ -2,19 +2,22 @@ import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  // Il middleware ha già verificato la sessione con una vera chiamata di rete
+  // per questa richiesta: getSession() legge il cookie già firmato, senza
+  // rifare lo stesso giro di rete (vedi lo stesso ragionamento nel layout).
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session!.user;
 
-  const { count: clientsCount } = await supabase
-    .from('clients')
-    .select('id', { count: 'exact', head: true })
-    .eq('studio_id', user!.id)
-    .eq('archiviato', false);
-
-  const { count: matterCount } = await supabase
-    .from('matters')
-    .select('id', { count: 'exact', head: true })
-    .eq('studio_id', user!.id)
-    .neq('stato', 'archiviata');
+  const [{ count: clientsCount }, { count: matterCount }] = await Promise.all([
+    supabase.from('clients')
+      .select('id', { count: 'exact', head: true })
+      .eq('studio_id', user.id)
+      .eq('archiviato', false),
+    supabase.from('matters')
+      .select('id', { count: 'exact', head: true })
+      .eq('studio_id', user.id)
+      .neq('stato', 'archiviata'),
+  ]);
 
   return (
     <div>
