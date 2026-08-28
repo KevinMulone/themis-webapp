@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { oggiIso } from '@/lib/dateUtils';
 import SidebarNav from './SidebarNav';
+import UsageTracker from './UsageTracker';
 
 function giorniRimanenti(expiresAt: string | null): string | null {
   if (!expiresAt) return null;
@@ -53,6 +54,7 @@ export default async function StudioLayout({ children }: { children: React.React
 
   return (
     <div className="flex min-h-screen flex-col bg-neutral-50 lg:flex-row">
+      <UsageTracker />
       <SidebarNav navItems={NAV} nomeStudio={studio.nome_studio} abbonamentoLabel={giorniRimanenti(studio.subscription_expires_at)} />
       <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
     </div>

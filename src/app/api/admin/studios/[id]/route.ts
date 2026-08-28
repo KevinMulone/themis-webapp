@@ -9,7 +9,7 @@ export async function PATCH(request: Request, ctx: RouteContext<'/api/admin/stud
   const { id } = await ctx.params;
   const body = await request.json();
   const allowed: Record<string, unknown> = {};
-  for (const key of ['subscription_status', 'subscription_expires_at', 'plan', 'nome_studio']) {
+  for (const key of ['subscription_status', 'subscription_expires_at', 'plan', 'nome_studio', 'refund_requested_at']) {
     if (key in body) allowed[key] = body[key];
   }
 
