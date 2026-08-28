@@ -188,11 +188,11 @@ export default function CalendarioPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-xs text-neutral-500">Ora inizio</label>
-                  <input type="time" name="ora_inizio" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+                  <input type="time" name="ora_inizio" step={1800} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
                 </div>
                 <div>
                   <label className="mb-1 block text-xs text-neutral-500">Ora fine</label>
-                  <input type="time" name="ora_fine" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+                  <input type="time" name="ora_fine" step={1800} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
                 </div>
               </div>
               <div>

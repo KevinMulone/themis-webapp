@@ -147,7 +147,11 @@ function PortalePageInner() {
       data: chosenSlot.data, ora_inizio: chosenSlot.ora, ora_fine: oraFine, reminder_offsets_minutes: offsets,
       stato: 'in_attesa',
     });
-    if (err) { setError('Slot appena occupato da qualcun altro, scegline un altro.'); handleShowSlots(); return; }
+    if (err) {
+      setError(err.code === '23505' ? 'Slot appena occupato da qualcun altro, scegline un altro.' : `Errore: ${err.message}`);
+      handleShowSlots();
+      return;
+    }
     setChosenSlot(null);
     setSlotsByDay({});
     setSelectedDay(null);
