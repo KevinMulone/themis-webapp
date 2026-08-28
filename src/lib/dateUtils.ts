@@ -17,3 +17,13 @@ export function toIsoLocale(data: Date): string {
 export function oggiIso(): string {
   return toIsoLocale(new Date());
 }
+
+/**
+ * Somma `days` giorni a `base` (YYYY-MM-DD), o a oggi se `base` è nel
+ * passato o assente — mai si "perdono" giorni già pagati/estesi.
+ */
+export function addDaysIso(base: string | null, days: number): string {
+  const start = base && base > oggiIso() ? new Date(base) : new Date();
+  start.setDate(start.getDate() + days);
+  return toIsoLocale(start);
+}

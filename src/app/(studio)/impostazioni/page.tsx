@@ -11,6 +11,10 @@ type PecAccount = {
   id: string; etichetta: string; indirizzo_pec: string; imap_host: string; imap_port: number;
   imap_user: string; attivo: boolean; ultimo_controllo_at: string | null; ultimo_errore: string | null;
 };
+type Abbonamento = {
+  stripe_customer_id: string | null; plan: string | null;
+  subscription_status: string; subscription_expires_at: string | null;
+};
 
 const FONT_CHOICES = ['Times New Roman', 'Garamond', 'Georgia', 'Cambria', 'Calibri', 'Arial', 'Verdana'];
 const LINE_SPACING_CHOICES = [1.0, 1.15, 1.5, 2.0];
@@ -42,11 +46,13 @@ export default function ImpostazioniPage() {
   const [pecSincronizzando, setPecSincronizzando] = useState(false);
   const [pecSyncMsg, setPecSyncMsg] = useState('');
   const pecFormRef = useRef<HTMLFormElement>(null);
+  const [abbonamento, setAbbonamento] = useState<Abbonamento | null>(null);
+  const [portaleLoading, setPortaleLoading] = useState(false);
 
   async function load() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const [{ data: tpl }, { data: s }, letterheadRes, { data: rules }, { data: pec }] = await Promise.all([
+    const [{ data: tpl }, { data: s }, letterheadRes, { data: rules }, { data: pec }, { data: studio }] = await Promise.all([
       supabase.from('templates').select('id, nome, categoria, descrizione, studio_id').eq('attivo', true).order('categoria'),
       supabase.from('studio_settings').select('*').eq('studio_id', user.id).single(),
       fetch('/api/settings/letterhead'),
@@ -54,8 +60,10 @@ export default function ImpostazioniPage() {
       supabase.from('pec_account')
         .select('id, etichetta, indirizzo_pec, imap_host, imap_port, imap_user, attivo, ultimo_controllo_at, ultimo_errore')
         .order('created_at'),
+      supabase.from('studios').select('stripe_customer_id, plan, subscription_status, subscription_expires_at').eq('id', user.id).single(),
     ]);
     setTemplates(tpl || []);
+    setAbbonamento(studio || null);
     if (s) setSettings({ font_family: s.font_family, font_size_pt: s.font_size_pt, line_spacing: s.line_spacing });
     setLetterhead(await letterheadRes.json());
 
@@ -182,6 +190,15 @@ export default function ImpostazioniPage() {
     load();
   }
 
+  async function handleGestisciAbbonamento() {
+    setPortaleLoading(true);
+    const res = await fetch('/api/billing-portal', { method: 'POST' });
+    const body = await res.json();
+    setPortaleLoading(false);
+    if (!res.ok) { alert(body.error || 'Impossibile aprire il portale di gestione'); return; }
+    window.location.href = body.url;
+  }
+
   function updateDay(index: number, patch: Partial<DayRule>) {
     setDays((prev) => prev.map((d, i) => (i === index ? { ...d, ...patch } : d)));
   }
@@ -231,6 +248,32 @@ export default function ImpostazioniPage() {
           </button>
         </div>
       </form>
+
+      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-3 font-semibold text-neutral-900">Abbonamento</h2>
+        {abbonamento?.stripe_customer_id ? (
+          <>
+            <p className="mb-3 text-sm text-neutral-600">
+              Piano {abbonamento.plan || '—'} · {abbonamento.subscription_status === 'active' ? 'attivo' : 'sospeso'}
+              {abbonamento.subscription_expires_at
+                ? ` · rinnovo/scadenza il ${new Date(abbonamento.subscription_expires_at).toLocaleDateString('it-IT')}`
+                : ''}
+            </p>
+            <button
+              onClick={handleGestisciAbbonamento}
+              disabled={portaleLoading}
+              className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50 disabled:opacity-50"
+            >
+              {portaleLoading ? 'Apertura...' : 'Gestisci abbonamento'}
+            </button>
+          </>
+        ) : (
+          <p className="text-sm text-neutral-500">
+            Il tuo abbonamento non è collegato a un pagamento automatico Stripe (attivato con una chiave fornita
+            direttamente dallo studio).
+          </p>
+        )}
+      </div>
 
       <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 font-semibold text-neutral-900">Intestazione documenti</h2>

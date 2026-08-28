@@ -1,19 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { toIsoLocale, oggiIso } from '@/lib/dateUtils';
+import { addDaysIso, oggiIso } from '@/lib/dateUtils';
 
 type Studio = {
   id: string; nome_studio: string | null; email: string; plan: string | null;
   subscription_status: string; subscription_expires_at: string | null;
   last_sign_in_at: string | null;
 };
-
-function addDays(base: string | null, days: number): string {
-  const start = base && base > oggiIso() ? new Date(base) : new Date();
-  start.setDate(start.getDate() + days);
-  return toIsoLocale(start);
-}
 
 function giorniRimanenti(expiresAt: string | null): string {
   if (!expiresAt) return '—';
@@ -52,7 +46,7 @@ export default function AdminPage() {
   useEffect(() => { load(); }, []);
 
   async function handleExtend(s: Studio, days: number) {
-    const newExpiry = addDays(s.subscription_expires_at, days);
+    const newExpiry = addDaysIso(s.subscription_expires_at, days);
     const res = await fetch(`/api/admin/studios/${s.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ subscription_expires_at: newExpiry, subscription_status: 'active' }),

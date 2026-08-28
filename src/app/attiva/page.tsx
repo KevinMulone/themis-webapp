@@ -1,14 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import BrandHero from '@/components/BrandHero';
 
-export default function AttivaPage() {
+const PIANI = [
+  { key: 'monthly', nome: 'Mensile', prezzo: '100€/mese', dettaglio: 'Fatturazione mensile, disdici quando vuoi.' },
+  { key: 'semestrale', nome: 'Semestrale', prezzo: '500€/6 mesi', dettaglio: 'Un mese omaggio rispetto al mensile.' },
+  { key: 'annuale', nome: 'Annuale', prezzo: '1.100€/anno', dettaglio: 'Include le future funzionalità AI.' },
+] as const;
+
+function AttivaPageInner() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const checkoutEsito = searchParams.get('checkout');
+
+  const [tab, setTab] = useState<'chiave' | 'abbonati'>('chiave');
   const [key, setKey] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pianoInCorso, setPianoInCorso] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,31 +43,110 @@ export default function AttivaPage() {
     router.push('/dashboard');
   }
 
+  async function handleAbbonati(piano: string) {
+    setPianoInCorso(piano);
+    const res = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: piano }),
+    });
+    const body = await res.json();
+    if (!res.ok || !body.url) {
+      setPianoInCorso(null);
+      alert(body.error || 'Impossibile avviare il pagamento');
+      return;
+    }
+    window.location.href = body.url;
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
+      <div className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
         <BrandHero />
         <p className="mb-6 text-center text-sm text-neutral-500">Attiva il tuo account</p>
-        <p className="mb-4 text-sm text-neutral-600">
-          Inserisci la chiave di licenza che ti è stata fornita per attivare l&apos;abbonamento.
-        </p>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <textarea
-            className="min-h-24 rounded-md border border-neutral-300 px-3 py-2 font-mono text-xs"
-            placeholder="THM-....."
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-          />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+
+        {checkoutEsito === 'success' && (
+          <p className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">
+            Pagamento completato. Controlla la tua email: ti abbiamo inviato la chiave di attivazione da incollare qui sotto.
+          </p>
+        )}
+        {checkoutEsito === 'cancel' && (
+          <p className="mb-4 rounded-md bg-neutral-50 p-3 text-sm text-neutral-600">
+            Pagamento annullato. Puoi riprovare quando vuoi.
+          </p>
+        )}
+
+        <div className="mb-4 flex rounded-md border border-neutral-200 text-sm">
           <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+            type="button"
+            onClick={() => setTab('chiave')}
+            className={`flex-1 rounded-md py-2 ${tab === 'chiave' ? 'bg-bordeaux-700 text-white' : 'text-neutral-600'}`}
           >
-            {loading ? 'Attivazione...' : 'Attiva'}
+            Ho una chiave
           </button>
-        </form>
+          <button
+            type="button"
+            onClick={() => setTab('abbonati')}
+            className={`flex-1 rounded-md py-2 ${tab === 'abbonati' ? 'bg-bordeaux-700 text-white' : 'text-neutral-600'}`}
+          >
+            Abbonati ora
+          </button>
+        </div>
+
+        {tab === 'chiave' ? (
+          <>
+            <p className="mb-4 text-sm text-neutral-600">
+              Inserisci la chiave di licenza che ti è stata fornita per attivare l&apos;abbonamento.
+            </p>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <textarea
+                className="min-h-24 rounded-md border border-neutral-300 px-3 py-2 font-mono text-xs"
+                placeholder="THM-....."
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+              />
+              {error && <p className="text-sm text-red-600">{error}</p>}
+              <button
+                type="submit"
+                disabled={loading}
+                className="mt-2 rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+              >
+                {loading ? 'Attivazione...' : 'Attiva'}
+              </button>
+            </form>
+          </>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {PIANI.map((p) => (
+              <div key={p.key} className="rounded-md border border-neutral-200 p-4">
+                <div className="mb-1 flex items-baseline justify-between">
+                  <span className="font-semibold text-neutral-900">{p.nome}</span>
+                  <span className="font-semibold text-bordeaux-700">{p.prezzo}</span>
+                </div>
+                <p className="mb-3 text-xs text-neutral-500">{p.dettaglio}</p>
+                <button
+                  onClick={() => handleAbbonati(p.key)}
+                  disabled={pianoInCorso !== null}
+                  className="w-full rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                >
+                  {pianoInCorso === p.key ? 'Reindirizzamento...' : 'Scegli questo piano'}
+                </button>
+              </div>
+            ))}
+            <p className="text-center text-xs text-neutral-400">
+              Dopo il pagamento riceverai via email la chiave di attivazione da incollare nella scheda &quot;Ho una chiave&quot;.
+            </p>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function AttivaPage() {
+  return (
+    <Suspense fallback={null}>
+      <AttivaPageInner />
+    </Suspense>
   );
 }
