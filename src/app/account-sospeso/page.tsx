@@ -18,8 +18,10 @@ export default async function AccountSospesoPage({
         </p>
         <p className="mb-6 text-sm text-neutral-600">
           {scaduto
-            ? "L'abbonamento del tuo studio è scaduto. Contatta l'amministratore per rinnovarlo."
-            : 'Il tuo account è stato sospeso. Contatta l\'amministratore per riattivarlo.'}
+            ? "L'abbonamento del tuo studio è scaduto. Contatta l'amministratore al "
+            : "Il tuo account è stato sospeso. Contatta l'amministratore al "}
+          <a href="tel:+393286205581" className="text-bordeaux-700 hover:underline">328 620 5581</a>
+          {scaduto ? ' per rinnovarlo.' : ' per riattivarlo.'}
         </p>
         <div className="flex justify-center">
           <LogoutButton />
