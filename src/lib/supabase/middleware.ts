@@ -31,7 +31,8 @@ export async function updateSession(request: NextRequest) {
     || request.nextUrl.pathname.startsWith('/reimposta-password')
     || request.nextUrl.pathname.startsWith('/account-sospeso');
   const isPublicRoute = request.nextUrl.pathname === '/'
-    || request.nextUrl.pathname.startsWith('/portale');
+    || request.nextUrl.pathname.startsWith('/portale')
+    || request.nextUrl.pathname.startsWith('/politica-rimborsi');
   // Le route API (comprese le funzioni Python come /api/generate) gestiscono
   // da sole l'autenticazione — via cookie per quelle Next.js, via un
   // access_token nel corpo della richiesta per quelle Python, che non hanno

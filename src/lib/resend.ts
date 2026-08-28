@@ -24,3 +24,28 @@ export async function sendLicenseKeyEmail({
     `,
   });
 }
+
+export async function sendRefundRequestEmail({
+  nomeStudio,
+  email,
+  plan,
+  stripeCustomerId,
+}: {
+  nomeStudio: string | null;
+  email: string;
+  plan: string | null;
+  stripeCustomerId: string;
+}) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  await resend.emails.send({
+    from: process.env.RESEND_FROM_EMAIL!,
+    to: process.env.ADMIN_EMAIL!,
+    subject: `Richiesta di rimborso — ${nomeStudio || email}`,
+    html: `
+      <p>Lo studio <strong>${nomeStudio || '(senza nome)'}</strong> (${email}) ha richiesto il rimborso entro la finestra di 4 giorni dal primo pagamento.</p>
+      <p>Piano: ${plan || '—'}</p>
+      <p>Cliente Stripe: ${stripeCustomerId}</p>
+      <p>Vai su Stripe Dashboard per elaborare il rimborso e disdire l'abbonamento.</p>
+    `,
+  });
+}

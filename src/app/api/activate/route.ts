@@ -47,6 +47,7 @@ export async function POST(request: Request) {
       .update({
         stripe_customer_id: link.stripe_customer_id,
         stripe_subscription_id: link.stripe_subscription_id,
+        subscription_started_at: new Date().toISOString(),
         ...(days ? { subscription_expires_at: addDaysIso(null, days), subscription_status: 'active' } : {}),
       })
       .eq('id', user.id);

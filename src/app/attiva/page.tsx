@@ -145,6 +145,7 @@ function AttivaPageInner() {
             ))}
             <p className="text-center text-xs text-neutral-400">
               Dopo il pagamento riceverai via email la chiave di attivazione da incollare nella scheda &quot;Ho una chiave&quot;.
+              {' '}Garanzia di rimborso entro 4 giorni: <a href="/politica-rimborsi" target="_blank" className="underline">leggi la policy</a>.
             </p>
           </div>
         )}

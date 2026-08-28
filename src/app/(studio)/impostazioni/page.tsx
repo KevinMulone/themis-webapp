@@ -14,7 +14,23 @@ type PecAccount = {
 type Abbonamento = {
   stripe_customer_id: string | null; plan: string | null;
   subscription_status: string; subscription_expires_at: string | null;
+  subscription_started_at: string | null; refund_requested_at: string | null;
 };
+
+const FINESTRA_RIMBORSO_MS = 4 * 24 * 60 * 60 * 1000;
+
+function tempoRimborsoRimanente(startedAt: string, adesso: number): number {
+  return new Date(startedAt).getTime() + FINESTRA_RIMBORSO_MS - adesso;
+}
+
+function formattaTempoRimanente(ms: number): string {
+  const totaleMinuti = Math.max(0, Math.floor(ms / 60000));
+  const giorni = Math.floor(totaleMinuti / (24 * 60));
+  const ore = Math.floor((totaleMinuti % (24 * 60)) / 60);
+  if (giorni > 0) return `${giorni}g ${ore}h`;
+  const minuti = totaleMinuti % 60;
+  return `${ore}h ${minuti}m`;
+}
 
 const FONT_CHOICES = ['Times New Roman', 'Garamond', 'Georgia', 'Cambria', 'Calibri', 'Arial', 'Verdana'];
 const LINE_SPACING_CHOICES = [1.0, 1.15, 1.5, 2.0];
@@ -48,6 +64,13 @@ export default function ImpostazioniPage() {
   const pecFormRef = useRef<HTMLFormElement>(null);
   const [abbonamento, setAbbonamento] = useState<Abbonamento | null>(null);
   const [portaleLoading, setPortaleLoading] = useState(false);
+  const [refundLoading, setRefundLoading] = useState(false);
+  const [adesso, setAdesso] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setAdesso(Date.now()), 60000);
+    return () => clearInterval(id);
+  }, []);
 
   async function load() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -60,7 +83,9 @@ export default function ImpostazioniPage() {
       supabase.from('pec_account')
         .select('id, etichetta, indirizzo_pec, imap_host, imap_port, imap_user, attivo, ultimo_controllo_at, ultimo_errore')
         .order('created_at'),
-      supabase.from('studios').select('stripe_customer_id, plan, subscription_status, subscription_expires_at').eq('id', user.id).single(),
+      supabase.from('studios')
+        .select('stripe_customer_id, plan, subscription_status, subscription_expires_at, subscription_started_at, refund_requested_at')
+        .eq('id', user.id).single(),
     ]);
     setTemplates(tpl || []);
     setAbbonamento(studio || null);
@@ -199,6 +224,16 @@ export default function ImpostazioniPage() {
     window.location.href = body.url;
   }
 
+  async function handleRichiediRimborso() {
+    if (!confirm('Vuoi davvero richiedere il rimborso? Riceveremo la tua richiesta e ti contatteremo per procedere.')) return;
+    setRefundLoading(true);
+    const res = await fetch('/api/refund-request', { method: 'POST' });
+    const body = await res.json();
+    setRefundLoading(false);
+    if (!res.ok) { alert(body.error || 'Impossibile inviare la richiesta'); return; }
+    setAbbonamento((a) => (a ? { ...a, refund_requested_at: new Date().toISOString() } : a));
+  }
+
   function updateDay(index: number, patch: Partial<DayRule>) {
     setDays((prev) => prev.map((d, i) => (i === index ? { ...d, ...patch } : d)));
   }
@@ -266,6 +301,35 @@ export default function ImpostazioniPage() {
             >
               {portaleLoading ? 'Apertura...' : 'Gestisci abbonamento'}
             </button>
+
+            {abbonamento.refund_requested_at ? (
+              <p className="mt-4 border-t border-neutral-200 pt-4 text-sm text-neutral-500">
+                Richiesta di rimborso inviata il {new Date(abbonamento.refund_requested_at).toLocaleDateString('it-IT')}. Verrai contattato a breve.
+              </p>
+            ) : abbonamento.subscription_started_at && tempoRimborsoRimanente(abbonamento.subscription_started_at, adesso) > 0 ? (
+              <div className="mt-4 border-t border-neutral-200 pt-4">
+                <p className="mb-2 text-xs text-neutral-500">
+                  Puoi richiedere il rimborso entro {formattaTempoRimanente(tempoRimborsoRimanente(abbonamento.subscription_started_at, adesso))} dal primo pagamento.
+                </p>
+                <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-neutral-100">
+                  <div
+                    className="h-full bg-bordeaux-700"
+                    style={{ width: `${Math.max(0, Math.min(1, tempoRimborsoRimanente(abbonamento.subscription_started_at, adesso) / FINESTRA_RIMBORSO_MS)) * 100}%` }}
+                  />
+                </div>
+                <button
+                  onClick={handleRichiediRimborso}
+                  disabled={refundLoading}
+                  className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+                >
+                  {refundLoading ? 'Invio...' : 'Chiedi il rimborso'}
+                </button>
+                {' '}
+                <a href="/politica-rimborsi" target="_blank" className="ml-2 text-xs text-neutral-400 hover:underline">
+                  Leggi la policy di rimborso
+                </a>
+              </div>
+            ) : null}
           </>
         ) : (
           <p className="text-sm text-neutral-500">
