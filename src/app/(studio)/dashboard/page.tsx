@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardPage() {
@@ -31,6 +32,16 @@ export default async function DashboardPage() {
           <div className="text-3xl font-bold text-bordeaux-700">{matterCount ?? 0}</div>
           <div className="text-sm text-neutral-500">Pratiche attive</div>
         </div>
+      </div>
+
+      <div className="mt-10 flex justify-center">
+        <Image
+          src="/themis-dashboard.svg"
+          alt="Themis"
+          width={400}
+          height={480}
+          className="w-full max-w-[280px]"
+        />
       </div>
     </div>
   );
