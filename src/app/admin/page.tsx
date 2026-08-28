@@ -104,6 +104,18 @@ export default function AdminPage() {
     else addLog(`Errore su ${s.email}`);
   }
 
+  async function handleElimina(s: Studio) {
+    const ok = confirm(
+      `Eliminare definitivamente lo studio "${s.nome_studio || s.email}"?\n\n` +
+      `Questa azione è IRREVERSIBILE: l'account di accesso e la sua riga verranno cancellati subito. ` +
+      `Eventuali documenti caricati nello storage potrebbero restare orfani (non più raggiungibili da nessuna interfaccia, ma non cancellati automaticamente).`,
+    );
+    if (!ok) return;
+    const res = await fetch(`/api/admin/studios/${s.id}`, { method: 'DELETE' });
+    if (res.ok) { addLog(`${s.email}: studio eliminato definitivamente.`); load(); }
+    else { const body = await res.json(); addLog(`Errore eliminazione ${s.email}: ${body.error}`); }
+  }
+
   async function handleRimborsoGestito(s: Studio) {
     const res = await fetch(`/api/admin/studios/${s.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
@@ -249,10 +261,19 @@ export default function AdminPage() {
                 {studios.map((s) => (
                   <tr key={s.id} className={`border-t border-neutral-800 align-top ${s.refund_requested_at ? 'bg-red-950/20' : ''}`}>
                     <td className="px-3 py-3">
-                      {s.nome_studio || '—'}
-                      {s.stripe_customer_id && (
-                        <span className="ml-1 rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] text-neutral-400">Stripe</span>
-                      )}
+                      <span className="inline-flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleElimina(s)}
+                          title="Elimina definitivamente questo studio"
+                          className="flex h-4 w-4 items-center justify-center rounded-full border border-neutral-700 text-[10px] leading-none text-neutral-500 hover:border-red-500 hover:text-red-400"
+                        >
+                          ×
+                        </button>
+                        {s.nome_studio || '—'}
+                        {s.stripe_customer_id && (
+                          <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] text-neutral-400">Stripe</span>
+                        )}
+                      </span>
                     </td>
                     <td className="px-3 py-3">{s.email}</td>
                     <td className="px-3 py-3">{s.plan || '—'}</td>
