@@ -79,14 +79,16 @@ export default function CalendarioPage() {
     } else {
       from = toIso(cursore); to = toIso(cursore);
     }
-    const { data } = await supabase.from('eventi').select('*').gte('data', from).lte('data', to).order('data').order('ora_inizio');
+    const [{ data }, { data: appts }, { data: m }, { data: rules }] = await Promise.all([
+      supabase.from('eventi').select('*').gte('data', from).lte('data', to).order('data').order('ora_inizio'),
+      supabase.from('appointments').select('id, data, ora_inizio, ora_fine, nome_cliente, stato')
+        .gte('data', from).lte('data', to).in('stato', ['in_attesa', 'confermato']).order('data').order('ora_inizio'),
+      supabase.from('matters').select('id, client_id, tipo_pratica, clients(nome, cognome, ragione_sociale, tipo_soggetto)').neq('stato', 'archiviata'),
+      supabase.from('availability_rules').select('day_of_week, start_time, end_time, slot_minutes'),
+    ]);
     setEvents(data || []);
-    const { data: appts } = await supabase.from('appointments').select('id, data, ora_inizio, ora_fine, nome_cliente, stato')
-      .gte('data', from).lte('data', to).in('stato', ['in_attesa', 'confermato']).order('data').order('ora_inizio');
     setAppointments(appts || []);
-    const { data: m } = await supabase.from('matters').select('id, client_id, tipo_pratica, clients(nome, cognome, ragione_sociale, tipo_soggetto)').neq('stato', 'archiviata');
     setMatters((m as unknown as Matter[]) || []);
-    const { data: rules } = await supabase.from('availability_rules').select('day_of_week, start_time, end_time, slot_minutes');
     setAvailabilityRules((rules as AvailabilityRule[]) || []);
   }
 

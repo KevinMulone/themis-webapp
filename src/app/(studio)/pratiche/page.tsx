@@ -22,15 +22,15 @@ export default function PraticheePage() {
 
   async function load() {
     setLoading(true);
-    const { data } = await supabase
-      .from('matters')
-      .select('*, clients(id, tipo_soggetto, nome, cognome, ragione_sociale)')
-      .neq('stato', 'archiviata')
-      .order('updated_at', { ascending: false });
+    const [{ data }, { data: clientsData }] = await Promise.all([
+      supabase.from('matters')
+        .select('*, clients(id, tipo_soggetto, nome, cognome, ragione_sociale)')
+        .neq('stato', 'archiviata')
+        .order('updated_at', { ascending: false }),
+      supabase.from('clients').select('id, tipo_soggetto, nome, cognome, ragione_sociale')
+        .eq('archiviato', false).order('cognome'),
+    ]);
     setMatters((data as Matter[]) || []);
-    const { data: clientsData } = await supabase
-      .from('clients').select('id, tipo_soggetto, nome, cognome, ragione_sociale')
-      .eq('archiviato', false).order('cognome');
     setClients(clientsData || []);
     setLoading(false);
   }

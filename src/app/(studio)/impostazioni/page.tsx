@@ -46,14 +46,19 @@ export default function ImpostazioniPage() {
   async function load() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data: tpl } = await supabase.from('templates').select('id, nome, categoria, descrizione, studio_id').eq('attivo', true).order('categoria');
+    const [{ data: tpl }, { data: s }, letterheadRes, { data: rules }, { data: pec }] = await Promise.all([
+      supabase.from('templates').select('id, nome, categoria, descrizione, studio_id').eq('attivo', true).order('categoria'),
+      supabase.from('studio_settings').select('*').eq('studio_id', user.id).single(),
+      fetch('/api/settings/letterhead'),
+      supabase.from('availability_rules').select('*').eq('studio_id', user.id),
+      supabase.from('pec_account')
+        .select('id, etichetta, indirizzo_pec, imap_host, imap_port, imap_user, attivo, ultimo_controllo_at, ultimo_errore')
+        .order('created_at'),
+    ]);
     setTemplates(tpl || []);
-    const { data: s } = await supabase.from('studio_settings').select('*').eq('studio_id', user.id).single();
     if (s) setSettings({ font_family: s.font_family, font_size_pt: s.font_size_pt, line_spacing: s.line_spacing });
-    const res = await fetch('/api/settings/letterhead');
-    setLetterhead(await res.json());
+    setLetterhead(await letterheadRes.json());
 
-    const { data: rules } = await supabase.from('availability_rules').select('*').eq('studio_id', user.id);
     if (rules && rules.length > 0) {
       const newDays = Array.from({ length: 7 }, () => ({ ...DEFAULT_DAY, open: false }));
       rules.forEach((r) => {
@@ -62,11 +67,6 @@ export default function ImpostazioniPage() {
       setDays(newDays);
       setSlotMinutes(rules[0].slot_minutes);
     }
-
-    const { data: pec } = await supabase
-      .from('pec_account')
-      .select('id, etichetta, indirizzo_pec, imap_host, imap_port, imap_user, attivo, ultimo_controllo_at, ultimo_errore')
-      .order('created_at');
     setPecAccounts(pec || []);
   }
 

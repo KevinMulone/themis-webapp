@@ -30,13 +30,13 @@ export default function PatrocinioPage() {
   useEffect(() => {
     (async () => {
       setLoading(true);
-      const { data: matters } = await supabase
-        .from('matters')
-        .select('id, tribunale, clients(nome, cognome, ragione_sociale, tipo_soggetto)')
-        .eq('metodo_pagamento', 'gratuito_patrocinio')
-        .neq('stato', 'archiviata');
-
-      const { data: patrocini } = await supabase.from('patrocini_spese_stato').select('*');
+      const [{ data: matters }, { data: patrocini }] = await Promise.all([
+        supabase.from('matters')
+          .select('id, tribunale, clients(nome, cognome, ragione_sociale, tipo_soggetto)')
+          .eq('metodo_pagamento', 'gratuito_patrocinio')
+          .neq('stato', 'archiviata'),
+        supabase.from('patrocini_spese_stato').select('*'),
+      ]);
       const byMatter = new Map((patrocini || []).map((p) => [p.matter_id, p]));
 
       const righeCalcolate: Riga[] = (matters || []).map((m) => {

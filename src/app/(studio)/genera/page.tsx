@@ -24,9 +24,11 @@ export default function GeneraPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: m } = await supabase.from('matters').select('id, tipo_pratica, clients(nome, cognome, ragione_sociale, tipo_soggetto)').neq('stato', 'archiviata');
+      const [{ data: m }, { data: t }] = await Promise.all([
+        supabase.from('matters').select('id, tipo_pratica, clients(nome, cognome, ragione_sociale, tipo_soggetto)').neq('stato', 'archiviata'),
+        supabase.from('templates').select('id, nome, categoria').eq('attivo', true).order('categoria'),
+      ]);
       setMatters((m as unknown as Matter[]) || []);
-      const { data: t } = await supabase.from('templates').select('id, nome, categoria').eq('attivo', true).order('categoria');
       setTemplates(t || []);
     })();
   }, []);

@@ -50,13 +50,14 @@ export default function PecPage() {
 
   async function load() {
     setLoading(true);
-    const { data: acc } = await supabase.from('pec_account').select('id, etichetta').order('created_at');
+    const [{ data: acc }, { data: msg }] = await Promise.all([
+      supabase.from('pec_account').select('id, etichetta').order('created_at'),
+      supabase.from('pec_messaggi')
+        .select('id, pec_account_id, matter_id, tipo_pec, mittente, destinatari, oggetto, data_invio, data_ricezione, stato')
+        .order('data_ricezione', { ascending: false })
+        .limit(200),
+    ]);
     setAccounts(acc || []);
-    const { data: msg } = await supabase
-      .from('pec_messaggi')
-      .select('id, pec_account_id, matter_id, tipo_pec, mittente, destinatari, oggetto, data_invio, data_ricezione, stato')
-      .order('data_ricezione', { ascending: false })
-      .limit(200);
     setMessaggi(msg || []);
     setLoading(false);
   }
