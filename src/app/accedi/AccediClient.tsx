@@ -17,6 +17,11 @@ export default function AccediClient() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const [modalitaRecupero, setModalitaRecupero] = useState(false);
+  const [recuperoEmail, setRecuperoEmail] = useState('');
+  const [recuperoMsg, setRecuperoMsg] = useState('');
+  const [recuperoLoading, setRecuperoLoading] = useState(false);
+
   useEffect(() => {
     const remembered = localStorage.getItem(REMEMBER_KEY);
     if (remembered) setEmail(remembered);
@@ -60,6 +65,65 @@ export default function AccediClient() {
     router.push('/dashboard');
   }
 
+  function apriRecupero() {
+    setModalitaRecupero(true);
+    setRecuperoEmail(email);
+    setRecuperoMsg('');
+  }
+
+  async function handleRecupero(e: React.FormEvent) {
+    e.preventDefault();
+    setRecuperoMsg('');
+    if (!recuperoEmail.trim()) return;
+    setRecuperoLoading(true);
+    const supabase = createClient();
+    await supabase.auth.resetPasswordForEmail(recuperoEmail.trim(), {
+      redirectTo: `${window.location.origin}/reimposta-password`,
+    });
+    setRecuperoLoading(false);
+    // Messaggio uguale a prescindere dal risultato: non conferma né smentisce
+    // se quell'indirizzo è registrato, per non rivelare a chi non è
+    // autorizzato quali email hanno un account.
+    setRecuperoMsg("Se l'indirizzo è registrato, riceverai a breve un'email con le istruzioni per reimpostare la password.");
+  }
+
+  if (modalitaRecupero) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
+        <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
+          <BrandHero />
+          <p className="mb-6 text-center text-sm text-neutral-500">Recupera la password</p>
+          {recuperoMsg ? (
+            <p className="text-sm text-green-700">{recuperoMsg}</p>
+          ) : (
+            <form onSubmit={handleRecupero} className="flex flex-col gap-3">
+              <input
+                className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                type="email"
+                placeholder="La tua email"
+                autoComplete="username"
+                value={recuperoEmail}
+                onChange={(e) => setRecuperoEmail(e.target.value)}
+              />
+              <button
+                type="submit"
+                disabled={recuperoLoading}
+                className="mt-2 rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+              >
+                {recuperoLoading ? 'Invio...' : 'Invia il link per reimpostarla'}
+              </button>
+            </form>
+          )}
+          <p className="mt-4 text-center text-sm text-neutral-500">
+            <button type="button" onClick={() => setModalitaRecupero(false)} className="text-bordeaux-700 hover:underline">
+              Torna al login
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
       <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
@@ -82,10 +146,15 @@ export default function AccediClient() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <label className="flex items-center gap-2 text-sm text-neutral-600">
-            <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
-            Ricordami per il prossimo accesso
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 text-sm text-neutral-600">
+              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+              Ricordami
+            </label>
+            <button type="button" onClick={apriRecupero} className="text-sm text-bordeaux-700 hover:underline">
+              Password dimenticata?
+            </button>
+          </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
