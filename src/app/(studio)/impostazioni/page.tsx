@@ -208,11 +208,11 @@ export default function ImpostazioniPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="mb-6 text-2xl font-bold text-neutral-900">Impostazioni</h1>
+      <h1 className="mb-6 text-2xl font-display font-semibold text-neutral-900">Impostazioni</h1>
 
       <form onSubmit={handleChangePassword} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 font-semibold text-neutral-900">Cambia password</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Nuova password</label>
             <input name="new_password" type="password" autoComplete="new-password" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
@@ -257,7 +257,7 @@ export default function ImpostazioniPage() {
 
       <form onSubmit={handleSaveTypography} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 font-semibold text-neutral-900">Formattazione documenti</h2>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Carattere</label>
             <select name="font_family" defaultValue={settings.font_family} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
@@ -361,7 +361,7 @@ export default function ImpostazioniPage() {
             ))}
           </ul>
         )}
-        <form ref={pecFormRef} onSubmit={handleAddPecAccount} className="grid grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
+        <form ref={pecFormRef} onSubmit={handleAddPecAccount} className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
           <div className="col-span-2">
             <label className="mb-1 block text-xs text-neutral-500">Etichetta (per riconoscerla in elenco)</label>
             <input name="etichetta" required placeholder="Es. PEC studio" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
@@ -434,7 +434,7 @@ export default function ImpostazioniPage() {
             </li>
           ))}
         </ul>
-        <form onSubmit={handleTemplateUpload} className="grid grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
+        <form onSubmit={handleTemplateUpload} className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
           <div className="col-span-2">
             <label className="mb-1 block text-xs text-neutral-500">Nome modello</label>
             <input name="nome" required className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />

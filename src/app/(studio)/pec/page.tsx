@@ -77,7 +77,7 @@ export default function PecPage() {
 
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-bold text-neutral-900">PEC</h1>
+      <h1 className="mb-1 text-2xl font-display font-semibold text-neutral-900">PEC</h1>
       <p className="mb-6 text-xs text-neutral-500">
         Messaggi scaricati automaticamente dalle caselle configurate in Impostazioni. Le ricevute (accettazione,
         consegna) sono separate perché non richiedono azione.
@@ -115,13 +115,14 @@ export default function PecPage() {
             )}
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
+          <div className="rounded-xl border border-neutral-200 bg-white shadow-sm">
             {loading ? (
               <p className="p-6 text-sm text-neutral-500">Caricamento...</p>
             ) : filtrati.length === 0 ? (
               <p className="p-6 text-sm text-neutral-500">Nessun messaggio in questa scheda.</p>
             ) : (
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] text-sm">
                 <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
                   <tr>
                     <th className="px-4 py-2">Tipo</th>
@@ -149,6 +150,7 @@ export default function PecPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             )}
           </div>
         </>

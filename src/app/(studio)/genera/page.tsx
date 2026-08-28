@@ -63,7 +63,7 @@ export default function GeneraPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold text-neutral-900">Genera Atto</h1>
+      <h1 className="mb-6 text-2xl font-display font-semibold text-neutral-900">Genera Atto</h1>
 
       <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <div className="mb-4">

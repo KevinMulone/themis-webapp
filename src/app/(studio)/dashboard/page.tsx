@@ -18,8 +18,8 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-neutral-900">Dashboard</h1>
-      <div className="grid grid-cols-2 gap-4">
+      <h1 className="mb-6 text-2xl font-display font-semibold text-neutral-900">Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
           <div className="text-3xl font-bold text-bordeaux-700">{clientsCount ?? 0}</div>
           <div className="text-sm text-neutral-500">Clienti</div>

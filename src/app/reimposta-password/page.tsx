@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import BrandHero from '@/components/BrandHero';
 
 export default function ReimpostaPasswordPage() {
   const router = useRouter();
@@ -92,8 +93,8 @@ export default function ReimpostaPasswordPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
       <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-bordeaux-800">Themis</h1>
-        <p className="mb-6 mt-1 text-sm text-neutral-500">Imposta una nuova password</p>
+        <BrandHero />
+        <p className="mb-6 text-center text-sm text-neutral-500">Imposta una nuova password</p>
 
         {checking ? (
           <p className="text-sm text-neutral-500">Caricamento...</p>

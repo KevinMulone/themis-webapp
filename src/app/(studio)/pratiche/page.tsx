@@ -56,7 +56,7 @@ export default function PraticheePage() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900">Pratiche</h1>
+        <h1 className="text-2xl font-display font-semibold text-neutral-900">Pratiche</h1>
         <button
           onClick={() => setCreating(true)}
           className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
@@ -72,8 +72,8 @@ export default function PraticheePage() {
           Nessuna pratica trovata.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
+          <table className="w-full min-w-[520px] text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
               <tr>
                 <th className="px-4 py-2">Cliente</th>

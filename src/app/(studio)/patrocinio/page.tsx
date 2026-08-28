@@ -69,7 +69,7 @@ export default function PatrocinioPage() {
 
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-bold text-neutral-900">Patrocinio a spese dello Stato</h1>
+      <h1 className="mb-1 text-2xl font-display font-semibold text-neutral-900">Patrocinio a spese dello Stato</h1>
       <p className="mb-6 text-xs text-neutral-500">
         Tutte le pratiche con pagamento a carico dello Stato, con lo stato di avanzamento di ciascuna.
       </p>
@@ -81,8 +81,8 @@ export default function PatrocinioPage() {
           Nessuna pratica con metodo di pagamento "Gratuito patrocinio".
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
+          <table className="w-full min-w-[720px] text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
               <tr>
                 <th className="px-4 py-2">Cliente</th>

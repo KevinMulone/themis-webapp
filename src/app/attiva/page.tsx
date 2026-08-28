@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import BrandHero from '@/components/BrandHero';
 
 export default function AttivaPage() {
   const router = useRouter();
@@ -34,8 +35,8 @@ export default function AttivaPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
       <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-bordeaux-800">Themis</h1>
-        <p className="mb-6 mt-1 text-sm text-neutral-500">Attiva il tuo account</p>
+        <BrandHero />
+        <p className="mb-6 text-center text-sm text-neutral-500">Attiva il tuo account</p>
         <p className="mb-4 text-sm text-neutral-600">
           Inserisci la chiave di licenza che ti è stata fornita per attivare l&apos;abbonamento.
         </p>

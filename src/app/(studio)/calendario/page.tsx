@@ -102,7 +102,7 @@ export default function CalendarioPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold text-neutral-900">Calendario</h1>
+      <h1 className="mb-4 text-2xl font-display font-semibold text-neutral-900">Calendario</h1>
       <div className="mb-4 flex items-center justify-between">
         <button onClick={() => changeMonth(-1)} className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50">« Precedente</button>
         <h2 className="text-lg font-semibold">{MESI[month - 1]} {year}</h2>
@@ -115,38 +115,40 @@ export default function CalendarioPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-neutral-200 bg-neutral-200 shadow-sm">
-        {GIORNI.map((g) => (
-          <div key={g} className="bg-neutral-50 px-2 py-1 text-center text-xs font-semibold text-neutral-500">{g}</div>
-        ))}
-        {cells.map((c, i) => {
-          const iso = toIso(c.date);
-          const dayEvents = eventsByDay[iso] || [];
-          return (
-            <div
-              key={i}
-              onClick={() => setFormDate(iso)}
-              className={`min-h-24 cursor-pointer bg-white p-1.5 text-xs ${c.otherMonth ? 'opacity-40' : ''} ${iso === todayIso ? 'ring-2 ring-inset ring-gold-500' : ''}`}
-            >
-              <div className="mb-1 font-semibold">{c.date.getDate()}</div>
-              {dayEvents.map((ev) => (
-                <div
-                  key={ev.id}
-                  onClick={(e) => { e.stopPropagation(); setDetail(ev); }}
-                  className="mb-1 truncate rounded bg-gold-100 px-1 py-0.5 text-bordeaux-800"
-                  title={ev.titolo}
-                >
-                  {!ev.all_day && ev.ora_inizio && `${ev.ora_inizio.slice(0, 5)} `}{ev.titolo}
-                </div>
-              ))}
-            </div>
-          );
-        })}
+      <div className="overflow-x-auto rounded-xl border border-neutral-200 shadow-sm">
+        <div className="grid min-w-[640px] grid-cols-7 gap-px overflow-hidden bg-neutral-200">
+          {GIORNI.map((g) => (
+            <div key={g} className="bg-neutral-50 px-2 py-1 text-center text-xs font-semibold text-neutral-500">{g}</div>
+          ))}
+          {cells.map((c, i) => {
+            const iso = toIso(c.date);
+            const dayEvents = eventsByDay[iso] || [];
+            return (
+              <div
+                key={i}
+                onClick={() => setFormDate(iso)}
+                className={`min-h-24 cursor-pointer bg-white p-1.5 text-xs ${c.otherMonth ? 'opacity-40' : ''} ${iso === todayIso ? 'ring-2 ring-inset ring-gold-500' : ''}`}
+              >
+                <div className="mb-1 font-semibold">{c.date.getDate()}</div>
+                {dayEvents.map((ev) => (
+                  <div
+                    key={ev.id}
+                    onClick={(e) => { e.stopPropagation(); setDetail(ev); }}
+                    className="mb-1 truncate rounded bg-gold-100 px-1 py-0.5 text-bordeaux-800"
+                    title={ev.titolo}
+                  >
+                    {!ev.all_day && ev.ora_inizio && `${ev.ora_inizio.slice(0, 5)} `}{ev.titolo}
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {formDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
+          <div className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-6 shadow-lg">
             <h2 className="mb-4 text-lg font-bold text-neutral-900">Nuovo evento</h2>
             <form onSubmit={handleCreate} className="flex flex-col gap-3">
               <input type="hidden" name="data" value={formDate} />
@@ -167,7 +169,7 @@ export default function CalendarioPage() {
                   {matters.map((m) => <option key={m.id} value={m.id}>{clientLabel(m.clients)} - {m.tipo_pratica}</option>)}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-xs text-neutral-500">Ora inizio</label>
                   <input type="time" name="ora_inizio" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
@@ -196,7 +198,7 @@ export default function CalendarioPage() {
 
       {detail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
+          <div className="w-full max-w-md rounded-xl border border-neutral-200 bg-white p-6 shadow-lg">
             <h2 className="mb-4 text-lg font-bold text-neutral-900">{detail.titolo}</h2>
             <div className="space-y-1 text-sm text-neutral-700">
               <p><strong>Data:</strong> {detail.data}</p>

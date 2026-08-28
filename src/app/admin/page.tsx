@@ -114,7 +114,7 @@ export default function AdminPage() {
 
         <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
           <h2 className="mb-3 text-sm font-semibold">Nuovo studio</h2>
-          <form onSubmit={handleCreate} className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <input name="nome_studio" placeholder="Nome studio" className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm" />
             <input name="email" type="email" placeholder="Email" required className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm" />
             <input name="password" type="text" placeholder="Password iniziale" required className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm" />

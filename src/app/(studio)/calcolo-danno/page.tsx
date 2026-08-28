@@ -66,7 +66,7 @@ export default function CalcoloDannoPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <h1 className="mb-1 text-2xl font-bold text-neutral-900">Calcolo del danno biologico</h1>
+      <h1 className="mb-1 text-2xl font-display font-semibold text-neutral-900">Calcolo del danno biologico</h1>
       <p className="mb-4 text-xs text-neutral-500">
         Le tabelle di legge (art. 139 e Tabella Unica Nazionale ex art. 138 Cod. Ass.) sono vincolanti per i
         sinistri da circolazione di veicoli a motore e natanti. Le Tabelle di Milano restano il riferimento per i
@@ -119,7 +119,7 @@ function CalcolatoreMilano() {
         <h2 className="mb-1 font-semibold text-neutral-900">Dati del danneggiato</h2>
         <p className="mb-4 text-xs text-neutral-500">Tabelle di Milano, edizione 2024.</p>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Età al momento del fatto</label>
             <input type="number" min={1} max={100} value={eta} onChange={(e) => setEta(Number(e.target.value))} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
@@ -218,7 +218,7 @@ function CalcolatoreMicropermanente() {
           Art. 139 Cod. Ass. — solo per invalidità permanente da 1 a 9 punti da circolazione di veicoli.
         </p>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Età al momento del fatto</label>
             <input type="number" min={0} max={100} value={eta} onChange={(e) => setEta(Number(e.target.value))} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
@@ -322,7 +322,7 @@ function CalcolatoreMacropermanente() {
           Tabella Unica Nazionale, D.P.R. 12/2025 — invalidità permanente da 10 a 100 punti, sinistri dal 5.3.2025.
         </p>
 
-        <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Età al momento del fatto</label>
             <input type="number" min={1} max={100} value={eta} onChange={(e) => setEta(Number(e.target.value))} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />

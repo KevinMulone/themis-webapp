@@ -164,7 +164,7 @@ export default function ClientiPage() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-neutral-900">Clienti</h1>
+        <h1 className="text-2xl font-display font-semibold text-neutral-900">Clienti</h1>
         <button
           onClick={() => setEditing({ ...EMPTY })}
           className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
@@ -186,8 +186,8 @@ export default function ClientiPage() {
           Nessun cliente trovato.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
+          <table className="w-full min-w-[640px] text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
               <tr>
                 <th className="px-4 py-2">Nome</th>
@@ -222,7 +222,7 @@ export default function ClientiPage() {
             <h2 className="mb-4 text-lg font-bold text-neutral-900">
               {editing.id ? 'Modifica cliente' : 'Nuovo cliente'}
             </h2>
-            <form onSubmit={handleSave} className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="col-span-2">
                 <label className="mb-1 block text-xs text-neutral-500">Tipo soggetto</label>
                 <select

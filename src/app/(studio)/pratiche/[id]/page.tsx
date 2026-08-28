@@ -211,7 +211,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     <div className="mx-auto max-w-3xl">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">{clientLabel(client)}</h1>
+          <h1 className="text-2xl font-display font-semibold text-neutral-900">{clientLabel(client)}</h1>
           <p className="text-sm text-neutral-500">{labelFromOptions(TIPI_PRATICA, matter.tipo_pratica)}</p>
         </div>
         {saved && <span className="text-sm text-green-700">Salvato</span>}
@@ -219,7 +219,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
       <form onSubmit={handleSaveMatter} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 font-semibold text-neutral-900">Dati pratica</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Stato</label>
             <select name="stato" defaultValue={matter.stato} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
@@ -289,7 +289,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             {savedPatrocinio && <span className="text-sm text-green-700">Salvato</span>}
           </div>
           {patrocinioError && <p className="mb-3 text-sm text-red-600">{patrocinioError}</p>}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <Field label="Data istanza di ammissione" name="data_istanza" type="date" defaultValue={patrocinio?.data_istanza} />
             <div>
               <label className="mb-1 block text-xs text-neutral-500">Stato istanza</label>
@@ -343,7 +343,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           Suggerimenti con riferimento normativo, da verificare sempre sul caso concreto: la sospensione
           feriale (1-31 agosto) è applicata dove pertinente, esclusa per lavoro e previdenza.
         </p>
-        <div className="mb-3 grid grid-cols-2 gap-3">
+        <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Tipo di termine</label>
             <select
@@ -394,7 +394,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         <>
           <form onSubmit={handleSaveSinistro} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
             <h2 className="mb-3 font-semibold text-neutral-900">Dati sinistro</h2>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Field label="Data sinistro" name="data_sinistro" type="date" defaultValue={sinistro.data_sinistro} />
               <Field label="Luogo sinistro" name="luogo_sinistro" defaultValue={sinistro.luogo_sinistro} />
               <div>
@@ -454,7 +454,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
               </ul>
             )}
             {addingTestimone && (
-              <form onSubmit={handleAddTestimone} className="mt-4 grid grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
+              <form onSubmit={handleAddTestimone} className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
                 <Field label="Nome" name="nome" />
                 <Field label="Cognome" name="cognome" />
                 <Field label="Contatti" name="contatti" />

@@ -39,7 +39,7 @@ export default function ParcellePage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <h1 className="mb-1 text-2xl font-bold text-neutral-900">Calcolo parcella (parametri forensi)</h1>
+      <h1 className="mb-1 text-2xl font-display font-semibold text-neutral-900">Calcolo parcella (parametri forensi)</h1>
       <p className="mb-6 text-xs text-neutral-500">
         D.M. 55/2014, tabelle come sostituite dal D.M. 147/2022 (in vigore dal 23.10.2022).
       </p>

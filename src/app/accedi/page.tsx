@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { oggiIso } from '@/lib/dateUtils';
+import BrandHero from '@/components/BrandHero';
 
 const REMEMBER_KEY = 'themis_remembered_email';
 
@@ -62,8 +63,8 @@ export default function AccediPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
       <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-bordeaux-800">Themis</h1>
-        <p className="mb-6 mt-1 text-sm text-neutral-500">Accedi con le credenziali del tuo studio</p>
+        <BrandHero />
+        <p className="mb-6 text-center text-sm text-neutral-500">Accedi con le credenziali del tuo studio</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
             className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
