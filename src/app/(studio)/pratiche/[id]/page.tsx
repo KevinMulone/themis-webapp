@@ -31,6 +31,9 @@ type Testimone = {
   contatti: string | null; dichiarazione: string | null; note: string | null;
 };
 type Documento = { id: string; nome_file: string; data_generazione: string };
+type RichiestaDocumento = {
+  id: string; titolo: string; note: string | null; stato: string; documento_id: string | null;
+};
 type Patrocinio = {
   id: string; matter_id: string;
   data_istanza: string | null; stato_istanza: string | null; data_delibera: string | null;
@@ -53,6 +56,8 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const [saved, setSaved] = useState(false);
   const [documenti, setDocumenti] = useState<Documento[]>([]);
   const [uploadingDoc, setUploadingDoc] = useState(false);
+  const [richieste, setRichieste] = useState<RichiestaDocumento[]>([]);
+  const [creandoRichiesta, setCreandoRichiesta] = useState(false);
   const [regolaId, setRegolaId] = useState('');
   const [dataRiferimento, setDataRiferimento] = useState('');
   const [scadenzaMsg, setScadenzaMsg] = useState('');
@@ -63,6 +68,36 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   async function loadDocumenti() {
     const { data } = await supabase.from('documenti').select('id, nome_file, data_generazione').eq('matter_id', id).order('data_generazione', { ascending: false });
     setDocumenti(data || []);
+  }
+
+  async function loadRichieste() {
+    const { data } = await supabase.from('document_requests')
+      .select('id, titolo, note, stato, documento_id').eq('matter_id', id).order('created_at', { ascending: false });
+    setRichieste(data || []);
+  }
+
+  async function handleCreaRichiesta(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!matter) return;
+    const form = new FormData(e.currentTarget);
+    const titolo = (form.get('titolo') as string || '').trim();
+    if (!titolo) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    setCreandoRichiesta(true);
+    await supabase.from('document_requests').insert({
+      studio_id: user.id, matter_id: id, client_id: matter.client_id,
+      titolo, note: (form.get('note') as string) || null,
+    });
+    setCreandoRichiesta(false);
+    (e.target as HTMLFormElement).reset();
+    loadRichieste();
+  }
+
+  async function handleEliminaRichiesta(richiestaId: string) {
+    if (!confirm('Annullare questa richiesta?')) return;
+    await supabase.from('document_requests').delete().eq('id', richiestaId);
+    loadRichieste();
   }
 
   async function handleUploadDocumento(e: React.ChangeEvent<HTMLInputElement>) {
@@ -81,6 +116,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
   async function load() {
     loadDocumenti();
+    loadRichieste();
     const { data: m } = await supabase.from('matters').select('*').eq('id', id).single();
     if (!m) return;
     setMatter(m);
@@ -280,6 +316,45 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-3 font-semibold text-neutral-900">Documenti richiesti al cliente</h2>
+        {richieste.length === 0 ? (
+          <p className="mb-3 text-sm text-neutral-500">Nessuna richiesta inviata.</p>
+        ) : (
+          <ul className="mb-3 divide-y divide-neutral-100 text-sm">
+            {richieste.map((r) => (
+              <li key={r.id} className="flex items-center justify-between gap-3 py-2">
+                <div>
+                  <div className="font-medium text-neutral-800">{r.titolo}</div>
+                  {r.note && <div className="text-xs text-neutral-400">{r.note}</div>}
+                </div>
+                <div className="flex items-center gap-2">
+                  {r.stato === 'caricato' ? (
+                    <a href={`/api/documenti/${r.documento_id}/download`} className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-700 hover:underline">
+                      Caricato — scarica
+                    </a>
+                  ) : (
+                    <>
+                      <span className="rounded-full bg-gold-100 px-2 py-1 text-xs text-gold-700">In attesa</span>
+                      <button onClick={() => handleEliminaRichiesta(r.id)} className="text-xs text-red-600 hover:underline">Annulla</button>
+                    </>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        <form onSubmit={handleCreaRichiesta} className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
+          <input name="titolo" required placeholder="Es. Copia carta d'identità" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+          <input name="note" placeholder="Nota per il cliente (opzionale)" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+          <div className="col-span-2 flex justify-end">
+            <button type="submit" disabled={creandoRichiesta} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
+              {creandoRichiesta ? 'Invio...' : 'Richiedi documento'}
+            </button>
+          </div>
+        </form>
       </div>
 
       {matter.metodo_pagamento === 'gratuito_patrocinio' && (

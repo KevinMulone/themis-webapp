@@ -22,6 +22,7 @@ type PortalClient = { studio_id: string; nome_cliente: string | null };
 type Appointment = { id: string; data: string; ora_inizio: string; ora_fine: string; stato: string };
 type AvailabilityRule = { day_of_week: number; start_time: string; end_time: string; slot_minutes: number };
 type Slot = { ora: string; occupato: boolean };
+type RichiestaDocumento = { id: string; titolo: string; note: string | null; stato: string };
 
 function formattaData(iso: string): string {
   const d = new Date(`${iso}T00:00:00`);
@@ -46,6 +47,8 @@ function PortalePageInner() {
   const [chosenSlot, setChosenSlot] = useState<{ data: string; ora: string } | null>(null);
   const [offsets, setOffsets] = useState<number[]>([]);
   const [error, setError] = useState('');
+  const [richieste, setRichieste] = useState<RichiestaDocumento[]>([]);
+  const [caricando, setCaricando] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -63,13 +66,38 @@ function PortalePageInner() {
   }, [inviteCode]);
 
   useEffect(() => {
-    if (session && portalClient) loadAppointments();
+    if (session && portalClient) { loadAppointments(); loadRichieste(); }
   }, [session, portalClient]);
 
   async function loadAppointments() {
     const { data } = await supabase.from('appointments').select('id, data, ora_inizio, ora_fine, stato')
       .eq('portal_client_id', session!.id).in('stato', ['in_attesa', 'confermato', 'rifiutato']).order('data').order('ora_inizio');
     setAppointments(data || []);
+  }
+
+  async function loadRichieste() {
+    // Il proprio client_id si risolve tramite l'invito già usato per
+    // registrarsi (portal_invites), non da portal_clients: evita di
+    // dipendere da colonne di quella tabella che potrebbero non esserci.
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user?.email) return;
+    const { data: invito } = await supabase.from('portal_invites')
+      .select('client_id').eq('email', user.email).eq('used', true).maybeSingle();
+    if (!invito) return;
+    const { data } = await supabase.from('document_requests')
+      .select('id, titolo, note, stato').eq('client_id', invito.client_id).order('created_at', { ascending: false });
+    setRichieste(data || []);
+  }
+
+  async function handleCaricaDocumento(richiestaId: string, file: File) {
+    setCaricando(richiestaId);
+    const form = new FormData();
+    form.append('file', file);
+    form.append('request_id', richiestaId);
+    const res = await fetch('/api/document-requests/upload', { method: 'POST', body: form });
+    setCaricando(null);
+    if (!res.ok) { const b = await res.json(); setError(b.error || 'Errore caricamento'); return; }
+    loadRichieste();
   }
 
   async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
@@ -236,6 +264,33 @@ function PortalePageInner() {
                 Prenota un appuntamento
               </button>
             </div>
+
+            {richieste.length > 0 && (
+              <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+                <h2 className="mb-3 font-semibold">Documenti richiesti dallo studio</h2>
+                <ul className="divide-y divide-neutral-100 text-sm">
+                  {richieste.map((r) => (
+                    <li key={r.id} className="flex items-center justify-between gap-3 py-2">
+                      <div>
+                        <div className="font-medium text-neutral-800">{r.titolo}</div>
+                        {r.note && <div className="text-xs text-neutral-500">{r.note}</div>}
+                      </div>
+                      {r.stato === 'caricato' ? (
+                        <span className="whitespace-nowrap rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Caricato</span>
+                      ) : (
+                        <label className="cursor-pointer whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50">
+                          {caricando === r.id ? 'Caricamento...' : 'Carica file'}
+                          <input
+                            type="file" className="hidden" disabled={caricando !== null}
+                            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleCaricaDocumento(r.id, f); e.target.value = ''; }}
+                          />
+                        </label>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {Object.keys(slotsByDay).length > 0 && !chosenSlot && (
               <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
