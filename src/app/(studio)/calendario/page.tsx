@@ -103,7 +103,8 @@ export default function CalendarioPage() {
   }
 
   async function handleUpdateAppointment(id: string, stato: string) {
-    await supabase.from('appointments').update({ stato }).eq('id', id);
+    const { error } = await supabase.from('appointments').update({ stato }).eq('id', id);
+    if (error) { alert(error.message); return; }
     setAppointmentDetail(null);
     load();
   }
