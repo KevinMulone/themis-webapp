@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import LogoutButton from '@/components/LogoutButton';
 
-type NavItem = { href: string; label: string };
+type NavItem = { href: string; label: string; badge?: number };
 
 export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
   navItems: NavItem[]; nomeStudio: string; abbonamentoLabel: string | null;

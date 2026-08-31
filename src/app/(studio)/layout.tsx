@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { oggiIso } from '@/lib/dateUtils';
 import { contestoStudio, eCollaboratoreDisattivato } from '@/lib/studio/contesto';
+import { createClient } from '@/lib/supabase/server';
+import { STATI_APERTI } from '@/lib/incarichi';
 import { StudioProvider } from '@/lib/studio/StudioProvider';
 import SidebarNav from './SidebarNav';
 import UsageTracker from './UsageTracker';
@@ -19,6 +21,7 @@ const NAV = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/clienti', label: 'Clienti' },
   { href: '/pratiche', label: 'Pratiche' },
+  { href: '/incarichi', label: 'I miei incarichi' },
   { href: '/calendario', label: 'Calendario' },
   { href: '/pec', label: 'PEC' },
   { href: '/genera', label: 'Genera Atto' },
@@ -59,6 +62,19 @@ export default async function StudioLayout({ children }: { children: React.React
     redirect(`/account-sospeso?motivo=${expired ? 'scaduto' : 'sospeso'}`);
   }
 
+  // Il contatore accanto a "I miei incarichi": è la notifica in-app, e
+  // costa una query di sola conta.
+  const supabase = await createClient();
+  const { count: incarichiAperti } = await supabase
+    .from('incarichi')
+    .select('id', { count: 'exact', head: true })
+    .eq('assegnato_a', ctx.userId)
+    .in('stato', STATI_APERTI);
+
+  const voci = (ctx.ruolo === 'titolare' ? [...NAV, ...NAV_TITOLARE] : NAV).map((v) =>
+    v.href === '/incarichi' ? { ...v, badge: incarichiAperti ?? 0 } : v,
+  );
+
   return (
     <StudioProvider
       valore={{ userId: ctx.userId, studioId: ctx.studioId, ruolo: ctx.ruolo, nomeStudio: ctx.nomeStudio }}
@@ -66,7 +82,7 @@ export default async function StudioLayout({ children }: { children: React.React
       <div className="flex min-h-screen flex-col bg-neutral-50 lg:flex-row">
         <UsageTracker />
         <SidebarNav
-          navItems={ctx.ruolo === 'titolare' ? [...NAV, ...NAV_TITOLARE] : NAV}
+          navItems={voci}
           nomeStudio={ctx.nomeStudio ?? ''}
           abbonamentoLabel={giorniRimanenti(ctx.subscriptionExpiresAt)}
         />

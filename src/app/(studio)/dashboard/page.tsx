@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { contestoStudio } from '@/lib/studio/contesto';
 import { oggiIso, addDaysIso } from '@/lib/dateUtils';
 import { TIPI_EVENTO, TIPI_PRATICA, STATI_PRATICA, labelFromOptions, clientLabel, formatDateIt } from '@/lib/constants';
+import { STATI_APERTI } from '@/lib/incarichi';
 
 type ScadenzaRow = { id: string; titolo: string; tipo: string; data: string; ora_inizio: string | null };
 type ClienteRef = { tipo_soggetto: string; nome: string | null; cognome: string | null; ragione_sociale: string | null };
@@ -38,6 +39,7 @@ export default async function DashboardPage() {
     { count: prossimeScadenzeCount },
     { count: prenotazioniInAttesaCount },
     { count: pecCount },
+    { count: incarichiCount },
     { data: prossimeScadenze },
     { data: praticheRecenti },
   ] = await Promise.all([
@@ -46,6 +48,8 @@ export default async function DashboardPage() {
     supabase.from('eventi').select('id', { count: 'exact', head: true }).in('tipo', tipiScadenza).gte('data', oggi).lte('data', tra7gg),
     supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('stato', 'in_attesa'),
     supabase.from('pec_messaggi').select('id', { count: 'exact', head: true }).eq('tipo_pec', 'posta-certificata'),
+    supabase.from('incarichi').select('id', { count: 'exact', head: true })
+      .eq('assegnato_a', ctx.userId).in('stato', STATI_APERTI),
     supabase.from('eventi')
       .select('id, titolo, tipo, data, ora_inizio')
       .in('tipo', tipiScadenza)
@@ -67,7 +71,7 @@ export default async function DashboardPage() {
     <div>
       <h1 className="mb-6 text-2xl font-display font-semibold text-neutral-900">Dashboard</h1>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
         <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
           <div className="text-3xl font-bold text-bordeaux-700">{clientsCount ?? 0}</div>
           <div className="text-sm text-neutral-500">Clienti</div>
@@ -90,6 +94,12 @@ export default async function DashboardPage() {
           <div className="text-3xl font-bold text-bordeaux-700">{pecCount ?? 0}</div>
           <div className="text-sm text-neutral-500">Messaggi PEC</div>
         </div>
+        <Link href="/incarichi" className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm hover:border-bordeaux-700">
+          <div className={`text-3xl font-bold ${(incarichiCount ?? 0) > 0 ? 'text-amber-600' : 'text-bordeaux-700'}`}>
+            {incarichiCount ?? 0}
+          </div>
+          <div className="text-sm text-neutral-500">Incarichi da fare</div>
+        </Link>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">

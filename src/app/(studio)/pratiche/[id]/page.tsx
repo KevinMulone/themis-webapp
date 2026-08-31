@@ -4,6 +4,7 @@ import { useEffect, useState, use as usePromise } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
+import IncarichiPratica from './IncarichiPratica';
 import {
   TIPI_PRATICA, STATI_PRATICA, TIPI_SINISTRO, STATI_NEGOZIAZIONE, METODI_PAGAMENTO,
   labelFromOptions, clientLabel,
@@ -313,6 +314,8 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           </ul>
         )}
       </div>
+
+      <IncarichiPratica matterId={id} studioId={studioId} />
 
       <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 font-semibold text-neutral-900">Documenti richiesti al cliente</h2>
