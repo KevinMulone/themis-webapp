@@ -35,7 +35,7 @@ si esegue.
 | `007_funzioni_portale.sql` | ✅ sì |
 | `008_chiudi_falla_portal_invites.sql` | ✅ sì (31.08.2026) |
 | `009_incarichi.sql` | ✅ sì |
-| `010_notifiche.sql` | ❌ **no** |
+| `010_notifiche.sql` | ✅ sì |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 
