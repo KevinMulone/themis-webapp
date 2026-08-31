@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import LogoutButton from '@/components/LogoutButton';
+import NotificheCampanella from './NotificheCampanella';
 
 type NavItem = { href: string; label: string; badge?: number };
 
@@ -22,10 +23,11 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
     <>
       <div className="flex items-center gap-3 border-b-2 border-gold-500 px-5 py-4">
         <Image src="/icon.svg" alt="" width={32} height={32} className="rounded-md" />
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="font-display text-lg font-semibold tracking-wide text-bordeaux-800">Themis</h1>
-          <p className="text-xs text-neutral-500">{nomeStudio}</p>
+          <p className="truncate text-xs text-neutral-500">{nomeStudio}</p>
         </div>
+        <NotificheCampanella />
       </div>
       <nav className="flex flex-1 flex-col gap-1 overflow-y-auto p-3">
         {navItems.map((item) => (
@@ -33,13 +35,18 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
             key={item.href}
             href={item.href}
             onClick={() => setOpen(false)}
-            className={`rounded-md px-3 py-2 text-sm ${
+            className={`flex items-center justify-between gap-2 rounded-md px-3 py-2 text-sm ${
               eVoceAttiva(item.href)
                 ? 'bg-gold-100 font-medium text-bordeaux-800'
                 : 'text-neutral-700 hover:bg-gold-100 hover:text-bordeaux-800'
             }`}
           >
             {item.label}
+            {item.badge ? (
+              <span className="rounded-full bg-bordeaux-700 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                {item.badge}
+              </span>
+            ) : null}
           </Link>
         ))}
       </nav>
@@ -61,6 +68,8 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
           <Image src="/icon.svg" alt="" width={28} height={28} className="rounded-md" />
           <span className="font-display text-base font-semibold text-bordeaux-800">Themis</span>
         </div>
+        <div className="flex items-center gap-1">
+        <NotificheCampanella />
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -73,6 +82,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
             <line x1="2" y1="15" x2="18" y2="15" />
           </svg>
         </button>
+        </div>
       </div>
 
       {/* Drawer, solo sotto lg */}
