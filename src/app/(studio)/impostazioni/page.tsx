@@ -66,6 +66,8 @@ export default function ImpostazioniPage() {
   const pecFormRef = useRef<HTMLFormElement>(null);
   const [abbonamento, setAbbonamento] = useState<Abbonamento | null>(null);
   const [portaleLoading, setPortaleLoading] = useState(false);
+  const [mostraPinAdmin, setMostraPinAdmin] = useState(false);
+  const [pinAdmin, setPinAdmin] = useState('');
   const [refundLoading, setRefundLoading] = useState(false);
   const [adesso, setAdesso] = useState(() => Date.now());
 
@@ -226,15 +228,16 @@ export default function ImpostazioniPage() {
     window.location.href = body.url;
   }
 
-  function handleEntraComeAmministratore() {
-    // Non è una vera barriera di sicurezza (è codice lato client, quindi
-    // ispezionabile): la protezione reale resta il controllo server-side in
-    // /admin, che verifica l'email dell'account collegato. Questo PIN serve
-    // solo a non rendere l'ingresso ovvio a chi guarda lo schermo.
-    const pin = prompt('Password amministratore');
-    if (pin === null) return;
-    if (pin !== '13052003') { alert('Password errata'); return; }
-    window.location.href = '/admin';
+  // Non è una vera barriera di sicurezza (è codice lato client, quindi
+  // ispezionabile): la protezione reale resta il controllo server-side in
+  // /admin, che verifica l'email dell'account collegato. Questa password
+  // serve solo a non rendere l'ingresso ovvio a chi guarda lo schermo.
+  function handlePinAdmin(valore: string) {
+    setPinAdmin(valore);
+    // Apre appena la password è completa e corretta: nessun pulsante da
+    // premere, nessuna finestrella del browser (che su telefono è scomoda
+    // e a volte viene bloccata).
+    if (valore === '13052003') window.location.href = '/admin';
   }
 
   async function handleRichiediRimborso() {
@@ -587,11 +590,24 @@ export default function ImpostazioniPage() {
       </div>
 
       <div className="flex justify-center py-6">
-        <button
-          onClick={handleEntraComeAmministratore}
-          aria-label="Accesso avanzato"
-          className="h-2 w-2 rounded-full bg-neutral-200 hover:bg-neutral-300"
-        />
+        {mostraPinAdmin ? (
+          <input
+            type="password"
+            autoFocus
+            inputMode="numeric"
+            value={pinAdmin}
+            onChange={(e) => handlePinAdmin(e.target.value)}
+            onBlur={() => { if (!pinAdmin) setMostraPinAdmin(false); }}
+            aria-label="Password amministratore"
+            className="w-40 rounded-md border border-neutral-300 px-3 py-1.5 text-center text-sm"
+          />
+        ) : (
+          <button
+            onClick={() => setMostraPinAdmin(true)}
+            aria-label="Accesso avanzato"
+            className="h-2 w-2 rounded-full bg-neutral-200 hover:bg-neutral-300"
+          />
+        )}
       </div>
     </div>
   );
