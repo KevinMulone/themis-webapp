@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { aiutoSegnaposto } from '@/lib/suggerimenti';
 import { TIPI_PRATICA, labelFromOptions, clientLabel } from '@/lib/constants';
 
 type Matter = { id: string; tipo_pratica: string; clients?: { nome: string | null; cognome: string | null; ragione_sociale: string | null; tipo_soggetto: string } };
@@ -98,19 +99,23 @@ export default function GeneraPage() {
         {placeholders.length > 0 && (
           <div className="mb-4 space-y-3 border-t border-neutral-200 pt-4">
             <p className="text-xs font-semibold text-neutral-500">Campi da compilare</p>
-            {placeholders.map((p) => (
-              <div key={p.placeholder_key}>
-                <label className="mb-1 block text-xs text-neutral-500">
-                  {p.etichetta}{p.obbligatorio && ' *'}
-                </label>
-                <input
-                  type={p.tipo_campo === 'data' ? 'date' : p.tipo_campo === 'numero' || p.tipo_campo === 'importo' ? 'number' : 'text'}
-                  value={manualValues[p.placeholder_key] || ''}
-                  onChange={(e) => setManualValues({ ...manualValues, [p.placeholder_key]: e.target.value })}
-                  className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
-                />
-              </div>
-            ))}
+            {placeholders.map((p) => {
+              const aiuto = aiutoSegnaposto(p.placeholder_key, p.etichetta);
+              return (
+                <div key={p.placeholder_key}>
+                  <label className="mb-1 block text-xs text-neutral-500">
+                    {p.etichetta}{p.obbligatorio && ' *'}
+                  </label>
+                  <input
+                    type={p.tipo_campo === 'data' ? 'date' : p.tipo_campo === 'numero' || p.tipo_campo === 'importo' ? 'number' : 'text'}
+                    value={manualValues[p.placeholder_key] || ''}
+                    onChange={(e) => setManualValues({ ...manualValues, [p.placeholder_key]: e.target.value })}
+                    className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                  />
+                  {aiuto && <p className="mt-1 text-[11px] text-neutral-400">{aiuto}</p>}
+                </div>
+              );
+            })}
           </div>
         )}
 

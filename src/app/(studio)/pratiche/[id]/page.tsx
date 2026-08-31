@@ -4,6 +4,7 @@ import { useEffect, useState, use as usePromise } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
+import { AIUTO_CAMPI, COMPAGNIE_ASSICURATIVE, TRIBUNALI } from '@/lib/suggerimenti';
 import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import IncarichiPratica from './IncarichiPratica';
 import {
@@ -262,9 +263,9 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             </select>
           </div>
           <Field label="Controparte" name="controparte_nome" defaultValue={matter.controparte_nome} />
-          <Field label="Compagnia assicurativa" name="compagnia_assicurativa" defaultValue={matter.compagnia_assicurativa} />
+          <Field opzioni={COMPAGNIE_ASSICURATIVE} label="Compagnia assicurativa" name="compagnia_assicurativa" defaultValue={matter.compagnia_assicurativa} />
           <Field label="Numero riferimento" name="numero_riferimento" defaultValue={matter.numero_riferimento} />
-          <Field label="Tribunale" name="tribunale" defaultValue={matter.tribunale} />
+          <Field opzioni={TRIBUNALI} label="Tribunale" name="tribunale" defaultValue={matter.tribunale} />
           <Field label="Sezione" name="sezione" defaultValue={matter.sezione} />
           <Field label="RG numero" name="rg_numero" defaultValue={matter.rg_numero} />
           <Field label="RG anno" name="rg_anno" defaultValue={matter.rg_anno} />
@@ -555,13 +556,29 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   );
 }
 
-function Field({ label, name, defaultValue, type = 'text', step }: {
+function Field({ label, name, defaultValue, type = 'text', step, opzioni }: {
   label: string; name: string; defaultValue?: string | null; type?: string; step?: string;
+  /** Valori proposti in tendina. Il campo resta comunque scrivibile a mano:
+   *  un elenco chiuso qui sarebbe una gabbia, prima o poi arriva il caso che
+   *  non c'è. */
+  opzioni?: readonly string[];
 }) {
+  const aiuto = AIUTO_CAMPI[name];
+  const idElenco = opzioni ? `opzioni-${name}` : undefined;
   return (
     <div>
       <label className="mb-1 block text-xs text-neutral-500">{label}</label>
-      <input type={type} name={name} step={step} defaultValue={defaultValue ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+      <input
+        type={type} name={name} step={step} defaultValue={defaultValue ?? ''}
+        list={idElenco}
+        className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+      />
+      {opzioni && (
+        <datalist id={idElenco}>
+          {opzioni.map((o) => <option key={o} value={o} />)}
+        </datalist>
+      )}
+      {aiuto && <p className="mt-1 text-[11px] text-neutral-400">{aiuto}</p>}
     </div>
   );
 }
