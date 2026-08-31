@@ -35,6 +35,7 @@ const NAV = [
 // può usare: la barriera vera è il controllo lato server nelle pagine e
 // nelle route API.
 const NAV_TITOLARE = [
+  { href: '/attivita', label: 'Registro attività' },
   { href: '/collaboratori', label: 'Collaboratori' },
 ];
 
