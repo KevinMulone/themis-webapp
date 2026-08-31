@@ -6,8 +6,8 @@ type Documento = { id: string; nome_file: string };
 type Citazione = { documento: string | null; testo: string | null; pagina: number | null };
 type Credito = { usatoMillesimi: number; totaleMillesimi: number; residuoMillesimi: number; esaurito: boolean };
 
-function euro(millesimi: number): string {
-  return `${(millesimi / 1000).toFixed(2).replace('.', ',')} €`;
+function importo(millesimi: number): string {
+  return `${(millesimi / 1000).toFixed(2).replace('.', ',')} $`;
 }
 
 /** I formati che il server sa leggere. Gli altri non si offrono nemmeno. */
@@ -52,7 +52,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
         <h2 className="font-semibold text-neutral-900">Chiedi al fascicolo</h2>
         {credito && (
           <span className="text-xs text-neutral-400">
-            Credito: {euro(credito.residuoMillesimi)} di {euro(credito.totaleMillesimi)}
+            Credito: {importo(credito.residuoMillesimi)} di {importo(credito.totaleMillesimi)}
           </span>
         )}
       </div>

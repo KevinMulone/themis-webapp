@@ -38,8 +38,9 @@ export async function PATCH(request: Request) {
   const valore = Number(creditoCent);
   // Il tetto superiore non è pedanteria: protegge da uno zero di troppo
   // digitato per sbaglio, che qui si tradurrebbe in denaro vero.
+  // Centesimi di dollaro, come tutto il conteggio dell'assistente.
   if (!Number.isInteger(valore) || valore < 0 || valore > 100_000) {
-    return NextResponse.json({ error: 'Valore fuori intervallo (0 – 1.000 €)' }, { status: 400 });
+    return NextResponse.json({ error: 'Valore fuori intervallo (0 – 1.000 $)' }, { status: 400 });
   }
 
   const admin = createAdminClient();

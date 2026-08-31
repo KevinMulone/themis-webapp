@@ -22,10 +22,11 @@ export const POSTI_COLLABORATORI: Record<PlanKey, number> = {
 };
 
 /**
- * Credito mensile per l'intelligenza artificiale, in centesimi di euro.
+ * Credito mensile per l'intelligenza artificiale, in centesimi di DOLLARO
+ * (è la valuta in cui fattura Anthropic: vedi la nota in lib/ai/claude.ts).
  *
  * Sono il margine di Kevin: con i prezzi attuali una domanda su un
- * fascicolo di ~20 pagine costa circa 9 centesimi, quindi 5 € valgono una
+ * fascicolo di ~20 pagine costa circa 10 centesimi, quindi 5 $ valgono una
  * cinquantina di domande al mese. Da tarare guardando il consumo reale.
  */
 export const CREDITO_AI_MENSILE_CENT: Record<PlanKey, number> = {

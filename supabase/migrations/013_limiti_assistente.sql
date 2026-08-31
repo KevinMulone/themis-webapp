@@ -7,7 +7,9 @@
 
 create table if not exists public.limiti_assistente (
   plan text primary key,
-  -- Centesimi di euro al mese, per studio.
+  -- Centesimi di DOLLARO al mese, per studio: è la valuta in cui fattura
+  -- Anthropic e in cui si ricarica il credito. Convertire in euro con un
+  -- cambio fisso mostrerebbe un consumo che non torna mai con la console.
   credito_cent integer not null default 0,
   updated_at timestamptz not null default now()
 );

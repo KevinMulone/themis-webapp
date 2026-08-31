@@ -100,7 +100,7 @@ export default function AdminPage() {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan, creditoCent }),
     });
-    if (res.ok) addLog(`Limite assistente ${plan}: ${(creditoCent / 100).toFixed(2)} €/mese.`);
+    if (res.ok) addLog(`Limite assistente ${plan}: ${(creditoCent / 100).toFixed(2)} $/mese.`);
     else { const b = await res.json(); addLog(`Errore limite ${plan}: ${b.error}`); }
   }
 
@@ -286,14 +286,16 @@ export default function AdminPage() {
             <h2 className="text-sm font-semibold">Limite mensile assistente</h2>
             {consumoMese && (
               <span className="text-xs text-neutral-500">
-                Questo mese: {(consumoMese.totaleMillesimi / 1000).toFixed(2).replace('.', ',')} € su{' '}
+                Questo mese: {(consumoMese.totaleMillesimi / 1000).toFixed(2).replace('.', ',')} $ su{' '}
                 {consumoMese.richieste} richieste, {consumoMese.studiAttivi} studi
               </span>
             )}
           </div>
           <p className="mb-4 text-xs text-neutral-500">
-            Quanto può spendere ogni studio al mese, per piano. È il tuo margine: quando lo
-            studio lo esaurisce la funzione si ferma con un avviso, fino al mese successivo.
+            Quanto può spendere ogni studio al mese, per piano, <strong>in dollari</strong> —
+            la valuta in cui Anthropic fattura e in cui ricarichi il credito. È il tuo margine:
+            quando lo studio lo esaurisce la funzione si ferma con un avviso, fino al mese
+            successivo.
           </p>
           <div className="space-y-4">
             {(Object.keys(PLANS) as PlanKey[]).map((k) => {
@@ -302,7 +304,7 @@ export default function AdminPage() {
                 <div key={k} className="flex flex-wrap items-center gap-3">
                   <span className="w-24 text-xs text-neutral-400">{PLANS[k].label}</span>
                   <input
-                    type="range" min={0} max={5000} step={100}
+                    type="range" min={0} max={5000} step={50}
                     value={valore}
                     onChange={(e) => setLimiti({ ...limiti, [k]: Number(e.target.value) })}
                     onMouseUp={(e) => salvaLimite(k, Number((e.target as HTMLInputElement).value))}
@@ -319,7 +321,7 @@ export default function AdminPage() {
                     />
                     <span className="text-xs text-neutral-500">cent</span>
                     <span className="w-16 text-right text-xs text-neutral-400">
-                      {(valore / 100).toFixed(2).replace('.', ',')} €
+                      {(valore / 100).toFixed(2).replace('.', ',')} $
                     </span>
                   </div>
                 </div>

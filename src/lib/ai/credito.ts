@@ -2,7 +2,7 @@ import 'server-only';
 import type Anthropic from '@anthropic-ai/sdk';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { creditoAiMensileCent } from '@/lib/stripe/plans';
-import { PREZZO_USD_PER_MILIONE, CAMBIO_USD_EUR } from './claude';
+import { PREZZO_USD_PER_MILIONE } from './claude';
 
 /** Primo giorno del mese corrente, in formato data. */
 function meseCorrente(): string {
@@ -10,10 +10,10 @@ function meseCorrente(): string {
   return `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2, '0')}-01`;
 }
 
-/** Costo di una risposta, in millesimi di euro. */
+/** Costo di una risposta, in millesimi di dollaro. */
 export function costoMillesimi(usage: Anthropic.Usage): number {
   const perMilione = (token: number, prezzoUsd: number) =>
-    (token / 1_000_000) * prezzoUsd * CAMBIO_USD_EUR * 1000;
+    (token / 1_000_000) * prezzoUsd * 1000;
 
   return Math.round(
     perMilione(usage.input_tokens ?? 0, PREZZO_USD_PER_MILIONE.input)
@@ -24,9 +24,9 @@ export function costoMillesimi(usage: Anthropic.Usage): number {
 }
 
 export type Credito = {
-  /** Millesimi di euro spesi questo mese. */
+  /** Millesimi di dollaro spesi questo mese. */
   usatoMillesimi: number;
-  /** Millesimi di euro disponibili nel mese, secondo il piano. */
+  /** Millesimi di dollaro disponibili nel mese, secondo il piano. */
   totaleMillesimi: number;
   residuoMillesimi: number;
   esaurito: boolean;
@@ -100,7 +100,7 @@ export async function registraUtilizzo(
   if (error) console.error('Consumo AI non registrato:', error.message);
 }
 
-/** Per mostrare il credito in interfaccia: «1,20 € di 5,00 €». */
-export function euro(millesimi: number): string {
-  return `${(millesimi / 1000).toFixed(2).replace('.', ',')} €`;
+/** Per mostrare il credito in interfaccia: «1,20 $ di 5,00 $». */
+export function dollari(millesimi: number): string {
+  return `${(millesimi / 1000).toFixed(2).replace('.', ',')} $`;
 }

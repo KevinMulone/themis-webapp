@@ -5,7 +5,7 @@ import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
 import { decryptBuffer } from '@/lib/crypto/docEncryption';
 import { contestoStudio } from '@/lib/studio/contesto';
 import { getClaude, aiConfigurata, MODELLO } from '@/lib/ai/claude';
-import { creditoStudio, registraUtilizzo, euro } from '@/lib/ai/credito';
+import { creditoStudio, registraUtilizzo, dollari } from '@/lib/ai/credito';
 import { testoDaDocx, estensione } from '@/lib/ai/testoDocumento';
 
 export const runtime = 'nodejs';
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     // sbagliata.
     const messaggio = credito.totaleMillesimi === 0
       ? 'Funzione momentaneamente non disponibile. Riprova più tardi.'
-      : `Credito mensile esaurito (${euro(credito.totaleMillesimi)}). Riparte il primo del mese prossimo.`;
+      : `Credito mensile esaurito (${dollari(credito.totaleMillesimi)}). Riparte il primo del mese prossimo.`;
     return NextResponse.json({ error: messaggio }, { status: 402 });
   }
 

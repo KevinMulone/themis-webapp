@@ -26,8 +26,11 @@ export const PREZZO_USD_PER_MILIONE = {
   cacheScrittura: 6.25,
 };
 
-/** Conversione approssimata: il tetto è una stima, non una fattura. */
-export const CAMBIO_USD_EUR = 0.92;
+// Nota: qui si ragiona in DOLLARI, non in euro, ed è voluto. Anthropic
+// fattura in dollari e il credito si ricarica in dollari: convertire in
+// euro con un cambio scritto nel codice significherebbe mostrare un
+// consumo che non corrisponde mai a quello della console. Una sola
+// unità, quella in cui si paga davvero.
 
 export function getClaude(): Anthropic {
   // Legge ANTHROPIC_API_KEY dall'ambiente.
