@@ -7,6 +7,7 @@ import { useStudio } from '@/lib/studio/StudioProvider';
 import { AIUTO_CAMPI, COMPAGNIE_ASSICURATIVE, TRIBUNALI } from '@/lib/suggerimenti';
 import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import IncarichiPratica from './IncarichiPratica';
+import ChiediAlFascicolo from './ChiediAlFascicolo';
 import {
   TIPI_PRATICA, STATI_PRATICA, TIPI_SINISTRO, STATI_NEGOZIAZIONE, METODI_PAGAMENTO,
   labelFromOptions, clientLabel,
@@ -317,6 +318,8 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           </ul>
         )}
       </div>
+
+      <ChiediAlFascicolo matterId={id} documenti={documenti} />
 
       <IncarichiPratica matterId={id} studioId={studioId} />
 

@@ -21,6 +21,23 @@ export const POSTI_COLLABORATORI: Record<PlanKey, number> = {
   annuale: 5,
 };
 
+/**
+ * Credito mensile per l'intelligenza artificiale, in centesimi di euro.
+ *
+ * Sono il margine di Kevin: con i prezzi attuali una domanda su un
+ * fascicolo di ~20 pagine costa circa 9 centesimi, quindi 5 € valgono una
+ * cinquantina di domande al mese. Da tarare guardando il consumo reale.
+ */
+export const CREDITO_AI_MENSILE_CENT: Record<PlanKey, number> = {
+  monthly: 500,
+  semestrale: 1000,
+  annuale: 2000,
+};
+
+export function creditoAiMensileCent(plan: string | null): number {
+  return plan && isPlanKey(plan) ? CREDITO_AI_MENSILE_CENT[plan] : 0;
+}
+
 export function postiPerPiano(plan: string | null): number {
   return plan && isPlanKey(plan) ? POSTI_COLLABORATORI[plan] : 0;
 }

@@ -37,6 +37,7 @@ si esegue.
 | `009_incarichi.sql` | ✅ sì |
 | `010_notifiche.sql` | ✅ sì |
 | `011_realtime.sql` | ✅ sì |
+| `012_ai.sql` | ❌ **no** |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 
