@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { contestoStudio } from '@/lib/studio/contesto';
 import { oggiIso, addDaysIso } from '@/lib/dateUtils';
@@ -24,9 +25,13 @@ function primoCliente(c: ClienteRef | ClienteRef[] | null): ClienteRef | null {
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  // Il layout ha già verificato che il contesto esista (altrimenti avrebbe
-  // reindirizzato), quindi qui non può essere nullo.
-  const ctx = (await contestoStudio())!;
+  // Il layout reindirizza già quando il contesto manca, ma in Next.js
+  // layout e pagina vengono generati in parallelo: la pagina può arrivare
+  // qui prima che il reindirizzamento del layout abbia effetto. Dare per
+  // scontato il contesto (com'era prima, con un "!") trasformava quel
+  // momento in un errore fatale invece che in un reindirizzamento.
+  const ctx = await contestoStudio();
+  if (!ctx) redirect('/attiva');
   const studioId = ctx.studioId;
 
   const oggi = oggiIso();
