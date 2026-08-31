@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
+import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import { oggiIso } from '@/lib/dateUtils';
 import { labelFromOptions } from '@/lib/constants';
 import {
@@ -47,6 +48,7 @@ export default function IncarichiPratica({ matterId, studioId }: { matterId: str
   }, [supabase, matterId]);
 
   useEffect(() => { load(); }, [load]);
+  useAggiornamentoLive(['incarichi', 'incarichi_storico'], load);
 
   function nomeDi(id: string | null): string {
     if (!id) return 'Nessuno';

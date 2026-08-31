@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
+import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import { oggiIso } from '@/lib/dateUtils';
 import { clientLabel, labelFromOptions, TIPI_PRATICA } from '@/lib/constants';
 import {
@@ -48,6 +49,7 @@ export default function IncarichiPage() {
   }, [supabase]);
 
   useEffect(() => { load(); }, [load]);
+  useAggiornamentoLive(['incarichi'], load);
 
   async function aggiorna(inc: Incarico, patch: Record<string, unknown>) {
     const { error } = await supabase.from('incarichi').update(patch).eq('id', inc.id);

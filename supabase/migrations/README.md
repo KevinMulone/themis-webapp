@@ -36,6 +36,7 @@ si esegue.
 | `008_chiudi_falla_portal_invites.sql` | ✅ sì (31.08.2026) |
 | `009_incarichi.sql` | ✅ sì |
 | `010_notifiche.sql` | ✅ sì |
+| `011_realtime.sql` | ❌ **no** |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 

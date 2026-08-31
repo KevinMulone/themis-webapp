@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
+import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 
 type Notifica = {
   id: number; tipo: string; testo: string; link: string | null;
@@ -47,6 +48,13 @@ export default function NotificheCampanella() {
   }, [supabase]);
 
   useEffect(() => { load(); }, [load]);
+
+  // router.refresh() ridisegna anche i pezzi generati dal server — su
+  // tutti il contatore accanto a "I miei incarichi" nel menu.
+  useAggiornamentoLive(['notifiche', 'incarichi'], useCallback(() => {
+    load();
+    router.refresh();
+  }, [load, router]));
 
   // Chiude il pannello cliccando fuori.
   useEffect(() => {

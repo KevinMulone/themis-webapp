@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { LABEL_AZIONE_STORICO } from '@/lib/incarichi';
+import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 
 type Categoria = 'incarichi' | 'eliminazioni' | 'portale' | 'pec' | 'scadenze' | 'altro';
 
@@ -113,6 +114,7 @@ export default function AttivitaClient() {
   }, [supabase]);
 
   useEffect(() => { load(); }, [load]);
+  useAggiornamentoLive(['notifiche', 'incarichi_storico'], load);
 
   const persone = Array.from(new Set(voci.map((v) => v.chi).filter(Boolean) as string[])).sort();
 

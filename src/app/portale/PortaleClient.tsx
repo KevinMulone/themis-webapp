@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { toIsoLocale } from '@/lib/dateUtils';
+import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 
 const OFFSET_CHOICES: [number, string][] = [
   [15, '15 minuti prima'], [60, '1 ora prima'], [1440, '1 giorno prima'],
@@ -72,6 +73,12 @@ function PortalePageInner() {
   useEffect(() => {
     if (session && portalClient) { loadAppointments(); loadRichieste(); }
   }, [session, portalClient]);
+
+  // Il cliente vede da solo la conferma di un appuntamento o una nuova
+  // richiesta di documenti, senza dover ricaricare.
+  useAggiornamentoLive(['appointments', 'document_requests'], () => {
+    if (session && portalClient) { loadAppointments(); loadRichieste(); }
+  });
 
   async function loadAppointments() {
     const { data } = await supabase.from('appointments').select('id, data, ora_inizio, ora_fine, stato')

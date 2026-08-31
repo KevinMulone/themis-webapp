@@ -4,6 +4,7 @@ import { useEffect, useState, use as usePromise } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
+import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import IncarichiPratica from './IncarichiPratica';
 import {
   TIPI_PRATICA, STATI_PRATICA, TIPI_SINISTRO, STATI_NEGOZIAZIONE, METODI_PAGAMENTO,
@@ -140,6 +141,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   }
 
   useEffect(() => { load(); }, [id]);
+  useAggiornamentoLive(['document_requests'], loadRichieste);
 
   async function handleSaveMatter(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
