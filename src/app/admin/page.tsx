@@ -16,6 +16,16 @@ type Studio = {
 // un valore qui è l'unica modifica necessaria.
 const SCATTI_GIORNI = [-365, -90, -30, -1, 1, 30, 90, 365];
 
+// Durate offerte alla generazione delle chiavi. Il piano suggerito
+// determina anche i posti collaboratore, quindi resta modificabile a parte.
+const DURATE_CHIAVE: { giorni: number; label: string; plan: PlanKey }[] = [
+  { giorni: 1, label: '1 giorno (prova)', plan: 'monthly' },
+  { giorni: 7, label: '7 giorni (prova)', plan: 'monthly' },
+  { giorni: 30, label: '30 giorni', plan: 'monthly' },
+  { giorni: 180, label: '6 mesi', plan: 'semestrale' },
+  { giorni: 365, label: '1 anno', plan: 'annuale' },
+];
+
 const PREZZO_MENSILE_EQUIVALENTE: Record<string, number> = {
   monthly: 100,
   semestrale: 500 / 6,
@@ -53,6 +63,11 @@ export default function AdminPage() {
   const [log, setLog] = useState<string[]>([]);
   const [otpResult, setOtpResult] = useState<{ email: string; otp: string } | null>(null);
   const [pianoNuovo, setPianoNuovo] = useState<PlanKey>('monthly');
+  const [durataChiave, setDurataChiave] = useState(30);
+  const [pianoChiave, setPianoChiave] = useState<PlanKey>('monthly');
+  const [chiaveGenerata, setChiaveGenerata] = useState<string | null>(null);
+  const [generandoChiave, setGenerandoChiave] = useState(false);
+  const [chiaveCopiata, setChiaveCopiata] = useState(false);
   const [giorniNuovo, setGiorniNuovo] = useState<number>(PLANS.monthly.days);
 
   function addLog(msg: string) {
@@ -118,6 +133,31 @@ export default function AdminPage() {
     const res = await fetch(`/api/admin/studios/${s.id}`, { method: 'DELETE' });
     if (res.ok) { addLog(`${s.email}: studio eliminato definitivamente.`); load(); }
     else { const body = await res.json(); addLog(`Errore eliminazione ${s.email}: ${body.error}`); }
+  }
+
+  async function handleGeneraChiave() {
+    setGenerandoChiave(true);
+    setChiaveGenerata(null);
+    const res = await fetch('/api/admin/licenze', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ giorni: durataChiave, plan: pianoChiave }),
+    });
+    const body = await res.json();
+    setGenerandoChiave(false);
+    if (!res.ok) { addLog(`Errore generazione chiave: ${body.error}`); return; }
+    setChiaveGenerata(body.key);
+    setChiaveCopiata(false);
+    addLog(`Chiave generata: ${durataChiave} giorni, piano ${pianoChiave}.`);
+  }
+
+  async function handleCopiaChiave() {
+    if (!chiaveGenerata) return;
+    try {
+      await navigator.clipboard.writeText(chiaveGenerata);
+      setChiaveCopiata(true);
+    } catch {
+      addLog('Copia non riuscita: seleziona e copia la chiave a mano.');
+    }
   }
 
   async function handleCambiaPiano(s: Studio, plan: string) {
@@ -219,6 +259,67 @@ export default function AdminPage() {
             </ul>
           </div>
         )}
+
+        <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
+          <h2 className="mb-1 text-sm font-semibold">Genera chiave di licenza</h2>
+          <p className="mb-3 text-xs text-neutral-500">
+            La durata parte dalla prima attivazione, non da adesso: una chiave consegnata oggi e
+            usata fra due settimane vale comunque tutti i giorni previsti.
+          </p>
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <label className="mb-1 block text-xs text-neutral-500">Durata</label>
+              <select
+                value={durataChiave}
+                onChange={(e) => {
+                  const g = Number(e.target.value);
+                  setDurataChiave(g);
+                  const preset = DURATE_CHIAVE.find((d) => d.giorni === g);
+                  if (preset) setPianoChiave(preset.plan);
+                }}
+                className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm"
+              >
+                {DURATE_CHIAVE.map((d) => (
+                  <option key={d.giorni} value={d.giorni}>{d.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-neutral-500">Piano (determina i posti collaboratore)</label>
+              <select
+                value={pianoChiave}
+                onChange={(e) => setPianoChiave(e.target.value as PlanKey)}
+                className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm"
+              >
+                {(Object.keys(PLANS) as PlanKey[]).map((k) => (
+                  <option key={k} value={k}>{PLANS[k].label}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={handleGeneraChiave} disabled={generandoChiave}
+              className="rounded-md bg-gold-600 px-4 py-2 text-sm font-semibold hover:bg-bordeaux-700 disabled:opacity-50"
+            >
+              {generandoChiave ? 'Generazione...' : 'Genera chiave'}
+            </button>
+          </div>
+
+          {chiaveGenerata && (
+            <div className="mt-4 border-t border-neutral-800 pt-4">
+              <p className="mb-2 text-xs text-neutral-400">Consegnala al cliente: si attiva una volta sola.</p>
+              <textarea
+                readOnly value={chiaveGenerata} onFocus={(e) => e.currentTarget.select()}
+                className="mb-2 min-h-20 w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 font-mono text-xs"
+              />
+              <button
+                onClick={handleCopiaChiave}
+                className="rounded-md border border-neutral-700 px-3 py-1.5 text-xs hover:bg-neutral-800"
+              >
+                {chiaveCopiata ? 'Copiata!' : 'Copia chiave'}
+              </button>
+            </div>
+          )}
+        </div>
 
         <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
           <h2 className="mb-3 text-sm font-semibold">Nuovo studio</h2>

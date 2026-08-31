@@ -28,8 +28,10 @@ const NAV = [
   { href: '/calcolo-danno', label: 'Calcolo Danno' },
   { href: '/parcelle', label: 'Parcelle' },
   { href: '/patrocinio', label: 'Patrocinio Stato' },
-  { href: '/impostazioni', label: 'Impostazioni' },
 ];
+
+// Resta sempre in fondo, dopo le voci riservate al titolare.
+const NAV_IMPOSTAZIONI = { href: '/impostazioni', label: 'Impostazioni' };
 
 // Voci riservate al titolare. Nasconderle è solo cortesia verso chi non le
 // può usare: la barriera vera è il controllo lato server nelle pagine e
@@ -72,7 +74,11 @@ export default async function StudioLayout({ children }: { children: React.React
     .eq('assegnato_a', ctx.userId)
     .in('stato', STATI_APERTI);
 
-  const voci = (ctx.ruolo === 'titolare' ? [...NAV, ...NAV_TITOLARE] : NAV).map((v) =>
+  const voci = [
+    ...NAV,
+    ...(ctx.ruolo === 'titolare' ? NAV_TITOLARE : []),
+    NAV_IMPOSTAZIONI,
+  ].map((v) =>
     v.href === '/incarichi' ? { ...v, badge: incarichiAperti ?? 0 } : v,
   );
 

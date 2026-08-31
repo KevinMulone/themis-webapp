@@ -47,19 +47,33 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
   const { data: link } = await admin
     .from('issued_licenses')
-    .select('stripe_customer_id, stripe_subscription_id, plan')
+    .select('stripe_customer_id, stripe_subscription_id, plan, expires_at')
     .eq('license_id', licenseId)
     .maybeSingle();
 
-  if (link?.stripe_customer_id) {
-    const days = link.plan && isPlanKey(link.plan) ? PLANS[link.plan].days : null;
+  // La scadenza la calcoliamo qui, esplicitamente, invece di affidarci a
+  // come redeem_license() interpreta il formato "DAYS:N" — funzione che
+  // vive solo sul database e che non possiamo leggere da qui. Così il
+  // comportamento è visibile nel codice e vale allo stesso modo per le
+  // chiavi nate da un pagamento Stripe e per quelle generate a mano dal
+  // pannello amministratore.
+  const daGiorni = /^DAYS:(\d+)$/.exec(link?.expires_at ?? '');
+  const giorni = daGiorni
+    ? Number(daGiorni[1])
+    : (link?.plan && isPlanKey(link.plan) ? PLANS[link.plan].days : null);
+
+  if (link) {
     await admin
       .from('studios')
       .update({
-        stripe_customer_id: link.stripe_customer_id,
-        stripe_subscription_id: link.stripe_subscription_id,
-        subscription_started_at: new Date().toISOString(),
-        ...(days ? { subscription_expires_at: addDaysIso(null, days), subscription_status: 'active' } : {}),
+        ...(link.stripe_customer_id
+          ? {
+              stripe_customer_id: link.stripe_customer_id,
+              stripe_subscription_id: link.stripe_subscription_id,
+              subscription_started_at: new Date().toISOString(),
+            }
+          : {}),
+        ...(giorni ? { subscription_expires_at: addDaysIso(null, giorni), subscription_status: 'active' } : {}),
       })
       .eq('id', user.id);
   }
