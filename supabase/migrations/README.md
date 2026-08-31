@@ -38,6 +38,7 @@ si esegue.
 | `010_notifiche.sql` | ✅ sì |
 | `011_realtime.sql` | ✅ sì |
 | `012_ai.sql` | ❌ **no** |
+| `013_limiti_assistente.sql` | ❌ **no** — insieme alla 012 |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 

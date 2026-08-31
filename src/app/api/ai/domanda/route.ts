@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   const credito = await creditoStudio(contesto.studioId, contesto.plan);
   if (credito.esaurito) {
     return NextResponse.json({
-      error: `Credito AI del mese esaurito (${euro(credito.totaleMillesimi)}). Riparte il primo del mese prossimo.`,
+      error: `Credito mensile esaurito (${euro(credito.totaleMillesimi)}). Riparte il primo del mese prossimo.`,
     }, { status: 402 });
   }
 

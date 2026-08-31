@@ -49,7 +49,14 @@ export async function creditoStudio(studioId: string, plan: string | null): Prom
     .eq('mese', meseCorrente());
 
   const usatoMillesimi = (data ?? []).reduce((somma, r) => somma + (r.costo_millesimi ?? 0), 0);
-  const totaleMillesimi = creditoAiMensileCent(plan) * 10;
+
+  // Il limite lo regola Kevin dal pannello admin mentre osserva il consumo
+  // reale. La costante nel codice resta solo come valore di ripiego, se la
+  // riga per quel piano non c'è.
+  const { data: limite } = plan
+    ? await admin.from('limiti_assistente').select('credito_cent').eq('plan', plan).maybeSingle()
+    : { data: null };
+  const totaleMillesimi = (limite?.credito_cent ?? creditoAiMensileCent(plan)) * 10;
 
   return {
     usatoMillesimi,

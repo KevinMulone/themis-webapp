@@ -63,6 +63,8 @@ export default function AdminPage() {
   const [log, setLog] = useState<string[]>([]);
   const [otpResult, setOtpResult] = useState<{ email: string; otp: string } | null>(null);
   const [pianoNuovo, setPianoNuovo] = useState<PlanKey>('monthly');
+  const [limiti, setLimiti] = useState<Record<string, number>>({});
+  const [consumoMese, setConsumoMese] = useState<{ totaleMillesimi: number; studiAttivi: number; richieste: number } | null>(null);
   const [durataChiave, setDurataChiave] = useState(30);
   const [pianoChiave, setPianoChiave] = useState<PlanKey>('monthly');
   const [chiaveGenerata, setChiaveGenerata] = useState<string | null>(null);
@@ -83,7 +85,26 @@ export default function AdminPage() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  async function loadLimiti() {
+    const res = await fetch('/api/admin/limiti-assistente');
+    if (!res.ok) return;
+    const body = await res.json();
+    const mappa: Record<string, number> = {};
+    for (const l of body.limiti || []) mappa[l.plan] = l.credito_cent;
+    setLimiti(mappa);
+    setConsumoMese(body.consumoMese || null);
+  }
+
+  async function salvaLimite(plan: string, creditoCent: number) {
+    const res = await fetch('/api/admin/limiti-assistente', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan, creditoCent }),
+    });
+    if (res.ok) addLog(`Limite assistente ${plan}: ${(creditoCent / 100).toFixed(2)} €/mese.`);
+    else { const b = await res.json(); addLog(`Errore limite ${plan}: ${b.error}`); }
+  }
+
+  useEffect(() => { load(); loadLimiti(); }, []);
 
   async function handleExtend(s: Studio, days: number) {
     const newExpiry = addDaysIso(s.subscription_expires_at, days);
@@ -259,6 +280,53 @@ export default function AdminPage() {
             </ul>
           </div>
         )}
+
+        <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
+          <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="text-sm font-semibold">Limite mensile assistente</h2>
+            {consumoMese && (
+              <span className="text-xs text-neutral-500">
+                Questo mese: {(consumoMese.totaleMillesimi / 1000).toFixed(2).replace('.', ',')} € su{' '}
+                {consumoMese.richieste} richieste, {consumoMese.studiAttivi} studi
+              </span>
+            )}
+          </div>
+          <p className="mb-4 text-xs text-neutral-500">
+            Quanto può spendere ogni studio al mese, per piano. È il tuo margine: quando lo
+            studio lo esaurisce la funzione si ferma con un avviso, fino al mese successivo.
+          </p>
+          <div className="space-y-4">
+            {(Object.keys(PLANS) as PlanKey[]).map((k) => {
+              const valore = limiti[k] ?? 0;
+              return (
+                <div key={k} className="flex flex-wrap items-center gap-3">
+                  <span className="w-24 text-xs text-neutral-400">{PLANS[k].label}</span>
+                  <input
+                    type="range" min={0} max={5000} step={100}
+                    value={valore}
+                    onChange={(e) => setLimiti({ ...limiti, [k]: Number(e.target.value) })}
+                    onMouseUp={(e) => salvaLimite(k, Number((e.target as HTMLInputElement).value))}
+                    onTouchEnd={(e) => salvaLimite(k, Number((e.target as HTMLInputElement).value))}
+                    className="h-1 flex-1 min-w-40 cursor-pointer accent-gold-600"
+                  />
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number" min={0} max={100000} step={50}
+                      value={valore}
+                      onChange={(e) => setLimiti({ ...limiti, [k]: Number(e.target.value) })}
+                      onBlur={(e) => salvaLimite(k, Number(e.target.value))}
+                      className="w-20 rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-right text-xs"
+                    />
+                    <span className="text-xs text-neutral-500">cent</span>
+                    <span className="w-16 text-right text-xs text-neutral-400">
+                      {(valore / 100).toFixed(2).replace('.', ',')} €
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
           <h2 className="mb-1 text-sm font-semibold">Genera chiave di licenza</h2>

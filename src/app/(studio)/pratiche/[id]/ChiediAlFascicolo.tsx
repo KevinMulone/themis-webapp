@@ -52,13 +52,13 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
         <h2 className="font-semibold text-neutral-900">Chiedi al fascicolo</h2>
         {credito && (
           <span className="text-xs text-neutral-400">
-            Credito AI: {euro(credito.residuoMillesimi)} di {euro(credito.totaleMillesimi)}
+            Credito: {euro(credito.residuoMillesimi)} di {euro(credito.totaleMillesimi)}
           </span>
         )}
       </div>
       <p className="mb-4 text-xs text-neutral-500">
         Le risposte si basano solo sui dati della pratica e sui documenti che scegli qui sotto.
-        I documenti selezionati vengono inviati a un servizio esterno di intelligenza artificiale.
+        I documenti selezionati vengono inviati a un servizio esterno per l&apos;elaborazione.
       </p>
 
       {allegabili.length > 0 && (
