@@ -28,16 +28,30 @@ export function useAggiornamentoLive(tabelle: string[], aggiorna: () => void) {
   useEffect(() => {
     const supabase = createClient();
     const elenco = chiave.split(',');
-    const canale = supabase.channel(`live:${chiave}`);
 
-    for (const tabella of elenco) {
-      canale.on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: tabella },
-        () => callback.current(),
-      );
+    // Nome univoco a ogni attivazione. Supabase tiene i canali in un
+    // registro per nome, e rimuoverne uno è asincrono: riusando lo stesso
+    // nome, un effetto che riparte prima che la rimozione sia conclusa si
+    // vedrebbe restituire il canale vecchio, GIÀ sottoscritto — e
+    // aggiungere ascoltatori dopo subscribe() è vietato, con eccezione.
+    const canale = supabase.channel(`live:${chiave}:${Math.random().toString(36).slice(2)}`);
+
+    // L'aggiornamento dal vivo è una comodità: se Realtime non è
+    // disponibile o si comporta in modo imprevisto, la pagina deve
+    // continuare a funzionare. Resta comunque la rete di sicurezza qui
+    // sotto, che ricarica al ritorno sulla scheda.
+    try {
+      for (const tabella of elenco) {
+        canale.on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: tabella },
+          () => callback.current(),
+        );
+      }
+      canale.subscribe();
+    } catch (errore) {
+      console.warn('Aggiornamento dal vivo non attivo:', errore);
     }
-    canale.subscribe();
 
     function alRitorno() {
       if (document.visibilityState === 'visible') callback.current();
@@ -46,7 +60,11 @@ export function useAggiornamentoLive(tabelle: string[], aggiorna: () => void) {
     window.addEventListener('focus', alRitorno);
 
     return () => {
-      supabase.removeChannel(canale);
+      try {
+        supabase.removeChannel(canale);
+      } catch {
+        // Se il canale era già stato rimosso non c'è nulla da fare.
+      }
       document.removeEventListener('visibilitychange', alRitorno);
       window.removeEventListener('focus', alRitorno);
     };
