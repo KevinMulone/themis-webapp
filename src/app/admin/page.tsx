@@ -2,7 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { addDaysIso, oggiIso } from '@/lib/dateUtils';
-import { PLANS, type PlanKey } from '@/lib/stripe/plans';
+import { PLANS, isPlanKey, type PlanKey } from '@/lib/stripe/plans';
+
+type ConsumoStudio = {
+  studioId: string; nome: string; plan: string | null;
+  meseMillesimi: number; meseRichieste: number;
+  totaleMillesimi: number; totaleRichieste: number;
+};
+
+/** Millesimi di dollaro → «1,20 $». */
+function usd(millesimi: number): string {
+  return `${(millesimi / 1000).toFixed(2).replace('.', ',')} $`;
+}
 
 type Studio = {
   id: string; nome_studio: string | null; email: string; plan: string | null;
@@ -65,6 +76,8 @@ export default function AdminPage() {
   const [pianoNuovo, setPianoNuovo] = useState<PlanKey>('monthly');
   const [limiti, setLimiti] = useState<Record<string, number>>({});
   const [consumoMese, setConsumoMese] = useState<{ totaleMillesimi: number; studiAttivi: number; richieste: number } | null>(null);
+  const [consumoTotale, setConsumoTotale] = useState<{ totaleMillesimi: number; richieste: number; studi: number } | null>(null);
+  const [consumoPerStudio, setConsumoPerStudio] = useState<ConsumoStudio[]>([]);
   const [durataChiave, setDurataChiave] = useState(30);
   const [pianoChiave, setPianoChiave] = useState<PlanKey>('monthly');
   const [chiaveGenerata, setChiaveGenerata] = useState<string | null>(null);
@@ -93,6 +106,8 @@ export default function AdminPage() {
     for (const l of body.limiti || []) mappa[l.plan] = l.credito_cent;
     setLimiti(mappa);
     setConsumoMese(body.consumoMese || null);
+    setConsumoTotale(body.consumoTotale || null);
+    setConsumoPerStudio(body.perStudio || []);
   }
 
   async function salvaLimite(plan: string, creditoCent: number) {
@@ -284,10 +299,10 @@ export default function AdminPage() {
         <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
           <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="text-sm font-semibold">Limite mensile assistente</h2>
-            {consumoMese && (
+            {consumoMese && consumoTotale && (
               <span className="text-xs text-neutral-500">
-                Questo mese: {(consumoMese.totaleMillesimi / 1000).toFixed(2).replace('.', ',')} $ su{' '}
-                {consumoMese.richieste} richieste, {consumoMese.studiAttivi} studi
+                Questo mese {usd(consumoMese.totaleMillesimi)} ({consumoMese.richieste} richieste,{' '}
+                {consumoMese.studiAttivi} studi) · Da sempre {usd(consumoTotale.totaleMillesimi)}
               </span>
             )}
           </div>
@@ -327,6 +342,86 @@ export default function AdminPage() {
                 </div>
               );
             })}
+          </div>
+
+          <div className="mt-6 border-t border-neutral-800 pt-4">
+            <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-xs font-semibold text-neutral-300">Consumo per abbonato</h3>
+              {consumoTotale && consumoTotale.studi > 0 && (
+                <span className="text-xs text-neutral-500">
+                  {consumoTotale.studi} studi · {consumoTotale.richieste} richieste in totale
+                </span>
+              )}
+            </div>
+
+            {consumoPerStudio.length === 0 ? (
+              <p className="text-xs text-neutral-600">Nessun consumo registrato finora.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[500px] text-xs">
+                  <thead>
+                    <tr className="border-b border-neutral-800 text-neutral-500">
+                      <th className="py-1.5 text-left font-medium">Studio</th>
+                      <th className="py-1.5 text-left font-medium">Piano</th>
+                      <th className="py-1.5 text-right font-medium">Questo mese</th>
+                      <th className="py-1.5 text-right font-medium">Da sempre</th>
+                      <th className="py-1.5 text-right font-medium">Richieste</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {consumoPerStudio.map((c) => {
+                      const tetto = c.plan ? (limiti[c.plan] ?? 0) * 10 : 0;
+                      // Chi è vicino al tetto va visto a colpo d'occhio: è
+                      // lo studio che fra poco si vedrà bloccare la funzione,
+                      // e quindi quello che potrebbe chiamarti.
+                      const quota = tetto > 0 ? c.meseMillesimi / tetto : 0;
+                      return (
+                        <tr key={c.studioId} className="border-b border-neutral-900">
+                          <td className="py-1.5 pr-2 text-neutral-300">{c.nome}</td>
+                          <td className="py-1.5 pr-2 text-neutral-500">
+                            {c.plan && isPlanKey(c.plan) ? PLANS[c.plan].label : c.plan || '—'}
+                          </td>
+                          <td className={`py-1.5 text-right tabular-nums ${
+                            quota >= 1 ? 'font-semibold text-red-400'
+                              : quota >= 0.8 ? 'text-gold-500' : 'text-neutral-300'
+                          }`}>
+                            {usd(c.meseMillesimi)}
+                            {tetto > 0 && <span className="text-neutral-600"> / {usd(tetto)}</span>}
+                          </td>
+                          <td className="py-1.5 text-right tabular-nums text-neutral-400">
+                            {usd(c.totaleMillesimi)}
+                          </td>
+                          <td className="py-1.5 text-right tabular-nums text-neutral-500">
+                            {c.totaleRichieste}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  {consumoTotale && (
+                    <tfoot>
+                      <tr className="text-neutral-200">
+                        <td className="py-2 font-semibold" colSpan={2}>Totale</td>
+                        <td className="py-2 text-right font-semibold tabular-nums">
+                          {consumoMese ? usd(consumoMese.totaleMillesimi) : '—'}
+                        </td>
+                        <td className="py-2 text-right font-semibold tabular-nums">
+                          {usd(consumoTotale.totaleMillesimi)}
+                        </td>
+                        <td className="py-2 text-right font-semibold tabular-nums">
+                          {consumoTotale.richieste}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  )}
+                </table>
+              </div>
+            )}
+
+            <p className="mt-2 text-[11px] text-neutral-600">
+              «Da sempre» è quanto hai speso in tutto per quello studio: confrontalo con
+              l&apos;abbonamento che paga, non con il tetto mensile.
+            </p>
           </div>
         </div>
 
