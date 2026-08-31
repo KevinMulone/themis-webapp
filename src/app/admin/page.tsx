@@ -12,6 +12,10 @@ type Studio = {
   tempo_utilizzo_secondi: number | null;
 };
 
+// Di quanto si può spostare la scadenza con un clic. Aggiungere o togliere
+// un valore qui è l'unica modifica necessaria.
+const SCATTI_GIORNI = [-365, -90, -30, -1, 1, 30, 90, 365];
+
 const PREZZO_MENSILE_EQUIVALENTE: Record<string, number> = {
   monthly: 100,
   semestrale: 500 / 6,
@@ -311,12 +315,15 @@ export default function AdminPage() {
                     <td className="px-3 py-3">
                       <div className="flex w-max flex-col gap-1">
                         <div className="flex gap-1">
-                          <button onClick={() => handleExtend(s, -365)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">-365gg</button>
-                          <button onClick={() => handleExtend(s, -90)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">-90gg</button>
-                          <button onClick={() => handleExtend(s, -30)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">-30gg</button>
-                          <button onClick={() => handleExtend(s, 30)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">+30gg</button>
-                          <button onClick={() => handleExtend(s, 90)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">+90gg</button>
-                          <button onClick={() => handleExtend(s, 365)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">+365gg</button>
+                          {SCATTI_GIORNI.map((g) => (
+                            <button
+                              key={g}
+                              onClick={() => handleExtend(s, g)}
+                              className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800"
+                            >
+                              {g > 0 ? `+${g}` : g}gg
+                            </button>
+                          ))}
                         </div>
                         <div className="flex gap-1">
                           <button onClick={() => handleSetStatus(s, 'suspended')} className="rounded bg-red-900 px-2 py-0.5 text-xs hover:bg-red-800">
