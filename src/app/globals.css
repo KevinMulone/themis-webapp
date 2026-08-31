@@ -3,6 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Themis ha un solo tema, chiaro (bordeaux e oro su bianco): lo si
+     dichiara al browser così anche i controlli nativi — campi di testo,
+     tendine, selettori di data — restano chiari su un telefono impostato
+     in modalità scura, invece di comparire scuri dentro schede bianche. */
+  color-scheme: light;
 }
 
 @theme inline {
@@ -30,12 +36,12 @@
   --color-gold-700: #7f591c;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Qui c'era un blocco @media (prefers-color-scheme: dark) lasciato dallo
+   scaffold di create-next-app, che rendeva il testo del body quasi bianco
+   (#ededed) quando il telefono era in modalità scura. Ma l'app non ha mai
+   avuto un tema scuro — nessuna classe dark: da nessuna parte — e le schede
+   restavano bianche: risultato, testo bianco su bianco, e nei campi si
+   scriveva alla cieca. Rimosso. */
 
 body {
   background: var(--background);
