@@ -32,6 +32,28 @@ si esegue.
 | `004_document_requests.sql` | ✅ sì |
 | `005_studio_membri.sql` | ❌ **no** |
 | `006_policy_collaboratori.sql` | ❌ **no** — subito dopo la 005 |
+| `007_funzioni_portale.sql` | ❌ **no** — sicura in qualsiasi momento |
+| `008_chiudi_falla_portal_invites.sql` | ❌ **no** — ⚠️ solo DOPO il deploy del codice che usa la 007 |
+
+## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
+
+La policy `"Chiunque legge un invito dato il codice"` su `portal_invites`
+era `for select to public using (true)`. Il nome esprimeva l'intenzione
+giusta, ma `USING (true)` significa "tutte le righe, sempre": il database
+non ha modo di sapere che il codice era nel `WHERE` di chi interroga. E
+`to public` comprende il ruolo `anon`.
+
+Siccome la chiave anonima di Supabase è pubblica per costruzione (sta nel
+JavaScript che ogni browser scarica dal sito), **chiunque su internet
+poteva leggere l'intera tabella**: nomi ed email dei clienti di tutti gli
+studi, più i codici degli inviti non ancora usati, con cui ci si sarebbe
+potuti registrare al posto di quel cliente e vederne il fascicolo.
+
+È un tranello classico della Row Level Security, e vale la pena ricordarlo
+per il futuro: **una policy non può filtrare in base a ciò che c'era nella
+query**. Quando serve "solo la riga che corrisponde a questo codice", la
+strada giusta è una funzione `SECURITY DEFINER` che prende il codice come
+argomento — che è appunto quello che fa la 007.
 
 ## Esito della diagnostica (31.08.2026)
 

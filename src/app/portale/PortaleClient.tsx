@@ -58,8 +58,12 @@ function PortalePageInner() {
         const { data: pc } = await supabase.from('portal_clients').select('studio_id, nome_cliente').eq('id', user.id).single();
         setPortalClient(pc);
       } else if (inviteCode) {
-        const { data } = await supabase.from('portal_invites').select('email, nome_cliente, used').eq('code', inviteCode).single();
-        setInvite(data);
+        // Via funzione e non lettura diretta della tabella: il codice è un
+        // argomento, quindi il database restituisce davvero la sola riga
+        // corrispondente. Con una policy la tabella sarebbe interamente
+        // leggibile, perché il database non sa che il codice era nel WHERE.
+        const { data } = await supabase.rpc('invito_portale', { p_code: inviteCode }).maybeSingle();
+        setInvite(data as Invite | null);
       }
       setLoading(false);
     })();
@@ -76,16 +80,12 @@ function PortalePageInner() {
   }
 
   async function loadRichieste() {
-    // Il proprio client_id si risolve tramite l'invito già usato per
-    // registrarsi (portal_invites), non da portal_clients: evita di
-    // dipendere da colonne di quella tabella che potrebbero non esserci.
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user?.email) return;
-    const { data: invito } = await supabase.from('portal_invites')
-      .select('client_id').eq('email', user.email).eq('used', true).maybeSingle();
-    if (!invito) return;
+    // Il proprio client_id lo risolve il database: portal_clients lo porta
+    // già, scritto dal trigger al momento della registrazione.
+    const { data: clientId } = await supabase.rpc('cliente_portale_corrente');
+    if (!clientId) return;
     const { data } = await supabase.from('document_requests')
-      .select('id, titolo, note, stato').eq('client_id', invito.client_id).order('created_at', { ascending: false });
+      .select('id, titolo, note, stato').eq('client_id', clientId).order('created_at', { ascending: false });
     setRichieste(data || []);
   }
 
