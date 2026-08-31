@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { encryptBuffer } from '@/lib/crypto/docEncryption';
 import { PEC_KEY_SCOPE_PREFIX } from '@/lib/pec/sync';
+import { contestoStudio } from '@/lib/studio/contesto';
 
 // Crea o aggiorna una casella PEC. La password (se presente nel corpo della
 // richiesta) non torna mai al browser dopo il salvataggio: viene cifrata qui
@@ -11,8 +12,12 @@ import { PEC_KEY_SCOPE_PREFIX } from '@/lib/pec/sync';
 // route, che usa la chiave di servizio.
 export async function POST(request: Request) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+  const contesto = await contestoStudio();
+  if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+  if (contesto.ruolo !== 'titolare') {
+    return NextResponse.json({ error: 'Solo il titolare dello studio può gestire le caselle PEC' }, { status: 403 });
+  }
+  const { studioId } = contesto;
 
   const body = await request.json();
   const { id, etichetta, indirizzo_pec, imap_host, imap_port, imap_user, password } = body as {
@@ -26,7 +31,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'La password è obbligatoria per una nuova casella' }, { status: 400 });
   }
 
-  const payload = { studio_id: user.id, etichetta, indirizzo_pec, imap_host, imap_port, imap_user };
+  const payload = { studio_id: studioId, etichetta, indirizzo_pec, imap_host, imap_port, imap_user };
   let accountId = id;
 
   if (accountId) {
@@ -47,9 +52,9 @@ export async function POST(request: Request) {
 
   if (password) {
     const admin = createAdminClient();
-    const passwordCifrata = encryptBuffer(Buffer.from(password, 'utf-8'), PEC_KEY_SCOPE_PREFIX + user.id).toString('base64');
+    const passwordCifrata = encryptBuffer(Buffer.from(password, 'utf-8'), PEC_KEY_SCOPE_PREFIX + studioId).toString('base64');
     const { error: credError } = await admin.from('pec_credenziali').upsert(
-      { pec_account_id: accountId, studio_id: user.id, password_cifrata: passwordCifrata, updated_at: new Date().toISOString() },
+      { pec_account_id: accountId, studio_id: studioId, password_cifrata: passwordCifrata, updated_at: new Date().toISOString() },
       { onConflict: 'pec_account_id' },
     );
     if (credError) return NextResponse.json({ error: credError.message }, { status: 400 });
@@ -60,9 +65,11 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
-
+  const contesto = await contestoStudio();
+  if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+  if (contesto.ruolo !== 'titolare') {
+    return NextResponse.json({ error: 'Solo il titolare dello studio può gestire le caselle PEC' }, { status: 403 });
+  }
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'Id mancante' }, { status: 400 });

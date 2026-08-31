@@ -65,15 +65,31 @@ def decrypt_bytes(blob: bytes, scope: str) -> bytes:
 
 # ---------- auth (verifica il token contro Supabase, mai fidarsi del client) ----------
 
-def get_user_id(access_token: str):
+def get_studio_id(access_token: str):
+    """Studio per cui lavora chi sta chiamando.
+
+    Non è più "l'id dell'utente", perché un collaboratore ha un id proprio
+    diverso da quello dello studio: la risposta la dà Postgres con
+    studio_corrente(), la stessa identica funzione che regola l'accesso ai
+    dati nel resto dell'applicazione — una sola fonte di verità invece di
+    due implementazioni da tenere allineate.
+
+    Chiamata con il token dell'utente e non con la chiave di servizio: se il
+    token non è valido Supabase risponde 401 e qui si ritorna None, quindi
+    resta vero quanto dichiarato in cima al file (verificare sempre chi
+    chiama, senza fidarsi di un id passato dal client).
+    """
     if not access_token:
         return None
-    req = urllib.request.Request(f'{SUPABASE_URL}/auth/v1/user')
+    req = urllib.request.Request(
+        f'{SUPABASE_URL}/rest/v1/rpc/studio_corrente', data=b'{}', method='POST'
+    )
     req.add_header('apikey', ANON_KEY)
     req.add_header('Authorization', f'Bearer {access_token}')
+    req.add_header('Content-Type', 'application/json')
     try:
         with urllib.request.urlopen(req) as resp:
-            return json.loads(resp.read().decode('utf-8')).get('id')
+            return json.loads(resp.read().decode('utf-8') or 'null')
     except urllib.error.HTTPError:
         return None
 
@@ -270,8 +286,8 @@ def format_value(value, tipo_campo):
 
 def _handle(body):
     access_token = body.get('access_token')
-    user_id = get_user_id(access_token)
-    if not user_id:
+    studio_id = get_studio_id(access_token)
+    if not studio_id:
         raise PermissionError('Sessione non valida')
 
     matter_id = body.get('matter_id')
@@ -281,13 +297,13 @@ def _handle(body):
     if not matter_id or not template_id:
         raise ValueError('matter_id e template_id sono obbligatori')
 
-    matter = _first(rest_get(f'/rest/v1/matters?id=eq.{matter_id}&studio_id=eq.{user_id}&select=*'))
+    matter = _first(rest_get(f'/rest/v1/matters?id=eq.{matter_id}&studio_id=eq.{studio_id}&select=*'))
     if not matter:
         raise ValueError('Pratica non trovata')
 
     template = _first(rest_get(
         f'/rest/v1/templates?id=eq.{template_id}'
-        f'&or=(studio_id.is.null,studio_id.eq.{user_id})&select=*'
+        f'&or=(studio_id.is.null,studio_id.eq.{studio_id})&select=*'
     ))
     if not template:
         raise ValueError('Template non trovato o non accessibile')
@@ -327,11 +343,11 @@ def _handle(body):
     template_blob = download_object(template['storage_path'])
     template_bytes = decrypt_bytes(template_blob, template_scope)
 
-    settings = _first(rest_get(f'/rest/v1/studio_settings?studio_id=eq.{user_id}&select=*')) or {}
+    settings = _first(rest_get(f'/rest/v1/studio_settings?studio_id=eq.{studio_id}&select=*')) or {}
     letterhead_path_tmp = None
     if settings.get('letterhead_storage_path'):
         letterhead_blob = download_object(settings['letterhead_storage_path'])
-        letterhead_bytes = decrypt_bytes(letterhead_blob, user_id)
+        letterhead_bytes = decrypt_bytes(letterhead_blob, studio_id)
         letterhead_path_tmp = os.path.join(tempfile.gettempdir(), f'letterhead_{uuid.uuid4().hex}.png')
         with open(letterhead_path_tmp, 'wb') as f:
             f.write(letterhead_bytes)
@@ -357,11 +373,11 @@ def _handle(body):
                 os.remove(p)
 
     documento_id = str(uuid.uuid4())
-    storage_path = f'documenti/{user_id}/{documento_id}.docx.enc'
-    upload_object(storage_path, encrypt_bytes(output_bytes, user_id))
+    storage_path = f'documenti/{studio_id}/{documento_id}.docx.enc'
+    upload_object(storage_path, encrypt_bytes(output_bytes, studio_id))
 
     rest_post('/rest/v1/documenti', {
-        'id': documento_id, 'studio_id': user_id, 'matter_id': matter_id, 'template_id': template_id,
+        'id': documento_id, 'studio_id': studio_id, 'matter_id': matter_id, 'template_id': template_id,
         'nome_file': output_filename, 'storage_path': storage_path,
     })
 

@@ -3,11 +3,13 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
 import { encryptBuffer } from '@/lib/crypto/docEncryption';
 import { discoverPlaceholders } from '@/lib/discoverPlaceholders';
+import { contestoStudio } from '@/lib/studio/contesto';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+  const contesto = await contestoStudio();
+  if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+  const { studioId } = contesto;
 
   const form = await request.formData();
   const file = form.get('file') as File | null;
@@ -23,15 +25,15 @@ export async function POST(request: Request) {
 
   const { data: templateRow, error: insertError } = await supabase
     .from('templates')
-    .insert({ studio_id: user.id, nome, categoria, descrizione, storage_path: 'pending' })
+    .insert({ studio_id: studioId, nome, categoria, descrizione, storage_path: 'pending' })
     .select('id')
     .single();
   if (insertError || !templateRow) {
     return NextResponse.json({ error: insertError?.message || 'Errore creazione template' }, { status: 400 });
   }
 
-  const storagePath = `templates/${user.id}/${templateRow.id}.docx.enc`;
-  const encrypted = encryptBuffer(buffer, user.id);
+  const storagePath = `templates/${studioId}/${templateRow.id}.docx.enc`;
+  const encrypted = encryptBuffer(buffer, studioId);
   const admin = createAdminClient();
   const { error: uploadError } = await admin.storage.from(DOCUMENTS_BUCKET).upload(storagePath, encrypted, {
     contentType: 'application/octet-stream', upsert: true,

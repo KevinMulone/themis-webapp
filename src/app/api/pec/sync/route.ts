@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sincronizzaAccount } from '@/lib/pec/sync';
+import { contestoStudio } from '@/lib/studio/contesto';
 
 // Chiamata da due possibili "mittenti":
 // 1. Il cron esterno (pg_cron/pg_net su Supabase, o il cron di Vercel), con
@@ -20,10 +21,9 @@ export async function POST(request: Request) {
 
   let studioId: string | null = null;
   if (!chiamataDalCron) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
-    studioId = user.id;
+    const contesto = await contestoStudio();
+    if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+    studioId = contesto.studioId;
   }
 
   let query = admin.from('pec_account').select('id').eq('attivo', true);

@@ -30,10 +30,10 @@ si esegue.
 | `002_finestra_rimborso.sql` | ✅ sì |
 | `003_tempo_utilizzo.sql` | ✅ sì |
 | `004_document_requests.sql` | ✅ sì |
-| `005_studio_membri.sql` | ❌ **no** |
-| `006_policy_collaboratori.sql` | ❌ **no** — subito dopo la 005 |
-| `007_funzioni_portale.sql` | ❌ **no** — sicura in qualsiasi momento |
-| `008_chiudi_falla_portal_invites.sql` | ❌ **no** — ⚠️ solo DOPO il deploy del codice che usa la 007 |
+| `005_studio_membri.sql` | ✅ sì |
+| `006_policy_collaboratori.sql` | ✅ sì |
+| `007_funzioni_portale.sql` | ✅ sì |
+| `008_chiudi_falla_portal_invites.sql` | ✅ sì (31.08.2026) |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 

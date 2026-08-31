@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
 import { decryptBuffer } from '@/lib/crypto/docEncryption';
+import { contestoStudio } from '@/lib/studio/contesto';
 
 // Scarica il messaggio PEC così com'è arrivato (busta di trasporto completa
 // di postacert.eml e daticert.xml): sono questi due file a dare valore
@@ -10,12 +11,12 @@ import { decryptBuffer } from '@/lib/crypto/docEncryption';
 export async function GET(_request: Request, ctx: RouteContext<'/api/pec/messaggio/[id]/download'>) {
   const { id } = await ctx.params;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+  const contesto = await contestoStudio();
+  if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
 
   const { data: messaggio } = await supabase
     .from('pec_messaggi').select('oggetto, storage_path_eml, studio_id').eq('id', id).single();
-  if (!messaggio || messaggio.studio_id !== user.id) {
+  if (!messaggio || messaggio.studio_id !== contesto.studioId) {
     return NextResponse.json({ error: 'Messaggio non trovato' }, { status: 404 });
   }
 
@@ -24,7 +25,9 @@ export async function GET(_request: Request, ctx: RouteContext<'/api/pec/messagg
   if (error || !fileData) return NextResponse.json({ error: 'File non trovato nello storage' }, { status: 404 });
 
   const encrypted = Buffer.from(await fileData.arrayBuffer());
-  const plaintext = decryptBuffer(encrypted, user.id);
+  const plaintext = // Scope della riga, non di chi scarica: è il messaggio a sapere
+  // con quale chiave è stato cifrato.
+  decryptBuffer(encrypted, messaggio.studio_id);
   const nomeFile = `${(messaggio.oggetto || 'messaggio').replace(/[^\w\- ]/g, '_').slice(0, 80)}.eml`;
 
   return new NextResponse(new Uint8Array(plaintext), {

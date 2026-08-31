@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { contestoStudio } from '@/lib/studio/contesto';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 // Chiamata ogni 60 secondi da UsageTracker mentre la scheda è visibile:
@@ -10,22 +10,22 @@ import { createAdminClient } from '@/lib/supabase/admin';
 const SECONDI_PER_HEARTBEAT = 60;
 
 export async function POST() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+  const contesto = await contestoStudio();
+  if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+  const { studioId } = contesto;
 
   const admin = createAdminClient();
   const { data: studio } = await admin
     .from('studios')
     .select('tempo_utilizzo_secondi')
-    .eq('id', user.id)
+    .eq('id', studioId)
     .single();
 
   const attuale = studio?.tempo_utilizzo_secondi ?? 0;
   await admin
     .from('studios')
     .update({ tempo_utilizzo_secondi: attuale + SECONDI_PER_HEARTBEAT })
-    .eq('id', user.id);
+    .eq('id', studioId);
 
   return NextResponse.json({ ok: true });
 }
