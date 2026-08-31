@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { extractLicenseId } from '@/lib/licenseKey';
+import { contestoStudio } from '@/lib/studio/contesto';
 import { PLANS, isPlanKey } from '@/lib/stripe/plans';
 import { addDaysIso } from '@/lib/dateUtils';
 
@@ -22,6 +23,16 @@ export async function POST(request: Request) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Devi essere registrato/collegato per attivare una chiave' }, { status: 401 });
+  }
+
+  // Un collaboratore non deve poter riscattare una licenza: si ritroverebbe
+  // uno studio proprio accanto a quello a cui appartiene, con conseguenze
+  // confuse su dati e fatturazione. L'abbonamento lo gestisce il titolare.
+  const contesto = await contestoStudio();
+  if (contesto && contesto.ruolo !== 'titolare') {
+    return NextResponse.json({
+      error: 'Fai già parte di uno studio come collaboratore: l\'abbonamento lo gestisce il titolare.',
+    }, { status: 403 });
   }
 
   const { error } = await supabase.rpc('redeem_license', { p_license_id: licenseId });

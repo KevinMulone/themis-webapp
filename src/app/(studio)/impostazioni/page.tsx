@@ -44,7 +44,7 @@ const GESTORI_PEC: { nome: string; host: string; porta: number }[] = [
 
 export default function ImpostazioniPage() {
   const supabase = createClient();
-  const { studioId, userId } = useStudio();
+  const { studioId, userId, ruolo } = useStudio();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [settings, setSettings] = useState<Settings>({ font_family: 'Times New Roman', font_size_pt: 12, line_spacing: 1.5 });
   const [letterhead, setLetterhead] = useState<{ exists: boolean; data_url?: string }>({ exists: false });
@@ -300,6 +300,7 @@ export default function ImpostazioniPage() {
         </div>
       </form>
 
+      {ruolo === 'titolare' && (
       <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 font-semibold text-neutral-900">Abbonamento</h2>
         {abbonamento?.stripe_customer_id ? (
@@ -354,6 +355,7 @@ export default function ImpostazioniPage() {
           </p>
         )}
       </div>
+      )}
 
       <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
         <h2 className="mb-3 font-semibold text-neutral-900">Intestazione documenti</h2>

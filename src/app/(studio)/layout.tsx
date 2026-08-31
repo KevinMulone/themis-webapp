@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { oggiIso } from '@/lib/dateUtils';
-import { contestoStudio } from '@/lib/studio/contesto';
+import { contestoStudio, eCollaboratoreDisattivato } from '@/lib/studio/contesto';
 import { StudioProvider } from '@/lib/studio/StudioProvider';
 import SidebarNav from './SidebarNav';
 import UsageTracker from './UsageTracker';
@@ -28,6 +28,13 @@ const NAV = [
   { href: '/impostazioni', label: 'Impostazioni' },
 ];
 
+// Voci riservate al titolare. Nasconderle è solo cortesia verso chi non le
+// può usare: la barriera vera è il controllo lato server nelle pagine e
+// nelle route API.
+const NAV_TITOLARE = [
+  { href: '/collaboratori', label: 'Collaboratori' },
+];
+
 export default async function StudioLayout({ children }: { children: React.ReactNode }) {
   // Non più "qual è la riga studios con id = user.id", che vale solo
   // finché un utente è per forza uno studio: adesso è il database a dire a
@@ -39,7 +46,12 @@ export default async function StudioLayout({ children }: { children: React.React
   // disattivato. Chi non è autenticato affatto non arriva nemmeno qui, lo
   // ferma prima il middleware mandandolo su /accedi.
   const ctx = await contestoStudio();
-  if (!ctx) redirect('/attiva');
+  if (!ctx) {
+    // A un collaboratore appena rimosso non si propone di comprare una
+    // licenza: gli si dice che non fa più parte dello studio.
+    if (await eCollaboratoreDisattivato()) redirect('/account-sospeso?motivo=collaboratore_rimosso');
+    redirect('/attiva');
+  }
 
   const today = oggiIso();
   const expired = !!ctx.subscriptionExpiresAt && ctx.subscriptionExpiresAt < today;
@@ -54,7 +66,7 @@ export default async function StudioLayout({ children }: { children: React.React
       <div className="flex min-h-screen flex-col bg-neutral-50 lg:flex-row">
         <UsageTracker />
         <SidebarNav
-          navItems={NAV}
+          navItems={ctx.ruolo === 'titolare' ? [...NAV, ...NAV_TITOLARE] : NAV}
           nomeStudio={ctx.nomeStudio ?? ''}
           abbonamentoLabel={giorniRimanenti(ctx.subscriptionExpiresAt)}
         />

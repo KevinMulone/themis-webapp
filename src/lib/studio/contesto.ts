@@ -1,5 +1,6 @@
 import 'server-only';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { ContestoStudio, Ruolo } from './tipi';
 
 type RigaContesto = {
@@ -46,4 +47,30 @@ export async function contestoStudio(): Promise<ContestoStudio | null> {
     subscriptionStatus: riga.subscription_status,
     subscriptionExpiresAt: riga.subscription_expires_at,
   };
+}
+
+/**
+ * Distingue "collaboratore rimosso" da "utente senza licenza".
+ *
+ * Serve solo quando contestoStudio() ha già restituito null, cioè di rado:
+ * senza questa distinzione a un collaboratore appena disattivato verrebbe
+ * proposto di acquistare un abbonamento, che è il messaggio sbagliato.
+ *
+ * Passa dal client di servizio perché è l'unico modo di leggere la propria
+ * riga in quel momento: le regole di sicurezza legano studio_membri allo
+ * studio corrente, che per un disattivato non esiste più.
+ */
+export async function eCollaboratoreDisattivato(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
+  if (!user) return false;
+
+  const { data } = await createAdminClient()
+    .from('studio_membri')
+    .select('stato')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  return !!data && data.stato !== 'attivo';
 }

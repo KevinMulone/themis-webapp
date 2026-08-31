@@ -29,6 +29,7 @@ export async function updateSession(request: NextRequest) {
     || request.nextUrl.pathname.startsWith('/registrati')
     || request.nextUrl.pathname.startsWith('/attiva')
     || request.nextUrl.pathname.startsWith('/reimposta-password')
+    || request.nextUrl.pathname.startsWith('/unisciti')
     || request.nextUrl.pathname.startsWith('/account-sospeso');
   const isPublicRoute = request.nextUrl.pathname === '/'
     || request.nextUrl.pathname.startsWith('/portale')
