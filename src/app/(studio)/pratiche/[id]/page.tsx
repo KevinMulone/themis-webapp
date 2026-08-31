@@ -8,6 +8,7 @@ import { AIUTO_CAMPI, COMPAGNIE_ASSICURATIVE, TRIBUNALI } from '@/lib/suggerimen
 import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import IncarichiPratica from './IncarichiPratica';
 import ChiediAlFascicolo from './ChiediAlFascicolo';
+import RedigiAtto from './RedigiAtto';
 import {
   TIPI_PRATICA, STATI_PRATICA, TIPI_SINISTRO, STATI_NEGOZIAZIONE, METODI_PAGAMENTO,
   labelFromOptions, clientLabel,
@@ -320,6 +321,8 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
       </div>
 
       <ChiediAlFascicolo matterId={id} documenti={documenti} />
+
+      <RedigiAtto matterId={id} documenti={documenti} onSalvato={loadDocumenti} />
 
       <IncarichiPratica matterId={id} studioId={studioId} />
 
