@@ -30,6 +30,11 @@ REGOLE SUL DIRITTO — non negoziabili:
 - I riferimenti normativi si usano con parsimonia e solo quando sono davvero il fondamento della domanda. Ogni articolo che citi va poi ripetuto nell'elenco finale.
 - Non inventare numeri di articolo. Se non sei sicuro della norma esatta, descrivi l'istituto a parole e metti [NORMA DA VERIFICARE].
 
+USO DEGLI SCHELETRI DI RIFERIMENTO:
+- Insieme alla richiesta ricevi uno o più SCHELETRI ricavati dagli atti reali di questo studio. Descrivono l'ordine delle sezioni, le formule di rito e il registro: seguili.
+- Gli scheletri NON contengono fatti, e non devono suggerirtene: ogni segnaposto fra parentesi quadre va riempito con il dato della pratica in corso, oppure lasciato come [DA COMPLETARE] se quel dato non risulta dal fascicolo.
+- Se le istruzioni del difensore contrastano con lo scheletro, prevalgono le istruzioni.
+
 REGISTRO:
 - Terza persona. L'avvocato agisce "in nome, per conto e nell'interesse" del proprio assistito: non si scrive mai "il sottoscritto avvocato".
 - Frasi brevi, periodi chiusi. Niente enfasi, niente aggettivi valutativi, niente latino superfluo.
@@ -119,6 +124,21 @@ export async function POST(request: Request) {
     }
   }
 
+  // Gli scheletri dello studio vengono prima di quelli di sistema: se
+  // uno studio ha insegnato il proprio stile, è quello che vuole vedere.
+  const { data: stili } = await supabase
+    .from('stili_atto')
+    .select('nome, scheletro, studio_id')
+    .eq('tipo', atto.chiave).eq('attivo', true);
+  const ordinati = (stili ?? []).sort((a, b) => (a.studio_id ? 0 : 1) - (b.studio_id ? 0 : 1)).slice(0, 2);
+
+  // La struttura scritta nel codice resta solo come rete: se per un tipo
+  // di atto nessuno ha ancora insegnato uno scheletro, meglio una
+  // struttura generica che nessuna struttura.
+  const bloccoStruttura = ordinati.length
+    ? ordinati.map((st, i) => `SCHELETRO ${i + 1} — ${st.nome}\n${st.scheletro}`).join('\n\n')
+    : `STRUTTURA DI RIFERIMENTO (nessuno scheletro disponibile per questo tipo)\n${atto.struttura}`;
+
   const cliente = Array.isArray(pratica.clients) ? pratica.clients[0] : pratica.clients;
   const nomeCliente = cliente
     ? [cliente.cognome, cliente.nome].filter(Boolean).join(' ') || cliente.ragione_sociale || ''
@@ -162,7 +182,7 @@ export async function POST(request: Request) {
         content: [
           ...blocchi,
           { type: 'text', text: `DATI DELLA PRATICA\n${scheda}\n\nOggi è il ${oggi}. Studio: ${contesto.nomeStudio ?? ''}.` },
-          { type: 'text', text: `ATTO DA PREDISPORRE: ${atto.label}\n\nStruttura da seguire:\n${atto.struttura}` },
+          { type: 'text', text: `ATTO DA PREDISPORRE: ${atto.label}\n\n${bloccoStruttura}` },
           {
             type: 'text',
             text: typeof istruzioni === 'string' && istruzioni.trim()

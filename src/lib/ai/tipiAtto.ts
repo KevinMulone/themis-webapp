@@ -1,6 +1,14 @@
 /**
  * Catalogo degli atti che si sanno impostare.
  *
+ * ATTENZIONE — la `struttura` scritta qui NON è più ciò che guida la
+ * redazione: dalla migrazione 014 in poi gli atti seguono gli scheletri
+ * ricavati dagli atti reali dello studio (tabella `stili_atto`), che si
+ * correggono senza pubblicare una nuova versione. Quella qui sotto è la
+ * rete di sicurezza per i tipi a cui nessuno ha ancora insegnato uno
+ * scheletro. Se vuoi cambiare come esce un atto, il posto giusto è la
+ * tabella, non questo file.
+ *
  * La struttura di ogni tipo non è decorazione: è ciò che distingue un
  * testo che sembra un atto da un testo che è un atto. Chiedere
  * genericamente «scrivi un atto di citazione» produce prosa plausibile e
