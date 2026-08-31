@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { contestoStudio } from '@/lib/studio/contesto';
 import { oggiIso, addDaysIso } from '@/lib/dateUtils';
 import { TIPI_EVENTO, TIPI_PRATICA, STATI_PRATICA, labelFromOptions, clientLabel, formatDateIt } from '@/lib/constants';
 
@@ -22,11 +23,10 @@ function primoCliente(c: ClienteRef | ClienteRef[] | null): ClienteRef | null {
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  // Il middleware ha già verificato la sessione con una vera chiamata di rete
-  // per questa richiesta: getSession() legge il cookie già firmato, senza
-  // rifare lo stesso giro di rete (vedi lo stesso ragionamento nel layout).
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session!.user;
+  // Il layout ha già verificato che il contesto esista (altrimenti avrebbe
+  // reindirizzato), quindi qui non può essere nullo.
+  const ctx = (await contestoStudio())!;
+  const studioId = ctx.studioId;
 
   const oggi = oggiIso();
   const tra7gg = addDaysIso(oggi, 7);
@@ -41,8 +41,8 @@ export default async function DashboardPage() {
     { data: prossimeScadenze },
     { data: praticheRecenti },
   ] = await Promise.all([
-    supabase.from('clients').select('id', { count: 'exact', head: true }).eq('studio_id', user.id).eq('archiviato', false),
-    supabase.from('matters').select('id', { count: 'exact', head: true }).eq('studio_id', user.id).neq('stato', 'archiviata'),
+    supabase.from('clients').select('id', { count: 'exact', head: true }).eq('studio_id', studioId).eq('archiviato', false),
+    supabase.from('matters').select('id', { count: 'exact', head: true }).eq('studio_id', studioId).neq('stato', 'archiviata'),
     supabase.from('eventi').select('id', { count: 'exact', head: true }).in('tipo', tipiScadenza).gte('data', oggi).lte('data', tra7gg),
     supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('stato', 'in_attesa'),
     supabase.from('pec_messaggi').select('id', { count: 'exact', head: true }).eq('tipo_pec', 'posta-certificata'),
@@ -54,7 +54,7 @@ export default async function DashboardPage() {
       .limit(5),
     supabase.from('matters')
       .select('id, tipo_pratica, stato, updated_at, clients(tipo_soggetto, nome, cognome, ragione_sociale)')
-      .eq('studio_id', user.id)
+      .eq('studio_id', studioId)
       .neq('stato', 'archiviata')
       .order('updated_at', { ascending: false })
       .limit(5),

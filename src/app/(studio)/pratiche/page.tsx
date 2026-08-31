@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_PRATICA, STATI_PRATICA, labelFromOptions, clientLabel, formatDateIt } from '@/lib/constants';
 
 type Client = { id: string; tipo_soggetto: string; nome: string | null; cognome: string | null; ragione_sociale: string | null };
@@ -13,6 +14,7 @@ type Matter = {
 
 export default function PraticheePage() {
   const supabase = createClient();
+  const { studioId } = useStudio();
   const [matters, setMatters] = useState<Matter[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,14 +42,12 @@ export default function PraticheePage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!newClientId) { alert('Seleziona un cliente'); return; }
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
     const { data, error } = await supabase.from('matters').insert({
-      studio_id: user.id, client_id: newClientId, tipo_pratica: newTipo, stato: 'aperta',
+      studio_id: studioId, client_id: newClientId, tipo_pratica: newTipo, stato: 'aperta',
     }).select('id').single();
     if (error) { alert(error.message); return; }
     if (newTipo === 'sinistro' && data) {
-      await supabase.from('sinistri').insert({ studio_id: user.id, matter_id: data.id });
+      await supabase.from('sinistri').insert({ studio_id: studioId, matter_id: data.id });
     }
     setCreating(false);
     load();

@@ -42,11 +42,17 @@ export default function AccediClient() {
     if (rememberMe) localStorage.setItem(REMEMBER_KEY, email);
     else localStorage.removeItem(REMEMBER_KEY);
 
-    const { data: studio } = await supabase
-      .from('studios')
-      .select('plan, subscription_status, subscription_expires_at')
-      .eq('id', data.user.id)
-      .single();
+    // Stessa domanda del layout: non "la riga studios che sono io", ma "a
+    // quale studio appartengo". Un collaboratore non ha una riga studios
+    // propria e senza questo verrebbe mandato ad attivare una licenza.
+    // Quando non si appartiene a nessuno studio la funzione non
+    // restituisce righe, ed è il caso gestito qui sotto da !studio.
+    const { data: contesto } = await supabase.rpc('contesto_studio').maybeSingle();
+    const studio = contesto as {
+      plan: string | null;
+      subscription_status: string | null;
+      subscription_expires_at: string | null;
+    } | null;
 
     setLoading(false);
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_SOGGETTO, TIPI_PRATICA, labelFromOptions, clientLabel } from '@/lib/constants';
 
 type Client = {
@@ -29,6 +30,7 @@ const EMPTY: Partial<Client> = { tipo_soggetto: 'persona_fisica' };
 
 export default function ClientiPage() {
   const supabase = createClient();
+  const { studioId } = useStudio();
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<Partial<Client> | null>(null);
@@ -90,13 +92,10 @@ export default function ClientiPage() {
     const payload: Record<string, unknown> = {};
     form.forEach((value, key) => { payload[key] = value === '' ? null : value; });
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     if (editing?.id) {
       await supabase.from('clients').update(payload).eq('id', editing.id);
     } else {
-      await supabase.from('clients').insert({ ...payload, studio_id: user.id });
+      await supabase.from('clients').insert({ ...payload, studio_id: studioId });
     }
     setEditing(null);
     load();
@@ -138,11 +137,9 @@ export default function ClientiPage() {
     if (!inviteModal || !inviteModal.client.id) return;
     const email = inviteModal.email.trim();
     if (!email) { setInviteModal({ ...inviteModal, error: 'Inserisci un indirizzo email.' }); return; }
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
     const code = crypto.randomUUID().replace(/-/g, '');
     const { error } = await supabase.from('portal_invites').insert({
-      studio_id: user.id, code, client_id: inviteModal.client.id, nome_cliente: clientLabel(inviteModal.client), email,
+      studio_id: studioId, code, client_id: inviteModal.client.id, nome_cliente: clientLabel(inviteModal.client), email,
     });
     if (error) { setInviteModal({ ...inviteModal, error: error.message }); return; }
     const link = `${window.location.origin}/portale?invite=${code}`;

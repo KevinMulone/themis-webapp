@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_PRATICA, labelFromOptions } from '@/lib/constants';
 
 type Template = { id: string; nome: string; categoria: string | null; descrizione: string | null; studio_id: string | null };
@@ -43,6 +44,7 @@ const GESTORI_PEC: { nome: string; host: string; porta: number }[] = [
 
 export default function ImpostazioniPage() {
   const supabase = createClient();
+  const { studioId, userId } = useStudio();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [settings, setSettings] = useState<Settings>({ font_family: 'Times New Roman', font_size_pt: 12, line_spacing: 1.5 });
   const [letterhead, setLetterhead] = useState<{ exists: boolean; data_url?: string }>({ exists: false });
@@ -73,19 +75,21 @@ export default function ImpostazioniPage() {
   }, []);
 
   async function load() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
     const [{ data: tpl }, { data: s }, letterheadRes, { data: rules }, { data: pec }, { data: studio }] = await Promise.all([
       supabase.from('templates').select('id, nome, categoria, descrizione, studio_id').eq('attivo', true).order('categoria'),
-      supabase.from('studio_settings').select('*').eq('studio_id', user.id).single(),
+      supabase.from('studio_settings').select('*').eq('studio_id', studioId).single(),
       fetch('/api/settings/letterhead'),
-      supabase.from('availability_rules').select('*').eq('studio_id', user.id),
+      supabase.from('availability_rules').select('*').eq('studio_id', studioId),
       supabase.from('pec_account')
         .select('id, etichetta, indirizzo_pec, imap_host, imap_port, imap_user, attivo, ultimo_controllo_at, ultimo_errore')
         .order('created_at'),
+      // Volutamente userId e non studioId: l'abbonamento è del titolare,
+      // non dello studio inteso come gruppo di persone. Vale ovunque si
+      // legga studios per Stripe, scadenze o rimborsi — un domani un
+      // collaboratore non deve poter disdire l'abbonamento del suo studio.
       supabase.from('studios')
         .select('stripe_customer_id, plan, subscription_status, subscription_expires_at, subscription_started_at, refund_requested_at')
-        .eq('id', user.id).single(),
+        .eq('id', userId).maybeSingle(),
     ]);
     setTemplates(tpl || []);
     setAbbonamento(studio || null);
@@ -136,11 +140,9 @@ export default function ImpostazioniPage() {
 
   async function handleSaveTypography(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
     const form = new FormData(e.currentTarget);
     const payload = {
-      studio_id: user.id,
+      studio_id: studioId,
       font_family: form.get('font_family') as string,
       font_size_pt: Number(form.get('font_size_pt')),
       line_spacing: Number(form.get('line_spacing')),
@@ -255,15 +257,13 @@ export default function ImpostazioniPage() {
   }
 
   async function handleSaveHours() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
     setSavingHours(true);
-    await supabase.from('availability_rules').delete().eq('studio_id', user.id);
+    await supabase.from('availability_rules').delete().eq('studio_id', studioId);
     const rows = days
       .map((d, i) => ({ ...d, day_of_week: i }))
       .filter((d) => d.open)
       .map((d) => ({
-        studio_id: user.id, day_of_week: d.day_of_week,
+        studio_id: studioId, day_of_week: d.day_of_week,
         start_time: d.start_time, end_time: d.end_time, slot_minutes: slotMinutes,
       }));
     if (rows.length > 0) {

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
 import { oggiIso } from '@/lib/dateUtils';
+import { contestoStudio } from '@/lib/studio/contesto';
+import { StudioProvider } from '@/lib/studio/StudioProvider';
 import SidebarNav from './SidebarNav';
 import UsageTracker from './UsageTracker';
 
@@ -28,35 +29,37 @@ const NAV = [
 ];
 
 export default async function StudioLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  // Il middleware (src/lib/supabase/middleware.ts) ha già verificato la
-  // sessione con Supabase Auth un istante prima, per questa stessa
-  // richiesta, con una vera chiamata di rete. Rifarla qui raddoppierebbe
-  // inutilmente la latenza di ogni navigazione: getSession() legge il
-  // cookie già firmato, senza un secondo giro di rete.
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user;
-  if (!user) redirect('/accedi');
-
-  const { data: studio } = await supabase
-    .from('studios')
-    .select('nome_studio, plan, subscription_status, subscription_expires_at')
-    .eq('id', user.id)
-    .single();
-
-  if (!studio || studio.plan === null) redirect('/attiva');
+  // Non più "qual è la riga studios con id = user.id", che vale solo
+  // finché un utente è per forza uno studio: adesso è il database a dire a
+  // quale studio appartiene chi sta navigando (funzione contesto_studio,
+  // migrazione 005). Per un titolare la risposta è la stessa di prima.
+  //
+  // ctx nullo significa "non appartiene a nessuno studio attivo": utente
+  // registrato ma senza licenza riscattata, oppure collaboratore
+  // disattivato. Chi non è autenticato affatto non arriva nemmeno qui, lo
+  // ferma prima il middleware mandandolo su /accedi.
+  const ctx = await contestoStudio();
+  if (!ctx) redirect('/attiva');
 
   const today = oggiIso();
-  const expired = !!studio.subscription_expires_at && studio.subscription_expires_at < today;
-  if (studio.subscription_status !== 'active' || expired) {
+  const expired = !!ctx.subscriptionExpiresAt && ctx.subscriptionExpiresAt < today;
+  if (ctx.subscriptionStatus !== 'active' || expired) {
     redirect(`/account-sospeso?motivo=${expired ? 'scaduto' : 'sospeso'}`);
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50 lg:flex-row">
-      <UsageTracker />
-      <SidebarNav navItems={NAV} nomeStudio={studio.nome_studio} abbonamentoLabel={giorniRimanenti(studio.subscription_expires_at)} />
-      <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
-    </div>
+    <StudioProvider
+      valore={{ userId: ctx.userId, studioId: ctx.studioId, ruolo: ctx.ruolo, nomeStudio: ctx.nomeStudio }}
+    >
+      <div className="flex min-h-screen flex-col bg-neutral-50 lg:flex-row">
+        <UsageTracker />
+        <SidebarNav
+          navItems={NAV}
+          nomeStudio={ctx.nomeStudio ?? ''}
+          abbonamentoLabel={giorniRimanenti(ctx.subscriptionExpiresAt)}
+        />
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+      </div>
+    </StudioProvider>
   );
 }

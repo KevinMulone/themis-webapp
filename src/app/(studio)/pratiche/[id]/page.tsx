@@ -3,6 +3,7 @@
 import { useEffect, useState, use as usePromise } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useStudio } from '@/lib/studio/StudioProvider';
 import {
   TIPI_PRATICA, STATI_PRATICA, TIPI_SINISTRO, STATI_NEGOZIAZIONE, METODI_PAGAMENTO,
   labelFromOptions, clientLabel,
@@ -47,6 +48,7 @@ type Patrocinio = {
 export default function MatterDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = usePromise(params);
   const supabase = createClient();
+  const { studioId } = useStudio();
   const router = useRouter();
   const [matter, setMatter] = useState<Matter | null>(null);
   const [client, setClient] = useState<{ id: string; tipo_soggetto: string; nome: string | null; cognome: string | null; ragione_sociale: string | null } | null>(null);
@@ -82,11 +84,9 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     const form = new FormData(e.currentTarget);
     const titolo = (form.get('titolo') as string || '').trim();
     if (!titolo) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
     setCreandoRichiesta(true);
     await supabase.from('document_requests').insert({
-      studio_id: user.id, matter_id: id, client_id: matter.client_id,
+      studio_id: studioId, matter_id: id, client_id: matter.client_id,
       titolo, note: (form.get('note') as string) || null,
     });
     setCreandoRichiesta(false);
@@ -168,7 +168,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     e.preventDefault();
     if (!sinistro) return;
     const form = new FormData(e.currentTarget);
-    const payload: Record<string, unknown> = { sinistro_id: sinistro.id, studio_id: matter && (await supabase.auth.getUser()).data.user?.id };
+    const payload: Record<string, unknown> = { sinistro_id: sinistro.id, studio_id: studioId };
     form.forEach((value, key) => { payload[key] = value === '' ? null : value; });
     if (!payload.nome && !payload.cognome) { alert('Inserisci almeno un nome'); return; }
     await supabase.from('testimoni').insert(payload);
@@ -197,11 +197,9 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
   async function handleAddScadenza() {
     if (!regolaSelezionata || !dataCalcolata) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
     const iso = toIsoLocale(dataCalcolata);
     const { error } = await supabase.from('eventi').insert({
-      studio_id: user.id, matter_id: id, titolo: regolaSelezionata.label,
+      studio_id: studioId, matter_id: id, titolo: regolaSelezionata.label,
       tipo: 'termine_processuale', data: iso, all_day: false, ora_inizio: '09:00',
       note: `${regolaSelezionata.riferimento}. Data di riferimento: ${dataRiferimento}. Verificare sempre eccezioni al caso concreto.`,
     });
@@ -213,10 +211,8 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   async function handleSavePatrocinio(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formEl = e.currentTarget;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
     const form = new FormData(formEl);
-    const payload: Record<string, unknown> = { studio_id: user.id, matter_id: id };
+    const payload: Record<string, unknown> = { studio_id: studioId, matter_id: id };
     form.forEach((value, key) => {
       if (key === 'opposizione_proposta' || key === 'fattura_emessa' || key === 'pagamento_incassato') return;
       payload[key] = value === '' ? null : value;

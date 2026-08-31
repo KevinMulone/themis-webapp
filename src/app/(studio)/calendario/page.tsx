@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_EVENTO, labelFromOptions, clientLabel } from '@/lib/constants';
 
 const MESI = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'];
@@ -52,6 +53,7 @@ function rigaDiOra(oraInizio: string, righe: string[]): string {
 
 export default function CalendarioPage() {
   const supabase = createClient();
+  const { studioId } = useStudio();
   const today = new Date();
   const [vista, setVista] = useState<Vista>('settimana');
   const [year, setYear] = useState(today.getFullYear());
@@ -154,10 +156,8 @@ export default function CalendarioPage() {
     const form = new FormData(e.currentTarget);
     const tipo = form.get('tipo') as string;
     const allDay = tipo === 'ferie';
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
     const payload: Record<string, unknown> = {
-      studio_id: user.id,
+      studio_id: studioId,
       titolo: form.get('titolo'),
       tipo,
       data: form.get('data'),
