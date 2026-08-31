@@ -37,9 +37,14 @@ export async function POST(request: Request) {
   // Il credito si verifica PRIMA di spendere.
   const credito = await creditoStudio(contesto.studioId, contesto.plan);
   if (credito.esaurito) {
-    return NextResponse.json({
-      error: `Credito mensile esaurito (${euro(credito.totaleMillesimi)}). Riparte il primo del mese prossimo.`,
-    }, { status: 402 });
+    // Un totale a zero non significa "hai finito": significa che il
+    // consumo non e' leggibile. Due situazioni diverse meritano due
+    // messaggi diversi, altrimenti si cerca il guasto dalla parte
+    // sbagliata.
+    const messaggio = credito.totaleMillesimi === 0
+      ? 'Funzione momentaneamente non disponibile. Riprova più tardi.'
+      : `Credito mensile esaurito (${euro(credito.totaleMillesimi)}). Riparte il primo del mese prossimo.`;
+    return NextResponse.json({ error: messaggio }, { status: 402 });
   }
 
   const supabase = await createClient();

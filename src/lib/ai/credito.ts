@@ -42,11 +42,19 @@ export type Credito = {
  */
 export async function creditoStudio(studioId: string, plan: string | null): Promise<Credito> {
   const admin = createAdminClient();
-  const { data } = await admin
+  const { data, error } = await admin
     .from('ai_utilizzo')
     .select('costo_millesimi')
     .eq('studio_id', studioId)
     .eq('mese', meseCorrente());
+
+  // Se il consumo non si riesce a leggere (tabella mancante, database
+  // irraggiungibile), NON si prosegue come se fosse zero: una lettura
+  // vuota e un errore si assomigliano troppo, e confonderli significa
+  // spendere senza tetto. Nel dubbio si nega.
+  if (error) {
+    return { usatoMillesimi: 0, totaleMillesimi: 0, residuoMillesimi: 0, esaurito: true };
+  }
 
   const usatoMillesimi = (data ?? []).reduce((somma, r) => somma + (r.costo_millesimi ?? 0), 0);
 
@@ -78,7 +86,7 @@ export async function registraUtilizzo(
   usage: Anthropic.Usage,
 ): Promise<void> {
   const admin = createAdminClient();
-  await admin.from('ai_utilizzo').insert({
+  const { error } = await admin.from('ai_utilizzo').insert({
     studio_id: studioId,
     mese: meseCorrente(),
     funzione,
@@ -87,6 +95,9 @@ export async function registraUtilizzo(
     token_output: usage.output_tokens ?? 0,
     costo_millesimi: costoMillesimi(usage),
   });
+  // Un consumo non registrato è un tetto che non tiene: lo si vede nei
+  // log del server anche se la richiesta dell'utente è andata a buon fine.
+  if (error) console.error('Consumo AI non registrato:', error.message);
 }
 
 /** Per mostrare il credito in interfaccia: «1,20 € di 5,00 €». */
