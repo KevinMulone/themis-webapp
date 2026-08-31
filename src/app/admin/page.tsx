@@ -116,6 +116,15 @@ export default function AdminPage() {
     else { const body = await res.json(); addLog(`Errore eliminazione ${s.email}: ${body.error}`); }
   }
 
+  async function handleCambiaPiano(s: Studio, plan: string) {
+    const res = await fetch(`/api/admin/studios/${s.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan }),
+    });
+    if (res.ok) { addLog(`${s.email}: piano impostato su ${plan}.`); load(); }
+    else addLog(`Errore cambio piano su ${s.email}`);
+  }
+
   async function handleRimborsoGestito(s: Studio) {
     const res = await fetch(`/api/admin/studios/${s.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
@@ -276,7 +285,22 @@ export default function AdminPage() {
                       </span>
                     </td>
                     <td className="px-3 py-3">{s.email}</td>
-                    <td className="px-3 py-3">{s.plan || '—'}</td>
+                    <td className="px-3 py-3">
+                      <select
+                        value={(Object.keys(PLANS) as string[]).includes(s.plan || '') ? (s.plan as string) : ''}
+                        onChange={(e) => handleCambiaPiano(s, e.target.value)}
+                        className="rounded border border-neutral-700 bg-neutral-950 px-1.5 py-0.5 text-xs"
+                      >
+                        {/* Piani storici o personalizzati: mostrati ma non selezionabili,
+                            perché non danno diritto a posti collaboratore. */}
+                        {!(Object.keys(PLANS) as string[]).includes(s.plan || '') && (
+                          <option value="">{s.plan || '—'}</option>
+                        )}
+                        {(Object.keys(PLANS) as PlanKey[]).map((k) => (
+                          <option key={k} value={k}>{PLANS[k].label}</option>
+                        ))}
+                      </select>
+                    </td>
                     <td className={`px-3 py-3 ${s.subscription_status === 'active' ? 'text-green-400' : 'text-red-400'}`}>{s.subscription_status}</td>
                     <td className="px-3 py-3 whitespace-nowrap">
                       {s.subscription_expires_at || '—'}

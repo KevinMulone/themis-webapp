@@ -19,6 +19,7 @@ const LABEL_STATO: Record<string, string> = {
 export default function CollaboratoriClient() {
   const [membri, setMembri] = useState<Membro[]>([]);
   const [posti, setPosti] = useState(0);
+  const [plan, setPlan] = useState<string | null>(null);
   const [occupati, setOccupati] = useState(0);
   const [caricando, setCaricando] = useState(true);
   const [invitando, setInvitando] = useState(false);
@@ -33,6 +34,7 @@ export default function CollaboratoriClient() {
       setMembri(body.collaboratori || []);
       setPosti(body.posti || 0);
       setOccupati(body.occupati || 0);
+      setPlan(body.plan ?? null);
     }
     setCaricando(false);
   }
@@ -96,7 +98,8 @@ export default function CollaboratoriClient() {
 
       {posti === 0 && (
         <p className="mb-4 rounded-md bg-gold-100 px-4 py-3 text-sm text-gold-700">
-          Il tuo piano non prevede collaboratori. Passa a un piano superiore per aggiungerne.
+          Il piano attuale{plan ? ` (${plan})` : ''} non prevede collaboratori. I posti sono
+          previsti dai piani Mensile (1), Semestrale (3) e Annuale (5).
         </p>
       )}
       {occupati > posti && (
