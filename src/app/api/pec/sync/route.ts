@@ -18,6 +18,37 @@ export const maxDuration = 120;
 // In nessun caso questa route fida di un id-studio passato dal chiamante:
 // o lo decide la sessione autenticata, o si sincronizza tutto (uso interno,
 // protetto dal segreto).
+/**
+ * Chiamata programmata di Vercel.
+ *
+ * Vercel invoca i suoi lavori programmati in GET, non in POST: senza
+ * questo la programmazione sembrerebbe attiva e non farebbe mai nulla.
+ * L'autorizzazione è l'intestazione con CRON_SECRET, che Vercel aggiunge
+ * da sé quando quella variabile d'ambiente esiste. Senza segreto
+ * configurato la porta resta chiusa: una sincronizzazione di tutte le
+ * caselle di tutti gli studi non deve essere raggiungibile da chiunque.
+ */
+export async function GET(request: Request) {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret || request.headers.get('authorization') !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Non autorizzato' }, { status: 401 });
+  }
+
+  const admin = createAdminClient();
+  const { data: accounts, error } = await admin
+    .from('pec_account').select('id').eq('attivo', true);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  const risultati = [];
+  for (const account of accounts ?? []) {
+    // Un giro per casella, modo 'nuovi': la rete di sicurezza serve a non
+    // perdere le PEC arrivate a Themis chiuso, non a ricostruire archivi.
+    risultati.push(await sincronizzaAccount(admin, account.id, 'nuovi'));
+  }
+
+  return NextResponse.json({ ok: true, caselle: risultati.length, risultati });
+}
+
 export async function POST(request: Request) {
   const admin = createAdminClient();
   const authHeader = request.headers.get('authorization');
