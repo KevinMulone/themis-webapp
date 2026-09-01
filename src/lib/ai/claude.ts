@@ -42,3 +42,48 @@ export function getClaude(): Anthropic {
 export function aiConfigurata(): boolean {
   return !!process.env.ANTHROPIC_API_KEY;
 }
+
+/**
+ * Ritenta quando il servizio è momentaneamente sovraccarico.
+ *
+ * Il 529 non significa "richiesta sbagliata": significa "riprova fra
+ * poco". Farlo fallire subito trasforma un intoppo di due secondi in un
+ * lavoro perso, e per l'utente in un errore incomprensibile.
+ *
+ * L'attesa raddoppia a ogni tentativo perché ritentare subito, tutti
+ * insieme, è il modo migliore per tenere sovraccarico un servizio che sta
+ * cercando di riprendersi.
+ */
+export async function conRitentativi<T>(
+  operazione: () => Promise<T>,
+  tentativi = 3,
+): Promise<T> {
+  let attesa = 1500;
+  for (let i = 1; ; i++) {
+    try {
+      return await operazione();
+    } catch (errore) {
+      const e = errore as { status?: number };
+      const ritentabile = e?.status === 429 || e?.status === 529 || e?.status === 500
+        || e?.status === 502 || e?.status === 503;
+      if (!ritentabile || i >= tentativi) throw errore;
+      await new Promise((r) => setTimeout(r, attesa));
+      attesa *= 2;
+    }
+  }
+}
+
+/** Il messaggio da mostrare a chi legge, al posto dell'errore tecnico. */
+export function messaggioErroreAi(errore: unknown): string {
+  const e = errore as { status?: number; message?: string };
+  if (e?.status === 529 || e?.status === 503) {
+    return 'Themis è momentaneamente sovraccarico. Riprova fra un minuto.';
+  }
+  if (e?.status === 429) {
+    return 'Troppe richieste ravvicinate. Aspetta qualche secondo e riprova.';
+  }
+  if (e?.status === 401 || e?.status === 403) {
+    return 'Themis non è configurato correttamente su questo sito.';
+  }
+  return `Richiesta non riuscita: ${e?.message ?? 'errore imprevisto'}`;
+}

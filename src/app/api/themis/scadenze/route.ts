@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
 import { decryptBuffer } from '@/lib/crypto/docEncryption';
 import { contestoStudio } from '@/lib/studio/contesto';
-import { getClaude, aiConfigurata, MODELLO } from '@/lib/ai/claude';
+import { getClaude, aiConfigurata, MODELLO, conRitentativi, messaggioErroreAi } from '@/lib/ai/claude';
 import { creditoStudio, registraUtilizzo, creditoPubblico } from '@/lib/ai/credito';
 import { apriMessaggioPec } from '@/lib/pec/parse';
 
@@ -74,10 +74,12 @@ export async function POST(request: Request) {
   }
 
   let create = 0;
+  let falliti = 0;
   try {
     const claude = getClaude();
 
     for (const messaggio of daLeggere) {
+      try {
       const { data: file } = await admin.storage
         .from(DOCUMENTS_BUCKET).download(messaggio.storage_path_eml as string);
       if (!file) continue;
@@ -91,7 +93,7 @@ export async function POST(request: Request) {
         ? new Date(messaggio.data_invio).toISOString().slice(0, 10)
         : new Date().toISOString().slice(0, 10);
 
-      const risposta = await claude.messages.create({
+      const risposta = await conRitentativi(() => claude.messages.create({
         model: MODELLO,
         max_tokens: 1500,
         system: ISTRUZIONI,
@@ -100,7 +102,7 @@ export async function POST(request: Request) {
           content: `DATA DEL MESSAGGIO: ${dataMessaggio}\nMITTENTE: ${messaggio.mittente ?? '?'}\n`
             + `OGGETTO: ${messaggio.oggetto ?? '?'}\n\nTESTO:\n${corpo}`,
         }],
-      });
+      }));
 
       await registraUtilizzo(contesto.studioId, 'scadenze', risposta.usage);
 
@@ -158,16 +160,23 @@ export async function POST(request: Request) {
           stato: 'rifiutata',
         });
       }
+      } catch (erroreMessaggio) {
+        // Una PEC che non si riesce ad analizzare non deve far perdere le
+        // altre quattro del giro. Non si registra nulla, così al prossimo
+        // tentativo viene riesaminata.
+        falliti += 1;
+        console.error('Analisi PEC non riuscita', messaggio.id, '—',
+          erroreMessaggio instanceof Error ? erroreMessaggio.message : erroreMessaggio);
+      }
     }
 
     const restanti = Math.max(0, (candidati ?? []).filter((m) => !esaminati.has(m.id)).length - daLeggere.length);
     const dopo = await creditoStudio(contesto.studioId, contesto.plan);
     return NextResponse.json({
-      ok: true, esaminati: daLeggere.length, proposte: create, restanti,
+      ok: true, esaminati: daLeggere.length - falliti, proposte: create, restanti, falliti,
       credito: creditoPubblico(dopo),
     });
   } catch (errore) {
-    const m = errore instanceof Error ? errore.message : 'Errore imprevisto';
-    return NextResponse.json({ error: `Analisi non riuscita: ${m}` }, { status: 502 });
+    return NextResponse.json({ error: messaggioErroreAi(errore) }, { status: 502 });
   }
 }

@@ -50,9 +50,10 @@ export default function ScadenzeProposte() {
     const body = await res.json();
     setAnalisi(false);
     if (!res.ok) { setMessaggio(body.error || 'Analisi non riuscita'); return; }
-    setMessaggio(body.esaminati === 0
+    setMessaggio(body.esaminati === 0 && !body.falliti
       ? 'Nessuna PEC nuova da esaminare.'
       : `${body.esaminati} PEC lette, ${body.proposte} scadenze trovate.`
+        + (body.falliti ? ` ${body.falliti} non analizzate: riprova fra un momento.` : '')
         + (body.restanti > 0 ? ` Altre ${body.restanti} da esaminare: premi di nuovo.` : ''));
     carica();
   }

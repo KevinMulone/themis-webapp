@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
 import { encryptBuffer, decryptBuffer } from '@/lib/crypto/docEncryption';
 import { contestoStudio } from '@/lib/studio/contesto';
-import { getClaude, aiConfigurata, MODELLO } from '@/lib/ai/claude';
+import { getClaude, aiConfigurata, MODELLO, conRitentativi, messaggioErroreAi } from '@/lib/ai/claude';
 import { creditoStudio, registraUtilizzo, creditoPubblico } from '@/lib/ai/credito';
 import { testoDaDocx, estensione } from '@/lib/ai/testoDocumento';
 import { tipoAtto } from '@/lib/ai/tipiAtto';
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
 
   try {
     const claude = getClaude();
-    const risposta = await claude.messages.create({
+    const risposta = await conRitentativi(() => claude.messages.create({
       model: MODELLO,
       max_tokens: 8000,
       system: ISTRUZIONI,
@@ -196,7 +196,7 @@ export async function POST(request: Request) {
           },
         ],
       }],
-    });
+    }));
 
     await registraUtilizzo(studioId, 'bozza', risposta.usage);
 
@@ -248,7 +248,6 @@ export async function POST(request: Request) {
     const dopo = await creditoStudio(studioId, contesto.plan);
     return NextResponse.json({ ok: true, testo, note, salvato, credito: creditoPubblico(dopo) });
   } catch (errore) {
-    const messaggio = errore instanceof Error ? errore.message : 'Errore imprevisto';
-    return NextResponse.json({ error: `Richiesta non riuscita: ${messaggio}` }, { status: 502 });
+    return NextResponse.json({ error: messaggioErroreAi(errore) }, { status: 502 });
   }
 }
