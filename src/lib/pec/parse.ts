@@ -113,3 +113,73 @@ export async function interpretaMessaggioPec(sorgente: Buffer): Promise<Messaggi
     daticertValido: true,
   };
 }
+
+export type AllegatoPec = { indice: number; nome: string; tipo: string; dimensione: number };
+export type MessaggioApertoPec = {
+  mittente: string | null;
+  destinatari: string | null;
+  oggetto: string | null;
+  dataInvio: string | null;
+  corpoTesto: string | null;
+  corpoHtml: string | null;
+  allegati: AllegatoPec[];
+};
+
+/**
+ * Risale al messaggio da mostrare a schermo.
+ *
+ * Per una PEC vera è quello dentro `postacert.eml`, non la busta di
+ * trasporto: la busta ha come mittente il gestore e come corpo un avviso
+ * tecnico. Mostrare quella significherebbe far leggere all'avvocato la
+ * ricevuta del postino invece della lettera.
+ */
+async function messaggioDaMostrare(sorgente: Buffer) {
+  const busta = await simpleParser(sorgente);
+  const postacert = busta.attachments.find((a) => a.filename === 'postacert.eml');
+  if (postacert) {
+    try {
+      return await simpleParser(postacert.content);
+    } catch {
+      // Se il contenuto interno non si apre, meglio la busta che niente.
+      return busta;
+    }
+  }
+  return busta;
+}
+
+/** Corpo e allegati, per la lettura dentro Themis. */
+export async function apriMessaggioPec(sorgente: Buffer): Promise<MessaggioApertoPec> {
+  const m = await messaggioDaMostrare(sorgente);
+  return {
+    mittente: pulisciIndirizzi(m.from),
+    destinatari: pulisciIndirizzi(m.to),
+    oggetto: m.subject || null,
+    dataInvio: m.date ? m.date.toISOString() : null,
+    corpoTesto: m.text || null,
+    corpoHtml: typeof m.html === 'string' ? m.html : null,
+    // daticert.xml e postacert.eml sono impalcatura del protocollo, non
+    // allegati che interessino a chi legge.
+    allegati: m.attachments
+      .map((a, indice) => ({
+        indice,
+        nome: a.filename || `allegato-${indice + 1}`,
+        tipo: a.contentType || 'application/octet-stream',
+        dimensione: a.size ?? a.content.length,
+      }))
+      .filter((a) => a.nome !== 'daticert.xml' && a.nome !== 'postacert.eml'),
+  };
+}
+
+/** Il contenuto di un allegato, per lo scaricamento. */
+export async function estraiAllegatoPec(
+  sorgente: Buffer, indice: number,
+): Promise<{ nome: string; tipo: string; contenuto: Buffer } | null> {
+  const m = await messaggioDaMostrare(sorgente);
+  const a = m.attachments[indice];
+  if (!a) return null;
+  return {
+    nome: a.filename || `allegato-${indice + 1}`,
+    tipo: a.contentType || 'application/octet-stream',
+    contenuto: Buffer.from(a.content),
+  };
+}

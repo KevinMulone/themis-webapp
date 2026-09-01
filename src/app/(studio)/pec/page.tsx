@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import LetturaMessaggio from './LetturaMessaggio';
 
 type Messaggio = {
   id: string;
@@ -66,6 +67,7 @@ export default function PecPage() {
   useEffect(() => { load(); }, []);
 
   const [direzioneFiltro, setDirezioneFiltro] = useState('');
+  const [messaggioAperto, setMessaggioAperto] = useState('');
 
   const filtrati = useMemo(() => {
     return messaggi.filter((m) => {
@@ -161,11 +163,18 @@ export default function PecPage() {
                         </span>
                       </td>
                       <td className="px-4 py-2">{m.mittente || '—'}</td>
-                      <td className="px-4 py-2">{m.oggetto || '—'}</td>
+                      <td className="px-4 py-2">
+                        <button
+                          type="button" onClick={() => setMessaggioAperto(m.id)}
+                          className="text-left text-bordeaux-700 hover:underline"
+                        >
+                          {m.oggetto || '(senza oggetto)'}
+                        </button>
+                      </td>
                       <td className="px-4 py-2 text-xs text-neutral-500">{formattaData(m.data_ricezione)}</td>
                       {accounts.length > 1 && <td className="px-4 py-2 text-xs text-neutral-500">{nomeAccount(m.pec_account_id)}</td>}
                       <td className="px-4 py-2 text-right">
-                        <a href={`/api/pec/messaggio/${m.id}/download`} className="text-xs font-semibold text-bordeaux-700 hover:underline">
+                        <a href={`/api/pec/messaggio/${m.id}/download`} className="text-xs font-semibold text-neutral-500 hover:underline">
                           Scarica
                         </a>
                       </td>
@@ -177,6 +186,10 @@ export default function PecPage() {
             )}
           </div>
         </>
+      )}
+
+      {messaggioAperto && (
+        <LetturaMessaggio messaggioId={messaggioAperto} onChiudi={() => setMessaggioAperto('')} />
       )}
     </div>
   );
