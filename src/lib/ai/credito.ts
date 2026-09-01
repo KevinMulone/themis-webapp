@@ -100,7 +100,24 @@ export async function registraUtilizzo(
   if (error) console.error('Consumo AI non registrato:', error.message);
 }
 
-/** Per mostrare il credito in interfaccia: «1,20 $ di 5,00 $». */
+/**
+ * Il credito nella forma che può uscire dal server.
+ *
+ * L'avvocato non deve vedere quanto costa: quello è il margine di Kevin,
+ * e un margine che si legge negli strumenti per sviluppatori non è un
+ * margine. Perciò le cifre restano dentro, e fuori esce solo la
+ * percentuale. Non è una scelta di interfaccia: è ciò che il server
+ * risponde.
+ */
+export type CreditoPubblico = { usatoPct: number; residuoPct: number; esaurito: boolean };
+
+export function creditoPubblico(c: Credito): CreditoPubblico {
+  if (c.totaleMillesimi <= 0) return { usatoPct: 100, residuoPct: 0, esaurito: true };
+  const usatoPct = Math.min(100, Math.round((c.usatoMillesimi / c.totaleMillesimi) * 100));
+  return { usatoPct, residuoPct: 100 - usatoPct, esaurito: c.esaurito };
+}
+
+/** Per i log e il pannello admin, dove le cifre servono davvero. */
 export function dollari(millesimi: number): string {
   return `${(millesimi / 1000).toFixed(2).replace('.', ',')} $`;
 }

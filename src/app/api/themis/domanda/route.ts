@@ -5,7 +5,7 @@ import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
 import { decryptBuffer } from '@/lib/crypto/docEncryption';
 import { contestoStudio } from '@/lib/studio/contesto';
 import { getClaude, aiConfigurata, MODELLO } from '@/lib/ai/claude';
-import { creditoStudio, registraUtilizzo, dollari } from '@/lib/ai/credito';
+import { creditoStudio, registraUtilizzo, creditoPubblico } from '@/lib/ai/credito';
 import { testoDaDocx, estensione } from '@/lib/ai/testoDocumento';
 
 export const runtime = 'nodejs';
@@ -52,8 +52,8 @@ export async function POST(request: Request) {
     // messaggi diversi, altrimenti si cerca il guasto dalla parte
     // sbagliata.
     const messaggio = credito.totaleMillesimi === 0
-      ? 'Funzione momentaneamente non disponibile. Riprova più tardi.'
-      : `Credito mensile esaurito (${dollari(credito.totaleMillesimi)}). Riparte il primo del mese prossimo.`;
+      ? 'Themis non è momentaneamente disponibile. Riprova più tardi.'
+      : 'Hai esaurito il credito mensile di Themis. Riparte il primo del mese prossimo.';
     return NextResponse.json({ error: messaggio }, { status: 402 });
   }
 
@@ -202,7 +202,7 @@ export async function POST(request: Request) {
       }));
 
     const dopo = await creditoStudio(contesto.studioId, contesto.plan);
-    return NextResponse.json({ ok: true, testo, citazioni, allegati, credito: dopo });
+    return NextResponse.json({ ok: true, testo, citazioni, allegati, credito: creditoPubblico(dopo) });
   } catch (errore) {
     const messaggio = errore instanceof Error ? errore.message : 'Errore imprevisto';
     return NextResponse.json({ error: `Richiesta non riuscita: ${messaggio}` }, { status: 502 });
