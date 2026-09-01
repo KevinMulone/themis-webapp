@@ -59,7 +59,8 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
       <p className="mb-4 text-xs text-neutral-500">
         Themis è l&apos;intelligenza artificiale dello studio: legge il fascicolo e risponde
         soltanto su ciò che vi trova, indicando sempre da quale documento viene ogni
-        affermazione. I documenti che selezioni vengono inviati a un servizio esterno per
+        affermazione. Risponde solo su questioni giuridiche: fuori da quelle non entra.
+        I documenti che selezioni vengono inviati a un servizio esterno per
         l&apos;elaborazione.
       </p>
 
