@@ -152,3 +152,43 @@ export const GRUPPI_SCADENZE: GruppoScadenze[] = [
     ],
   },
 ];
+
+/**
+ * Quali categorie di termini hanno senso per ciascun tipo di pratica.
+ *
+ * Serve a non mostrare i termini dell'ATP a chi sta lavorando su un
+ * sinistro. Ma è un filtro di comodità, non un giudizio: una pratica può
+ * sempre avere bisogno di un termine di un'altra materia, e nell'interfaccia
+ * resta un modo per vederli tutti.
+ *
+ * Nascondere un termine che serviva sarebbe il modo peggiore di aiutare:
+ * una scadenza non calcolata è una scadenza persa. Per questo il filtro è
+ * generoso — ogni tipo vede la propria materia, quella civile dove è
+ * pertinente, e i "Termini generali".
+ */
+export const CATEGORIE_PER_TIPO: Record<string, string[]> = {
+  sinistro: ['Sinistri e responsabilità civile', 'Cause civili ed esecuzioni', 'Termini generali'],
+  atp_invalidita: ['ATP invalidità civile', 'Ricorsi INPS', 'Termini generali'],
+  ricorso_inps: ['Ricorsi INPS', 'ATP invalidità civile', 'Termini generali'],
+  causa_civile: ['Cause civili ed esecuzioni', 'Termini generali'],
+  successione: ['Successioni', 'Cause civili ed esecuzioni', 'Termini generali'],
+  lavoro: ['Diritto del lavoro', 'Cause civili ed esecuzioni', 'Termini generali'],
+  penale: ['Penale', 'Termini generali'],
+  immigrazione: ['Immigrazione', 'Termini generali'],
+  sovraindebitamento: ['Cause civili ed esecuzioni', 'Termini generali'],
+  mediazione_condominiale: ['Mediazione e condominio', 'Cause civili ed esecuzioni', 'Termini generali'],
+  // 'altro' non compare apposta: senza una materia dichiarata si mostra tutto.
+};
+
+export function gruppiPerPratica(
+  tipoPratica: string,
+  gratuitoPatrocinio: boolean,
+): GruppoScadenze[] {
+  const ammesse = CATEGORIE_PER_TIPO[tipoPratica];
+  if (!ammesse) return GRUPPI_SCADENZE;
+  const insieme = new Set(ammesse);
+  // I termini del gratuito patrocinio dipendono da come è pagata la
+  // pratica, non da che materia tratta: si aggiungono a parte.
+  if (gratuitoPatrocinio) insieme.add('Gratuito patrocinio');
+  return GRUPPI_SCADENZE.filter((g) => insieme.has(g.categoria));
+}

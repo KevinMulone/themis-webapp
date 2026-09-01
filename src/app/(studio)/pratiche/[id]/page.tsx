@@ -13,7 +13,7 @@ import {
   TIPI_PRATICA, STATI_PRATICA, TIPI_SINISTRO, STATI_NEGOZIAZIONE, METODI_PAGAMENTO,
   labelFromOptions, clientLabel,
 } from '@/lib/constants';
-import { GRUPPI_SCADENZE, calcolaScadenza, toIsoLocale, type RegolaScadenza } from '@/lib/scadenzeLegali';
+import { GRUPPI_SCADENZE, gruppiPerPratica, calcolaScadenza, toIsoLocale, type RegolaScadenza } from '@/lib/scadenzeLegali';
 
 type Matter = {
   id: string; client_id: string; tipo_pratica: string; stato: string;
@@ -57,6 +57,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const { studioId } = useStudio();
   const router = useRouter();
   const [matter, setMatter] = useState<Matter | null>(null);
+  const [tutteLeScadenze, setTutteLeScadenze] = useState(false);
   const [membriStudio, setMembriStudio] = useState<{ user_id: string; nome: string | null; email: string }[]>([]);
   const [client, setClient] = useState<{ id: string; tipo_soggetto: string; nome: string | null; cognome: string | null; ragione_sociale: string | null } | null>(null);
   const [sinistro, setSinistro] = useState<Sinistro | null>(null);
@@ -286,7 +287,9 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             </p>
           </div>
           <Field label="Controparte" name="controparte_nome" defaultValue={matter.controparte_nome} />
-          <Field opzioni={COMPAGNIE_ASSICURATIVE} label="Compagnia assicurativa" name="compagnia_assicurativa" defaultValue={matter.compagnia_assicurativa} />
+          {(matter.tipo_pratica === 'sinistro' || matter.compagnia_assicurativa) && (
+            <Field opzioni={COMPAGNIE_ASSICURATIVE} label="Compagnia assicurativa" name="compagnia_assicurativa" defaultValue={matter.compagnia_assicurativa} />
+          )}
           <Field label="Numero riferimento" name="numero_riferimento" defaultValue={matter.numero_riferimento} />
           <Field opzioni={TRIBUNALI} label="Tribunale" name="tribunale" defaultValue={matter.tribunale} />
           <Field label="Sezione" name="sezione" defaultValue={matter.sezione} />
@@ -447,6 +450,13 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           Suggerimenti con riferimento normativo, da verificare sempre sul caso concreto: la sospensione
           feriale (1-31 agosto) è applicata dove pertinente, esclusa per lavoro e previdenza.
         </p>
+        <label className="mb-3 flex items-center gap-2 text-xs text-neutral-500">
+          <input
+            type="checkbox" checked={tutteLeScadenze}
+            onChange={(e) => { setTutteLeScadenze(e.target.checked); setRegolaId(''); }}
+          />
+          Mostra anche i termini delle altre materie
+        </label>
         <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Tipo di termine</label>
@@ -455,7 +465,10 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
               className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
             >
               <option value="">Seleziona...</option>
-              {GRUPPI_SCADENZE.map((g) => (
+              {(tutteLeScadenze
+                ? GRUPPI_SCADENZE
+                : gruppiPerPratica(matter.tipo_pratica, matter.metodo_pagamento === 'gratuito_patrocinio')
+              ).map((g) => (
                 <optgroup key={g.categoria} label={g.categoria}>
                   {g.regole.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
                 </optgroup>
