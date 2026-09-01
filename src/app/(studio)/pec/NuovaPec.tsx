@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import CreditoBarra, { type Credito } from '../pratiche/[id]/CreditoBarra';
 
 type Account = { id: string; etichetta: string; indirizzo_pec: string };
 type Documento = { id: string; nome_file: string };
@@ -30,6 +31,11 @@ export default function NuovaPec({ onChiudi, onInviata }: {
   const [oggetto, setOggetto] = useState('');
   const [testo, setTesto] = useState('');
   const [scelti, setScelti] = useState<string[]>([]);
+
+  const [argomento, setArgomento] = useState('');
+  const [scrivendoThemis, setScrivendoThemis] = useState(false);
+  const [creditoThemis, setCreditoThemis] = useState<Credito | null>(null);
+  const [erroreThemis, setErroreThemis] = useState('');
 
   const [fase, setFase] = useState<'scrittura' | 'conferma'>('scrittura');
   const [inCorso, setInCorso] = useState(false);
@@ -75,6 +81,29 @@ export default function NuovaPec({ onChiudi, onInviata }: {
   const elencoCc = cc.split(/[,;\n]/).map((x) => x.trim()).filter(Boolean);
   const mittente = accounts.find((a) => a.id === accountId)?.indirizzo_pec ?? '';
   const pronto = accountId && elencoA.length > 0 && oggetto.trim() && testo.trim();
+
+  async function scriviConThemis() {
+    if (!argomento.trim()) return;
+    // Non si sovrascrive in silenzio quello che l'avvocato ha già scritto.
+    if ((oggetto.trim() || testo.trim())
+        && !confirm('Themis sostituirà oggetto e testo già scritti. Procedo?')) return;
+
+    setScrivendoThemis(true);
+    setErroreThemis('');
+    const res = await fetch('/api/themis/pec', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        argomento, matterId: matterId || null,
+        destinatari: elencoA, documentiIds: scelti,
+      }),
+    });
+    const body = await res.json();
+    setScrivendoThemis(false);
+    if (!res.ok) { setErroreThemis(body.error || 'Non riuscito'); return; }
+    if (body.oggetto) setOggetto(body.oggetto);
+    setTesto(body.testo || '');
+    setCreditoThemis(body.credito || null);
+  }
 
   async function invia() {
     setInCorso(true);
@@ -153,6 +182,34 @@ export default function NuovaPec({ onChiudi, onInviata }: {
               <label className="mb-1 block text-xs text-neutral-500">Conoscenza (facoltativo)</label>
               <input value={cc} onChange={(e) => setCc(e.target.value)}
                 className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+            </div>
+
+            <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
+              <div className="mb-1 flex flex-wrap items-start justify-between gap-3">
+                <label className="text-xs font-medium text-neutral-600">
+                  Fai scrivere la PEC a Themis
+                </label>
+                <CreditoBarra credito={creditoThemis} />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  value={argomento} onChange={(e) => setArgomento(e.target.value)}
+                  placeholder="Es. sollecito riscontro alla richiesta danni, termine 15 giorni"
+                  className="min-w-60 flex-1 rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                />
+                <button
+                  type="button" onClick={scriviConThemis}
+                  disabled={scrivendoThemis || !argomento.trim()}
+                  className="rounded-md bg-bordeaux-700 px-3 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                >
+                  {scrivendoThemis ? 'Sto scrivendo...' : 'Scrivi'}
+                </button>
+              </div>
+              {erroreThemis && <p className="mt-1 text-xs text-red-600">{erroreThemis}</p>}
+              <p className="mt-1 text-[11px] text-neutral-400">
+                Themis prende i fatti dalla pratica collegata e dagli allegati che scegli.
+                Dove non sa, lascia un segnaposto invece di inventare. Rileggi sempre prima di inviare.
+              </p>
             </div>
 
             <div>
