@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react';
 import { addDaysIso, oggiIso } from '@/lib/dateUtils';
 import { PLANS, isPlanKey, type PlanKey } from '@/lib/stripe/plans';
+import { Button } from '@/components/ui/Button';
+import { Card, CardHeader } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Field } from '@/components/ui/Field';
+import { Select } from '@/components/ui/Select';
 
 type ConsumoStudio = {
   studioId: string; nome: string; plan: string | null;
@@ -65,6 +70,34 @@ function formattaTempoUtilizzo(secondi: number | null): string {
   if (giorni > 0) return `${giorni}g ${ore % 24}h`;
   if (ore > 0) return `${ore}h ${minuti % 60}m`;
   return `${minuti}m`;
+}
+
+/**
+ * Le cinque tessere in cima: un numero grande, un'etichetta piccola.
+ *
+ * Le classi colore sono scritte per intero, una per variante, apposta:
+ * Tailwind decide cosa includere nel foglio di stile leggendo il
+ * sorgente alla ricerca di stringhe letterali. Una classe composta a
+ * runtime come `text-${tono}` non viene mai vista, e il colore
+ * risulterebbe assente dal sito pubblicato pur essendo corretto nel
+ * codice.
+ */
+const TONO_KPI = {
+  neutro: 'text-neutral-900',
+  successo: 'text-green-600',
+  pericolo: 'text-red-600',
+  avviso: 'text-gold-600',
+} as const;
+
+function Kpi({ valore, etichetta, tono = 'neutro' }: {
+  valore: React.ReactNode; etichetta: string; tono?: keyof typeof TONO_KPI;
+}) {
+  return (
+    <div className="rounded-xl border border-neutral-200 bg-white p-4">
+      <div className={`text-2xl font-bold ${TONO_KPI[tono]}`}>{valore}</div>
+      <div className="text-xs text-neutral-500">{etichetta}</div>
+    </div>
+  );
 }
 
 export default function AdminPage() {
@@ -288,60 +321,48 @@ export default function AdminPage() {
     .reduce((tot, s) => tot + PREZZO_MENSILE_EQUIVALENTE[s.plan as string], 0);
 
   return (
-    <div className="min-h-screen bg-neutral-950 p-6 text-neutral-100">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="mb-1 text-xl font-bold">Themis — Pannello abbonamenti</h1>
+    // Una sola striscia oro in cima distingue "sei nell'amministrazione"
+    // da qualunque altra pagina — non un secondo tema visivo intero.
+    // Il resto usa lo stesso sfondo, le stesse schede bianche, gli stessi
+    // bottoni di tutta l'app: chi passa dal pannello utente a questo non
+    // deve reimparare a leggere lo schermo.
+    <div className="min-h-screen bg-neutral-50">
+      <div className="h-1.5 bg-gold-500" />
+      <div className="mx-auto max-w-4xl p-6">
+        <h1 className="mb-1 text-xl font-bold text-neutral-900">Themis — Pannello abbonamenti</h1>
         <p className="mb-6 text-xs text-neutral-500">Uso esclusivo amministratore.</p>
 
         <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-            <div className="text-2xl font-bold">{totaleStudi}</div>
-            <div className="text-xs text-neutral-500">Studi totali</div>
-          </div>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-            <div className="text-2xl font-bold text-green-400">{attivi}</div>
-            <div className="text-xs text-neutral-500">Attivi</div>
-          </div>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-            <div className="text-2xl font-bold text-red-400">{sospesi}</div>
-            <div className="text-xs text-neutral-500">Sospesi</div>
-          </div>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-            <div className="text-2xl font-bold text-gold-400">{inScadenza}</div>
-            <div className="text-xs text-neutral-500">In scadenza (7gg)</div>
-          </div>
-          <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-4">
-            <div className="text-2xl font-bold">{mrrStimato.toFixed(0)}€</div>
-            <div className="text-xs text-neutral-500">MRR stimato (solo Stripe)</div>
-          </div>
+          <Kpi valore={totaleStudi} etichetta="Studi totali" />
+          <Kpi valore={attivi} etichetta="Attivi" tono="successo" />
+          <Kpi valore={sospesi} etichetta="Sospesi" tono="pericolo" />
+          <Kpi valore={inScadenza} etichetta="In scadenza (7gg)" tono="avviso" />
+          <Kpi valore={`${mrrStimato.toFixed(0)}€`} etichetta="MRR stimato (solo Stripe)" />
         </div>
 
         {rimborsiInSospeso.length > 0 && (
-          <div className="mb-6 rounded-xl border border-red-800 bg-red-950/40 p-6">
-            <h2 className="mb-3 text-sm font-semibold text-red-300">
+          <Card className="border-red-200 bg-red-50">
+            <h2 className="mb-3 text-sm font-semibold text-red-800">
               Richieste di rimborso in sospeso ({rimborsiInSospeso.length})
             </h2>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-2 text-sm text-neutral-800">
               {rimborsiInSospeso.map((s) => (
                 <li key={s.id} className="flex items-center justify-between gap-3">
                   <span>
                     {s.nome_studio || s.email} — richiesta il {formatDateTime(s.refund_requested_at)}
                   </span>
-                  <button
-                    onClick={() => handleRimborsoGestito(s)}
-                    className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800"
-                  >
+                  <Button variant="secondary" size="sm" onClick={() => handleRimborsoGestito(s)}>
                     Segna come gestita
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
-          </div>
+          </Card>
         )}
 
-        <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
+        <Card>
           <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-sm font-semibold">Limite mensile assistente</h2>
+            <h2 className="text-sm font-semibold text-neutral-900">Limite mensile assistente</h2>
             {consumoMese && consumoTotale && (
               <span className="text-xs text-neutral-500">
                 Questo mese {usd(consumoMese.totaleMillesimi)} ({consumoMese.richieste} richieste,{' '}
@@ -360,14 +381,14 @@ export default function AdminPage() {
               const valore = limiti[k] ?? 0;
               return (
                 <div key={k} className="flex flex-wrap items-center gap-3">
-                  <span className="w-24 text-xs text-neutral-400">{PLANS[k].label}</span>
+                  <span className="w-24 text-xs text-neutral-500">{PLANS[k].label}</span>
                   <input
                     type="range" min={0} max={5000} step={50}
                     value={valore}
                     onChange={(e) => setLimiti({ ...limiti, [k]: Number(e.target.value) })}
                     onMouseUp={(e) => salvaLimite(k, Number((e.target as HTMLInputElement).value))}
                     onTouchEnd={(e) => salvaLimite(k, Number((e.target as HTMLInputElement).value))}
-                    className="h-1 flex-1 min-w-40 cursor-pointer accent-gold-600"
+                    className="h-1 flex-1 min-w-40 cursor-pointer accent-bordeaux-700"
                   />
                   <div className="flex items-center gap-1">
                     <input
@@ -375,19 +396,17 @@ export default function AdminPage() {
                       value={valore}
                       onChange={(e) => setLimiti({ ...limiti, [k]: Number(e.target.value) })}
                       onBlur={(e) => salvaLimite(k, Number(e.target.value))}
-                      className="w-20 rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-right text-xs"
+                      className="w-20 rounded-md border border-neutral-300 px-2 py-1 text-right text-xs"
                     />
                     <span className="text-xs text-neutral-500">cent</span>
-                    <span className="w-16 text-right text-xs text-neutral-400">
+                    <span className="w-16 text-right text-xs text-neutral-500">
                       {(valore / 100).toFixed(2).replace('.', ',')} $
                     </span>
                     {/* Zero è un valore legittimo — "niente Themis per questo
                         piano" — ma è anche il valore che si ottiene per
                         sbaglio. Detto a voce alta smette di essere una
                         trappola silenziosa. */}
-                    {valore === 0 && (
-                      <span className="text-xs font-medium text-red-400">Themis disattivato</span>
-                    )}
+                    {valore === 0 && <Badge tono="danger">Themis disattivato</Badge>}
                   </div>
                 </div>
               );
@@ -395,19 +414,16 @@ export default function AdminPage() {
           </div>
 
           <div className="mt-4 flex items-center justify-end gap-3">
-            {erroreLimiti && <span className="text-xs text-red-400">{erroreLimiti}</span>}
-            {limitiSalvati && !erroreLimiti && <span className="text-xs text-green-500">Salvato</span>}
-            <button
-              type="button" onClick={salvaTuttiILimiti} disabled={salvandoLimiti}
-              className="rounded-md bg-gold-600 px-4 py-2 text-xs font-semibold text-neutral-950 hover:bg-gold-500 disabled:opacity-50"
-            >
+            {erroreLimiti && <span className="text-xs text-red-600">{erroreLimiti}</span>}
+            {limitiSalvati && !erroreLimiti && <span className="text-xs text-green-600">Salvato</span>}
+            <Button onClick={salvaTuttiILimiti} disabled={salvandoLimiti} size="sm">
               {salvandoLimiti ? 'Salvataggio...' : 'Salva i limiti'}
-            </button>
+            </Button>
           </div>
 
-          <div className="mt-6 border-t border-neutral-800 pt-4">
+          <div className="mt-6 border-t border-neutral-100 pt-4">
             <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
-              <h3 className="text-xs font-semibold text-neutral-300">Consumo per abbonato</h3>
+              <h3 className="text-xs font-semibold text-neutral-700">Consumo per abbonato</h3>
               {consumoTotale && consumoTotale.studi > 0 && (
                 <span className="text-xs text-neutral-500">
                   {consumoTotale.studi} studi · {consumoTotale.richieste} richieste in totale
@@ -416,12 +432,12 @@ export default function AdminPage() {
             </div>
 
             {consumoPerStudio.length === 0 ? (
-              <p className="text-xs text-neutral-600">Nessun consumo registrato finora.</p>
+              <p className="text-xs text-neutral-400">Nessun consumo registrato finora.</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[500px] text-xs">
                   <thead>
-                    <tr className="border-b border-neutral-800 text-neutral-500">
+                    <tr className="border-b border-neutral-200 text-neutral-500">
                       <th className="py-1.5 text-left font-medium">Studio</th>
                       <th className="py-1.5 text-left font-medium">Piano</th>
                       <th className="py-1.5 text-right font-medium">Questo mese</th>
@@ -437,26 +453,26 @@ export default function AdminPage() {
                       // e quindi quello che potrebbe chiamarti.
                       const quota = tetto > 0 ? c.meseMillesimi / tetto : 0;
                       return (
-                        <tr key={c.studioId} className="border-b border-neutral-900">
-                          <td className="py-1.5 pr-2 text-neutral-300">{c.nome}</td>
+                        <tr key={c.studioId} className="border-b border-neutral-100">
+                          <td className="py-1.5 pr-2 text-neutral-700">{c.nome}</td>
                           <td className="py-1.5 pr-2 text-neutral-500">
                             {c.plan && isPlanKey(c.plan) ? PLANS[c.plan].label : c.plan || '—'}
                           </td>
                           <td className={`py-1.5 text-right tabular-nums ${
-                            quota >= 1 ? 'font-semibold text-red-400'
-                              : quota >= 0.8 ? 'text-gold-500' : 'text-neutral-300'
+                            quota >= 1 ? 'font-semibold text-red-600'
+                              : quota >= 0.8 ? 'text-gold-600' : 'text-neutral-700'
                           }`}>
                             {usd(c.meseMillesimi)}
                             {tetto > 0 && (
-                              <span className="text-neutral-600">
+                              <span className="text-neutral-400">
                                 {' / '}{usd(tetto)} · {Math.round(quota * 100)}%
                               </span>
                             )}
                           </td>
-                          <td className="py-1.5 text-right tabular-nums text-neutral-400">
+                          <td className="py-1.5 text-right tabular-nums text-neutral-500">
                             {usd(c.totaleMillesimi)}
                           </td>
-                          <td className="py-1.5 text-right tabular-nums text-neutral-500">
+                          <td className="py-1.5 text-right tabular-nums text-neutral-400">
                             {c.totaleRichieste}
                           </td>
                         </tr>
@@ -465,7 +481,7 @@ export default function AdminPage() {
                   </tbody>
                   {consumoTotale && (
                     <tfoot>
-                      <tr className="text-neutral-200">
+                      <tr className="text-neutral-800">
                         <td className="py-2 font-semibold" colSpan={2}>Totale</td>
                         <td className="py-2 text-right font-semibold tabular-nums">
                           {consumoMese ? usd(consumoMese.totaleMillesimi) : '—'}
@@ -483,112 +499,100 @@ export default function AdminPage() {
               </div>
             )}
 
-            <p className="mt-2 text-[11px] text-neutral-600">
+            <p className="mt-2 text-[11px] text-neutral-500">
               «Da sempre» è quanto hai speso in tutto per quello studio: confrontalo con
               l&apos;abbonamento che paga, non con il tetto mensile.
             </p>
           </div>
-        </div>
+        </Card>
 
-        <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
-          <h2 className="mb-1 text-sm font-semibold">Genera chiave di licenza</h2>
-          <p className="mb-3 text-xs text-neutral-500">
-            La durata parte dalla prima attivazione, non da adesso: una chiave consegnata oggi e
-            usata fra due settimane vale comunque tutti i giorni previsti.
-          </p>
+        <Card>
+          <CardHeader
+            title="Genera chiave di licenza"
+            hint="La durata parte dalla prima attivazione, non da adesso: una chiave consegnata oggi e usata fra due settimane vale comunque tutti i giorni previsti."
+          />
           <div className="flex flex-wrap items-end gap-3">
-            <div>
-              <label className="mb-1 block text-xs text-neutral-500">Durata</label>
-              <select
-                value={durataChiave}
-                onChange={(e) => {
-                  const g = Number(e.target.value);
-                  setDurataChiave(g);
-                  const preset = DURATE_CHIAVE.find((d) => d.giorni === g);
-                  if (preset) setPianoChiave(preset.plan);
-                }}
-                className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm"
-              >
-                {DURATE_CHIAVE.map((d) => (
-                  <option key={d.giorni} value={d.giorni}>{d.label}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="mb-1 block text-xs text-neutral-500">Piano (determina i posti collaboratore)</label>
-              <select
-                value={pianoChiave}
-                onChange={(e) => setPianoChiave(e.target.value as PlanKey)}
-                className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm"
-              >
-                {(Object.keys(PLANS) as PlanKey[]).map((k) => (
-                  <option key={k} value={k}>{PLANS[k].label}</option>
-                ))}
-              </select>
-            </div>
-            <button
-              onClick={handleGeneraChiave} disabled={generandoChiave}
-              className="rounded-md bg-gold-600 px-4 py-2 text-sm font-semibold hover:bg-bordeaux-700 disabled:opacity-50"
+            <Select
+              label="Durata"
+              value={durataChiave}
+              onChange={(e) => {
+                const g = Number(e.target.value);
+                setDurataChiave(g);
+                const preset = DURATE_CHIAVE.find((d) => d.giorni === g);
+                if (preset) setPianoChiave(preset.plan);
+              }}
             >
+              {DURATE_CHIAVE.map((d) => (
+                <option key={d.giorni} value={d.giorni}>{d.label}</option>
+              ))}
+            </Select>
+            <Select
+              label="Piano (determina i posti collaboratore)"
+              value={pianoChiave}
+              onChange={(e) => setPianoChiave(e.target.value as PlanKey)}
+            >
+              {(Object.keys(PLANS) as PlanKey[]).map((k) => (
+                <option key={k} value={k}>{PLANS[k].label}</option>
+              ))}
+            </Select>
+            <Button onClick={handleGeneraChiave} disabled={generandoChiave}>
               {generandoChiave ? 'Generazione...' : 'Genera chiave'}
-            </button>
+            </Button>
           </div>
 
           {chiaveGenerata && (
-            <div className="mt-4 border-t border-neutral-800 pt-4">
-              <p className="mb-2 text-xs text-neutral-400">Consegnala al cliente: si attiva una volta sola.</p>
+            <div className="mt-4 border-t border-neutral-100 pt-4">
+              <p className="mb-2 text-xs text-neutral-500">Consegnala al cliente: si attiva una volta sola.</p>
               <textarea
                 readOnly value={chiaveGenerata} onFocus={(e) => e.currentTarget.select()}
-                className="mb-2 min-h-20 w-full rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 font-mono text-xs"
+                className="mb-2 min-h-20 w-full rounded-md border border-neutral-300 px-3 py-2 font-mono text-xs"
               />
-              <button
-                onClick={handleCopiaChiave}
-                className="rounded-md border border-neutral-700 px-3 py-1.5 text-xs hover:bg-neutral-800"
-              >
+              <Button variant="secondary" size="sm" onClick={handleCopiaChiave}>
                 {chiaveCopiata ? 'Copiata!' : 'Copia chiave'}
-              </button>
+              </Button>
             </div>
           )}
-        </div>
+        </Card>
 
-        <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
-          <h2 className="mb-3 text-sm font-semibold">Nuovo studio</h2>
+        <Card>
+          <h2 className="mb-3 text-sm font-semibold text-neutral-900">Nuovo studio</h2>
           <form onSubmit={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input name="nome_studio" placeholder="Nome studio" className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm" />
-            <input name="email" type="email" placeholder="Email" required className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm" />
-            <input name="password" type="text" placeholder="Password iniziale" required className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm" />
-            <select
+            <Field name="nome_studio" label="Nome studio" placeholder="Nome studio" />
+            <Field name="email" type="email" label="Email" placeholder="Email" required />
+            <Field name="password" type="text" label="Password iniziale" placeholder="Password iniziale" required />
+            <Select
               name="plan"
+              label="Piano"
               value={pianoNuovo}
               onChange={(e) => {
                 const piano = e.target.value as PlanKey;
                 setPianoNuovo(piano);
                 setGiorniNuovo(PLANS[piano].days);
               }}
-              className="rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm"
             >
               {(Object.keys(PLANS) as PlanKey[]).map((k) => (
                 <option key={k} value={k}>{PLANS[k].label}</option>
               ))}
-            </select>
-            <select
+            </Select>
+            <Select
               name="days"
+              label="Durata"
+              full
               value={giorniNuovo}
               onChange={(e) => setGiorniNuovo(Number(e.target.value))}
-              className="col-span-2 rounded-md border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm"
             >
               <option value={30}>30 giorni (mensile)</option>
               <option value={180}>180 giorni (semestrale)</option>
               <option value={365}>365 giorni (annuale)</option>
-            </select>
-            <button type="submit" disabled={creating} className="col-span-2 rounded-md bg-gold-600 px-4 py-2 text-sm font-semibold hover:bg-bordeaux-700 disabled:opacity-50">
+            </Select>
+            <Button type="submit" disabled={creating} className="col-span-full">
               {creating ? 'Creazione...' : 'Crea studio'}
-            </button>
+            </Button>
           </form>
-        </div>
+        </Card>
 
-        <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-900 p-6">
-          <h2 className="mb-3 text-sm font-semibold">Studi registrati ({studios.length})</h2>
+        <Card>
+          <h2 className="mb-3 text-sm font-semibold text-neutral-900">Studi registrati ({studios.length})</h2>
           {loading ? <p className="text-sm text-neutral-500">Caricamento...</p> : (
             <div className="overflow-x-auto">
             <table className="w-full min-w-[1200px] text-sm">
@@ -603,28 +607,26 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {studios.map((s) => (
-                  <tr key={s.id} className={`border-t border-neutral-800 align-top ${s.refund_requested_at ? 'bg-red-950/20' : ''}`}>
+                  <tr key={s.id} className={`border-t border-neutral-100 align-top ${s.refund_requested_at ? 'bg-red-50' : ''}`}>
                     <td className="px-3 py-3">
-                      <span className="inline-flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1.5 text-neutral-900">
                         <button
                           onClick={() => handleElimina(s)}
                           title="Elimina definitivamente questo studio"
-                          className="flex h-4 w-4 items-center justify-center rounded-full border border-neutral-700 text-[10px] leading-none text-neutral-500 hover:border-red-500 hover:text-red-400"
+                          className="flex h-4 w-4 items-center justify-center rounded-full border border-neutral-300 text-[10px] leading-none text-neutral-400 hover:border-red-400 hover:text-red-600"
                         >
                           ×
                         </button>
                         {s.nome_studio || '—'}
-                        {s.stripe_customer_id && (
-                          <span className="rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] text-neutral-400">Stripe</span>
-                        )}
+                        {s.stripe_customer_id && <Badge>Stripe</Badge>}
                       </span>
                     </td>
-                    <td className="px-3 py-3">{s.email}</td>
+                    <td className="px-3 py-3 text-neutral-700">{s.email}</td>
                     <td className="px-3 py-3">
                       <select
                         value={(Object.keys(PLANS) as string[]).includes(s.plan || '') ? (s.plan as string) : ''}
                         onChange={(e) => handleCambiaPiano(s, e.target.value)}
-                        className="rounded border border-neutral-700 bg-neutral-950 px-1.5 py-0.5 text-xs"
+                        className="rounded border border-neutral-300 px-1.5 py-0.5 text-xs"
                       >
                         {/* Piani storici o personalizzati: mostrati ma non selezionabili,
                             perché non danno diritto a posti collaboratore. */}
@@ -636,13 +638,17 @@ export default function AdminPage() {
                         ))}
                       </select>
                     </td>
-                    <td className={`px-3 py-3 ${s.subscription_status === 'active' ? 'text-green-400' : 'text-red-400'}`}>{s.subscription_status}</td>
-                    <td className="px-3 py-3 whitespace-nowrap">
-                      {s.subscription_expires_at || '—'}
-                      {s.subscription_expires_at && <span className="ml-1 text-neutral-500">({giorniRimanenti(s.subscription_expires_at)})</span>}
+                    <td className="px-3 py-3">
+                      <Badge tono={s.subscription_status === 'active' ? 'success' : 'danger'}>
+                        {s.subscription_status}
+                      </Badge>
                     </td>
-                    <td className="px-3 py-3 whitespace-nowrap text-neutral-400">{formatDateTime(s.last_sign_in_at)}</td>
-                    <td className="px-3 py-3 whitespace-nowrap text-neutral-400">{formattaTempoUtilizzo(s.tempo_utilizzo_secondi)}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-neutral-700">
+                      {s.subscription_expires_at || '—'}
+                      {s.subscription_expires_at && <span className="ml-1 text-neutral-400">({giorniRimanenti(s.subscription_expires_at)})</span>}
+                    </td>
+                    <td className="px-3 py-3 whitespace-nowrap text-neutral-500">{formatDateTime(s.last_sign_in_at)}</td>
+                    <td className="px-3 py-3 whitespace-nowrap text-neutral-500">{formattaTempoUtilizzo(s.tempo_utilizzo_secondi)}</td>
                     <td className="px-3 py-3">
                       <div className="flex w-max flex-col gap-1">
                         <div className="flex gap-1">
@@ -650,23 +656,23 @@ export default function AdminPage() {
                             <button
                               key={g}
                               onClick={() => handleExtend(s, g)}
-                              className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800"
+                              className="rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-50"
                             >
                               {g > 0 ? `+${g}` : g}gg
                             </button>
                           ))}
                         </div>
                         <div className="flex gap-1">
-                          <button onClick={() => handleSetStatus(s, 'suspended')} className="rounded bg-red-900 px-2 py-0.5 text-xs hover:bg-red-800">
+                          <button onClick={() => handleSetStatus(s, 'suspended')} className="rounded bg-red-100 px-2 py-0.5 text-xs text-red-700 hover:bg-red-200">
                             Sospendi
                           </button>
-                          <button onClick={() => handleSetStatus(s, 'active')} className="rounded bg-green-900 px-2 py-0.5 text-xs hover:bg-green-800">
+                          <button onClick={() => handleSetStatus(s, 'active')} className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-700 hover:bg-green-200">
                             Riattiva
                           </button>
-                          <button onClick={() => handleSendResetPassword(s)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">
+                          <button onClick={() => handleSendResetPassword(s)} className="rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-50">
                             Invia reset password
                           </button>
-                          <button onClick={() => handleGenerateOtp(s)} className="rounded border border-neutral-700 px-2 py-0.5 text-xs hover:bg-neutral-800">
+                          <button onClick={() => handleGenerateOtp(s)} className="rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-50">
                             Genera codice di riserva
                           </button>
                         </div>
@@ -678,28 +684,28 @@ export default function AdminPage() {
             </table>
             </div>
           )}
-        </div>
+        </Card>
 
         {otpResult && (
-          <div className="mb-6 rounded-xl border border-gold-600 bg-bordeaux-950/40 p-6">
+          <Card className="border-gold-300 bg-gold-50">
             <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold">Codice di riserva per {otpResult.email}</h2>
-              <button onClick={() => setOtpResult(null)} className="text-xs text-neutral-400 hover:text-neutral-200">Chiudi</button>
+              <h2 className="text-sm font-semibold text-neutral-900">Codice di riserva per {otpResult.email}</h2>
+              <button onClick={() => setOtpResult(null)} className="text-xs text-neutral-500 hover:text-neutral-800">Chiudi</button>
             </div>
-            <p className="mb-3 text-xs text-neutral-400">
+            <p className="mb-3 text-xs text-neutral-600">
               Comunica questo codice al cliente (telefono, WhatsApp, email personale): lo inserirà nella pagina
               &quot;Imposta una nuova password&quot; se il link ricevuto via email non funziona. Vale pochi minuti.
             </p>
-            <p className="text-2xl font-mono font-bold tracking-widest text-gold-400">{otpResult.otp}</p>
-          </div>
+            <p className="text-2xl font-mono font-bold tracking-widest text-bordeaux-700">{otpResult.otp}</p>
+          </Card>
         )}
 
-        <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6">
-          <h2 className="mb-3 text-sm font-semibold">Log</h2>
+        <Card className="mb-0">
+          <h2 className="mb-3 text-sm font-semibold text-neutral-900">Log</h2>
           <div className="max-h-32 overflow-y-auto text-xs text-neutral-500">
             {log.length === 0 ? 'Pronto.' : log.map((l, i) => <div key={i}>{l}</div>)}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
