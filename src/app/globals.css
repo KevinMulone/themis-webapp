@@ -48,3 +48,11 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
+
+/* Barra di avanzamento indeterminata: si usa dove non sappiamo quanto
+   manca (lo scarico IMAP), perché una percentuale inventata è peggio di
+   nessuna percentuale. */
+@keyframes scorri {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}

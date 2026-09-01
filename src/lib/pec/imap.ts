@@ -1,13 +1,8 @@
 import 'server-only';
 import { ImapFlow } from 'imapflow';
 
-/**
- * Quanti messaggi nuovi si scaricano al massimo per ogni giro di
- * sincronizzazione. Tiene la durata della route indipendente dall'arretrato:
- * una casella con migliaia di messaggi non fermi arretrati viene svuotata in
- * più giri successivi invece di far scadere il timeout della funzione.
- */
-export const MAX_MESSAGGI_PER_GIRO = 10;
+export { MAX_MESSAGGI_PER_GIRO } from './costanti';
+import { MAX_MESSAGGI_PER_GIRO } from './costanti';
 
 export type ConfigurazioneImap = {
   host: string;

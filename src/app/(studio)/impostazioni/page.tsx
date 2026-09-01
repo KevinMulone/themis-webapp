@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_PRATICA, labelFromOptions } from '@/lib/constants';
+import { MAX_MESSAGGI_PER_GIRO } from '@/lib/pec/costanti';
 
 type Template = { id: string; nome: string; categoria: string | null; descrizione: string | null; studio_id: string | null };
 type Settings = { font_family: string; font_size_pt: number; line_spacing: number };
@@ -63,6 +64,8 @@ export default function ImpostazioniPage() {
   const [pecSalvando, setPecSalvando] = useState(false);
   const [pecSincronizzando, setPecSincronizzando] = useState(false);
   const [pecSyncMsg, setPecSyncMsg] = useState('');
+  const [pecSecondi, setPecSecondi] = useState(0);
+  const [pecAncora, setPecAncora] = useState(false);
   const [pecPasswordId, setPecPasswordId] = useState('');
   const [pecNuovaPassword, setPecNuovaPassword] = useState('');
   const [pecPwdMsg, setPecPwdMsg] = useState('');
@@ -240,16 +243,41 @@ export default function ImpostazioniPage() {
     load();
   }
 
+  // Un cronometro invece di una percentuale: IMAP non dice a che punto è
+  // dello scarico, e una barra che finge di sapere quanto manca è peggio
+  // di una che dice onestamente «sto lavorando da 40 secondi».
+  useEffect(() => {
+    if (!pecSincronizzando) return;
+    const t = setInterval(() => setPecSecondi((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, [pecSincronizzando]);
+
   async function handleSyncPec() {
     setPecSincronizzando(true);
     setPecSyncMsg('');
-    const res = await fetch('/api/pec/sync', { method: 'POST' });
-    const body = await res.json();
-    setPecSincronizzando(false);
-    if (!res.ok) { setPecSyncMsg(`Errore: ${body.error}`); return; }
-    const totale = (body.risultati || []).reduce((s: number, r: { messaggiScaricati: number }) => s + r.messaggiScaricati, 0);
-    setPecSyncMsg(totale > 0 ? `${totale} nuovo/i messaggio/i scaricato/i.` : 'Nessun messaggio nuovo.');
-    load();
+    setPecAncora(false);
+    setPecSecondi(0);
+    try {
+      const res = await fetch('/api/pec/sync', { method: 'POST' });
+      const body = await res.json();
+      if (!res.ok) { setPecSyncMsg(`Errore: ${body.error}`); return; }
+      const risultati = (body.risultati || []) as { messaggiScaricati: number }[];
+      const totale = risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
+      // Ogni giro scarica al massimo MAX_MESSAGGI_PER_GIRO messaggi, per non
+      // far scadere la funzione su una casella con anni di arretrato. Se il
+      // tetto è stato raggiunto, ce n'è quasi certamente dell'altro: va
+      // detto, altrimenti si crede di aver finito.
+      const alTetto = risultati.some((r) => r.messaggiScaricati >= MAX_MESSAGGI_PER_GIRO);
+      setPecAncora(alTetto);
+      setPecSyncMsg(totale > 0
+        ? `${totale} messaggi scaricati.`
+        : 'Nessun messaggio nuovo.');
+      load();
+    } catch {
+      setPecSyncMsg('La sincronizzazione si è interrotta. Riprova.');
+    } finally {
+      setPecSincronizzando(false);
+    }
   }
 
   async function handleGestisciAbbonamento() {
@@ -501,7 +529,28 @@ export default function ImpostazioniPage() {
           password dedicata &quot;per programmi di posta&quot;, generata dal pannello del tuo gestore. Non è la
           password con cui accedi alla webmail.
         </p>
-        {pecSyncMsg && <p className="mb-3 text-sm text-neutral-600">{pecSyncMsg}</p>}
+        {pecSincronizzando && (
+          <div className="mb-3">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200">
+              <div className="h-full w-1/3 animate-[scorri_1.2s_ease-in-out_infinite] rounded-full bg-bordeaux-700" />
+            </div>
+            <p className="mt-1 text-xs text-neutral-500">
+              Lettura della casella in corso da {pecSecondi}s.
+              {pecSecondi > 20 && ' Il primo scarico è il più lento: sta aprendo la casella dall’inizio.'}
+              {pecSecondi > 90 && ' Se supera i tre minuti, la funzione scade da sola e potrai riprovare.'}
+            </p>
+          </div>
+        )}
+        {pecSyncMsg && (
+          <p className="mb-3 text-sm text-neutral-600">
+            {pecSyncMsg}
+            {pecAncora && (
+              <span className="ml-1 text-neutral-500">
+                Ce ne sono altri in attesa: premi di nuovo «Sincronizza ora».
+              </span>
+            )}
+          </p>
+        )}
         {pecAccounts.length > 0 && (
           <ul className="mb-4 divide-y divide-neutral-100 text-sm">
             {pecAccounts.map((a) => (
