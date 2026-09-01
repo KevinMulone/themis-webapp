@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { TIPI_PRATICA, labelFromOptions, clientLabel } from '@/lib/constants';
@@ -16,16 +16,32 @@ type Matter = {
 };
 type Documento = { id: string; nome_file: string };
 
-/** Una delle tre cose che Themis sa fare, spiegata in due righe. */
-function CapacitaCard({ icona, titolo, testo }: { icona: NomeIcona; titolo: string; testo: string }) {
+/**
+ * Una delle tre cose che Themis sa fare.
+ *
+ * È un pulsante, non un riquadro illustrativo: cliccarla porta dove
+ * quella cosa si fa davvero. Un elemento che sembra premibile e non fa
+ * nulla insegna a non fidarsi del resto dell'interfaccia.
+ */
+function CapacitaCard({ icona, titolo, testo, onClick, azione }: {
+  icona: NomeIcona; titolo: string; testo: string; onClick: () => void; azione: string;
+}) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-5 text-left">
+    <button
+      type="button"
+      onClick={onClick}
+      className="group rounded-xl border border-neutral-200 bg-white p-5 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+    >
       <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
         <Icon nome={icona} className="h-5 w-5" />
       </span>
       <h3 className="text-sm font-semibold text-neutral-900">{titolo}</h3>
       <p className="mt-1 text-xs leading-relaxed text-neutral-500">{testo}</p>
-    </div>
+      <span className="mt-3 flex items-center gap-1 text-xs font-medium text-violet-600">
+        {azione}
+        <Icon nome="freccia" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+      </span>
+    </button>
   );
 }
 
@@ -43,6 +59,27 @@ export default function ThemisPage() {
   const [matterId, setMatterId] = useState('');
   const [documenti, setDocumenti] = useState<Documento[]>([]);
   const [caricando, setCaricando] = useState(true);
+  const [attoAperto, setAttoAperto] = useState(false);
+  const sceltaPratica = useRef<HTMLSelectElement>(null);
+  const zonaDomande = useRef<HTMLDivElement>(null);
+  const zonaAtti = useRef<HTMLDivElement>(null);
+
+  /** Porta l'occhio dove serve, e mette il cursore dove si deve scrivere. */
+  function vaiA(zona: React.RefObject<HTMLDivElement | null>) {
+    zona.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Il fuoco arriva dopo lo scorrimento: darlo subito farebbe saltare la
+    // pagina alla posizione del campo, annullando l'animazione.
+    setTimeout(() => zona.current?.querySelector('textarea')?.focus(), 400);
+  }
+
+  /**
+   * Senza una pratica scelta non c'è dove andare: si riporta l'attenzione
+   * sul menu, che è il passaggio che manca.
+   */
+  function chiediPratica() {
+    sceltaPratica.current?.focus();
+    sceltaPratica.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 
   useEffect(() => {
     (async () => {
@@ -57,6 +94,10 @@ export default function ThemisPage() {
   }, [supabase]);
 
   useEffect(() => {
+    // Cambiando pratica il pannello degli atti si richiude: restare aperto
+    // sulla bozza del fascicolo precedente è il modo migliore per
+    // scrivere un atto sul cliente sbagliato.
+    setAttoAperto(false);
     if (!matterId) { setDocumenti([]); return; }
     (async () => {
       const { data } = await supabase
@@ -97,6 +138,7 @@ export default function ThemisPage() {
         <div className="relative">
           <Icon nome="pratiche" className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
           <select
+            ref={sceltaPratica}
             value={matterId} onChange={(e) => setMatterId(e.target.value)}
             className="w-full appearance-none rounded-lg border border-neutral-300 py-3 pl-11 pr-10 text-sm"
             disabled={caricando}
@@ -148,24 +190,77 @@ export default function ThemisPage() {
             <CapacitaCard
               icona="documento" titolo="Analisi del fascicolo"
               testo="Legge i documenti della pratica che scegli: PDF, Word e testo."
+              azione="Scegli la pratica" onClick={chiediPratica}
             />
             <CapacitaCard
               icona="matita" titolo="Risposte con citazione"
               testo="Risponde solo su ciò che trova negli atti, indicando documento e pagina."
+              azione="Scegli la pratica" onClick={chiediPratica}
             />
             <CapacitaCard
               icona="genera" titolo="Bozze di atti"
               testo="Prima stesura di diffide, ricorsi e memorie, seguendo lo stile dello studio."
+              azione="Scegli la pratica" onClick={chiediPratica}
             />
           </div>
         </div>
       ) : (
         <>
-          <ChiediAlFascicolo key={`d-${matterId}`} matterId={matterId} documenti={documenti} />
-          <RedigiAtto
-            key={`a-${matterId}`} matterId={matterId} documenti={documenti}
-            onSalvato={ricaricaDocumenti}
-          />
+          <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <button
+              type="button"
+              onClick={() => vaiA(zonaDomande)}
+              className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
+                <Icon nome="matita" className="h-5 w-5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-neutral-900">Fai una domanda</span>
+                <span className="block text-xs text-neutral-500">Sul fascicolo scelto</span>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setAttoAperto(true); vaiA(zonaAtti); }}
+              className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
+                <Icon nome="genera" className="h-5 w-5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-neutral-900">Prepara un atto</span>
+                <span className="block text-xs text-neutral-500">Diffida, ricorso, memoria</span>
+              </span>
+            </button>
+
+            <Link
+              href={`/pratiche/${matterId}`}
+              className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+            >
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
+                <Icon nome="documento" className="h-5 w-5" />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-neutral-900">Vedi i documenti</span>
+                <span className="block text-xs text-neutral-500">
+                  {documenti.length === 0 ? 'Nessuno nel fascicolo' : `${documenti.length} nel fascicolo`}
+                </span>
+              </span>
+            </Link>
+          </div>
+
+          <div ref={zonaDomande} className="scroll-mt-4">
+            <ChiediAlFascicolo key={`d-${matterId}`} matterId={matterId} documenti={documenti} />
+          </div>
+          <div ref={zonaAtti} className="scroll-mt-4">
+            <RedigiAtto
+              key={`a-${matterId}`} matterId={matterId} documenti={documenti}
+              onSalvato={ricaricaDocumenti}
+              apertura={attoAperto} onApertura={setAttoAperto}
+            />
+          </div>
         </>
       )}
 

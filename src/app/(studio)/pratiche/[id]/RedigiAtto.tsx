@@ -16,12 +16,29 @@ function leggibile(nomeFile: string): boolean {
   return ['pdf', 'docx', 'txt', 'md'].includes(ext);
 }
 
-export default function RedigiAtto({ matterId, documenti, onSalvato }: {
+/**
+ * Il pannello si apre da solo o su richiesta di chi lo contiene.
+ *
+ * `apertura` e `onApertura` sono facoltativi: se non arrivano, il pannello
+ * si gestisce da sé come ha sempre fatto dentro la pratica. Servono alla
+ * pagina Themis, dove una scorciatoia deve poterlo aprire — e una
+ * scorciatoia che si limita a scorrere fino a un pannello chiuso non è
+ * una scorciatoia.
+ */
+export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, onApertura }: {
   matterId: string;
   documenti: Documento[];
   onSalvato?: () => void;
+  apertura?: boolean;
+  onApertura?: (v: boolean) => void;
 }) {
-  const [aperto, setAperto] = useState(false);
+  const [apertoInterno, setApertoInterno] = useState(false);
+  const controllato = apertura !== undefined;
+  const aperto = controllato ? apertura : apertoInterno;
+  const setAperto = (v: boolean) => {
+    if (controllato) onApertura?.(v);
+    else setApertoInterno(v);
+  };
   const [tipo, setTipo] = useState(TIPI_ATTO[0].chiave);
   const [istruzioni, setIstruzioni] = useState('');
   const [scelti, setScelti] = useState<string[]>([]);
