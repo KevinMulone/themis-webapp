@@ -381,6 +381,13 @@ export default function AdminPage() {
                     <span className="w-16 text-right text-xs text-neutral-400">
                       {(valore / 100).toFixed(2).replace('.', ',')} $
                     </span>
+                    {/* Zero è un valore legittimo — "niente Themis per questo
+                        piano" — ma è anche il valore che si ottiene per
+                        sbaglio. Detto a voce alta smette di essere una
+                        trappola silenziosa. */}
+                    {valore === 0 && (
+                      <span className="text-xs font-medium text-red-400">Themis disattivato</span>
+                    )}
                   </div>
                 </div>
               );
