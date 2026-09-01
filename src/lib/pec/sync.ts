@@ -103,13 +103,46 @@ export async function sincronizzaAccount(
 
     return { accountId, ok: true, messaggiScaricati: inseriti };
   } catch (err) {
-    const messaggioErrore = err instanceof Error ? err.message : 'Errore sconosciuto';
+    const messaggioErrore = descriviErrore(err);
     await admin
       .from('pec_account')
       .update({ ultimo_controllo_at: new Date().toISOString(), ultimo_errore: messaggioErrore, updated_at: new Date().toISOString() })
       .eq('id', accountId);
     return { accountId, ok: false, messaggiScaricati: 0, errore: messaggioErrore };
   }
+}
+
+/**
+ * Traduce un errore IMAP in qualcosa su cui si possa agire.
+ *
+ * ImapFlow segnala quasi tutto come «Command failed», che è vero e
+ * inutile: la risposta del server sta in `responseText`, e la distinzione
+ * fra «password sbagliata» e «server irraggiungibile» sta in campi
+ * separati. Buttarli via significa costringere chi legge a indovinare, e
+ * a cambiare parametri a caso finché qualcosa funziona.
+ */
+function descriviErrore(err: unknown): string {
+  if (!(err instanceof Error)) return 'Errore sconosciuto';
+  const e = err as Error & {
+    responseText?: string;
+    authenticationFailed?: boolean;
+    serverResponseCode?: string;
+    code?: string;
+  };
+
+  if (e.authenticationFailed) {
+    return `Autenticazione rifiutata dal server${e.responseText ? `: ${e.responseText}` : ''}. `
+      + 'Di solito significa password sbagliata, oppure che serve la password dedicata ai programmi di posta.';
+  }
+  if (e.code === 'ENOTFOUND') return `Server non trovato: controlla l'host IMAP (${e.message})`;
+  if (e.code === 'ECONNREFUSED') return `Connessione rifiutata: controlla host e porta (${e.message})`;
+  if (e.code === 'ETIMEDOUT') return 'Il server non risponde: host o porta probabilmente sbagliati';
+
+  const parti = [e.message];
+  if (e.responseText && e.responseText !== e.message) parti.push(e.responseText);
+  if (e.serverResponseCode) parti.push(`[${e.serverResponseCode}]`);
+  if (e.code && e.code !== e.message) parti.push(`(${e.code})`);
+  return parti.join(' — ');
 }
 
 export { PEC_KEY_SCOPE_PREFIX };
