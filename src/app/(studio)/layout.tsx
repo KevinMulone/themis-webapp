@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import SincronizzazionePec from './SincronizzazionePec';
 import { oggiIso } from '@/lib/dateUtils';
 import { contestoStudio, eCollaboratoreDisattivato } from '@/lib/studio/contesto';
 import { createClient } from '@/lib/supabase/server';
@@ -94,7 +95,8 @@ export default async function StudioLayout({ children }: { children: React.React
           nomeStudio={ctx.nomeStudio ?? ''}
           abbonamentoLabel={giorniRimanenti(ctx.subscriptionExpiresAt)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6"><SincronizzazionePec />
+      {children}</main>
       </div>
     </StudioProvider>
   );

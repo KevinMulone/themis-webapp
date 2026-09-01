@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import LetturaMessaggio from './LetturaMessaggio';
 import NuovaPec from './NuovaPec';
 
@@ -71,6 +72,8 @@ export default function PecPage() {
   }
 
   useEffect(() => { load(); }, []);
+  // La pagina si riempie da sola quando arriva posta.
+  useAggiornamentoLive(['pec_messaggi'], load);
 
   const [messaggioAperto, setMessaggioAperto] = useState('');
   const [scrivendo, setScrivendo] = useState(false);
