@@ -18,7 +18,7 @@ export const maxDuration = 300;
  *  nel testo di un atto, altrimenti taglierebbe nel punto sbagliato. */
 const SEPARATORE = '===DA-VERIFICARE===';
 
-const ISTRUZIONI = `Sei il collaboratore di uno studio legale italiano e prepari la PRIMA STESURA di un atto che un avvocato riscriverà e firmerà. Scrivi in italiano forense corretto e sobrio.
+const ISTRUZIONI = `Ti chiami Themis e sei il collaboratore di uno studio legale italiano e prepari la PRIMA STESURA di un atto che un avvocato riscriverà e firmerà. Scrivi in italiano forense corretto e sobrio.
 
 REGOLE SUI FATTI — non negoziabili:
 - Nomi, date, importi, percentuali, numeri di ruolo, di sinistro, di polizza, di protocollo e codici fiscali si prendono ALLA LETTERA dal fascicolo. Mai ricostruiti, mai resi verosimili.
@@ -51,7 +51,7 @@ Poi, sotto, due elenchi puntati:
 
 export async function POST(request: Request) {
   if (!aiConfigurata()) {
-    return NextResponse.json({ error: 'Funzione non ancora configurata su questo sito.' }, { status: 503 });
+    return NextResponse.json({ error: 'Themis non è ancora attivo su questo sito.' }, { status: 503 });
   }
 
   const contesto = await contestoStudio();

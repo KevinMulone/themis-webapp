@@ -43,7 +43,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato }: {
     setErrore('');
     setEsito(null);
     setInCorso(true);
-    const res = await fetch('/api/ai/bozza', {
+    const res = await fetch('/api/themis/bozza', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ matterId, tipo, istruzioni, documentiIds: scelti }),
@@ -66,7 +66,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato }: {
   return (
     <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-semibold text-neutral-900">Prepara un atto</h2>
+        <h2 className="font-semibold text-neutral-900">Fai preparare un atto a Themis</h2>
         <div className="flex items-center gap-3">
           {credito && (
             <span className="text-xs text-neutral-400">
@@ -84,15 +84,16 @@ export default function RedigiAtto({ matterId, documenti, onSalvato }: {
 
       {!aperto ? (
         <p className="mt-1 text-xs text-neutral-500">
-          Prima stesura di una diffida, di un ricorso o di una memoria, a partire dai dati
-          della pratica e dai documenti che scegli.
+          Themis prepara la prima stesura di una diffida, di un ricorso, di una memoria o di
+          una procura, seguendo la struttura degli atti dello studio.
         </p>
       ) : (
         <>
           <p className="mb-4 mt-1 text-xs text-neutral-500">
-            Quella che ottieni è una <strong>prima stesura da rivedere</strong>, non un atto
-            da depositare. I documenti selezionati vengono inviati a un servizio esterno per
-            l&apos;elaborazione.
+            Themis scrive seguendo la struttura degli atti dello studio e prende i fatti solo
+            dal fascicolo. Quella che ottieni è comunque una <strong>prima stesura da
+            rivedere</strong>, non un atto da depositare. I documenti selezionati vengono
+            inviati a un servizio esterno per l&apos;elaborazione.
           </p>
 
           <form onSubmit={handleRedigi} className="flex flex-col gap-4">
@@ -156,7 +157,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato }: {
                 type="submit" disabled={inCorso}
                 className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
               >
-                {inCorso ? 'Sto preparando l’atto...' : 'Prepara la bozza'}
+                {inCorso ? 'Themis sta preparando l’atto...' : 'Prepara la bozza'}
               </button>
             </div>
           </form>
@@ -201,7 +202,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato }: {
               )}
 
               <p className="mt-3 rounded-md bg-neutral-100 px-3 py-2 text-[11px] text-neutral-600">
-                Nessun riferimento a sentenze viene prodotto, per scelta: dove servirebbe trovi
+                Themis non produce riferimenti a sentenze, per scelta: dove servirebbe trovi
                 un segnaposto da riempire tu. Gli articoli di legge citati vanno riscontrati.
                 La responsabilità di ciò che depositi resta tua.
               </p>

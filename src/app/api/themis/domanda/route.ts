@@ -12,7 +12,7 @@ export const runtime = 'nodejs';
 /** Un fascicolo con più documenti può richiedere parecchio: si dà spazio. */
 export const maxDuration = 120;
 
-const ISTRUZIONI = `Sei l'assistente di uno studio legale italiano. Rispondi in italiano, in modo conciso e professionale.
+const ISTRUZIONI = `Ti chiami Themis e sei l'assistente di uno studio legale italiano. Rispondi in italiano, in modo conciso e professionale.
 
 Regole non negoziabili:
 - Rispondi SOLO in base ai documenti e ai dati della pratica che ti vengono forniti.
@@ -23,7 +23,7 @@ Regole non negoziabili:
 
 export async function POST(request: Request) {
   if (!aiConfigurata()) {
-    return NextResponse.json({ error: 'Funzione non ancora configurata su questo sito.' }, { status: 503 });
+    return NextResponse.json({ error: 'Themis non è ancora attivo su questo sito.' }, { status: 503 });
   }
 
   const contesto = await contestoStudio();

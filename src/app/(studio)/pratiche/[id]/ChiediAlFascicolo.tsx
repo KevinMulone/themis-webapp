@@ -34,7 +34,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
     setErrore('');
     setRisposta(null);
     setInCorso(true);
-    const res = await fetch('/api/ai/domanda', {
+    const res = await fetch('/api/themis/domanda', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ matterId, domanda, documentiIds: scelti }),
@@ -49,7 +49,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
   return (
     <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
       <div className="mb-1 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-semibold text-neutral-900">Chiedi al fascicolo</h2>
+        <h2 className="font-semibold text-neutral-900">Chiedi a Themis</h2>
         {credito && (
           <span className="text-xs text-neutral-400">
             Credito: {importo(credito.residuoMillesimi)} di {importo(credito.totaleMillesimi)}
@@ -57,8 +57,10 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
         )}
       </div>
       <p className="mb-4 text-xs text-neutral-500">
-        Le risposte si basano solo sui dati della pratica e sui documenti che scegli qui sotto.
-        I documenti selezionati vengono inviati a un servizio esterno per l&apos;elaborazione.
+        Themis è l&apos;intelligenza artificiale dello studio: legge il fascicolo e risponde
+        soltanto su ciò che vi trova, indicando sempre da quale documento viene ogni
+        affermazione. I documenti che selezioni vengono inviati a un servizio esterno per
+        l&apos;elaborazione.
       </p>
 
       {allegabili.length > 0 && (
@@ -96,7 +98,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
             type="submit" disabled={inCorso || !domanda.trim()}
             className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
           >
-            {inCorso ? 'Sto leggendo il fascicolo...' : 'Chiedi'}
+            {inCorso ? 'Themis sta leggendo il fascicolo...' : 'Chiedi a Themis'}
           </button>
         </div>
       </form>
@@ -122,8 +124,8 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
           )}
 
           <p className="mt-3 rounded-md bg-gold-100 px-3 py-2 text-[11px] text-gold-700">
-            Verifica sempre sui documenti originali prima di usare questa risposta in un atto.
-            La responsabilità di ciò che firmi resta tua.
+            Themis può sbagliare: verifica sempre sui documenti originali prima di usare
+            questa risposta in un atto. La responsabilità di ciò che firmi resta tua.
           </p>
         </div>
       )}
