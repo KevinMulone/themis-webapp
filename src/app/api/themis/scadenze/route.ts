@@ -17,7 +17,15 @@ const PER_GIRO = 5;
 const ISTRUZIONI = `Ti chiami Themis. Leggi una comunicazione PEC ricevuta da uno studio legale italiano e individui le scadenze che ne derivano.
 
 Rispondi SOLO con un array JSON, senza testo prima o dopo. Ogni elemento:
-{"tipo":"udienza"|"scadenza","data":"AAAA-MM-GG","ora":"HH:MM"|null,"titolo":"...","estratto":"...","confidenza":"alta"|"bassa"}
+{"tipo":"udienza"|"ctu"|"termine"|"scadenza"|"appuntamento"|"altro","data":"AAAA-MM-GG","ora":"HH:MM"|null,"titolo":"...","estratto":"...","confidenza":"alta"|"bassa"}
+
+IL TIPO — sceglilo con precisione, perché in un'agenda legale sono cose diverse:
+- "udienza": comparizione davanti a un giudice. Solo quella.
+- "ctu": visita medico-legale, operazioni peritali, inizio operazioni del consulente.
+- "termine": termine processuale da rispettare (deposito, costituzione, osservazioni alla CTU).
+- "scadenza": termine non processuale (riscontro a una compagnia, adempimento amministrativo).
+- "appuntamento": incontro di mediazione, negoziazione assistita, convocazione.
+- "altro": quando nessuno dei precedenti descrive davvero il fatto.
 
 REGOLE:
 - "data" è la data del termine o dell'udienza, non quella del messaggio.
@@ -126,7 +134,8 @@ export async function POST(request: Request) {
       for (const e of estratte) {
         // Solo i valori che la tabella accetta con certezza, e solo
         // proposte ancorate a una frase del messaggio.
-        if (e.tipo !== 'udienza' && e.tipo !== 'scadenza') continue;
+        const TIPI = ['udienza', 'ctu', 'termine', 'scadenza', 'appuntamento', 'altro'];
+        if (!TIPI.includes(e.tipo)) continue;
         if (!/^\d{4}-\d{2}-\d{2}$/.test(e.data)) continue;
         if (!e.estratto?.trim() || !e.titolo?.trim()) continue;
 

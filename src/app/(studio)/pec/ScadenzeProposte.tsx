@@ -103,7 +103,10 @@ export default function ScadenzeProposte() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium text-neutral-900">{p.titolo_proposto}</span>
                     <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] text-neutral-600">
-                      {p.tipo_proposto === 'udienza' ? 'Udienza' : 'Scadenza'}
+                      {({
+                        udienza: 'Udienza', ctu: 'CTU', termine: 'Termine processuale',
+                        scadenza: 'Scadenza', appuntamento: 'Appuntamento', altro: 'Altro',
+                      } as Record<string, string>)[p.tipo_proposto] ?? p.tipo_proposto}
                     </span>
                     {p.confidenza === 'bassa' && (
                       <span

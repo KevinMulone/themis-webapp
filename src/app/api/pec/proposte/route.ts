@@ -43,12 +43,42 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  // Il nome dell'assistito davanti al titolo: in un calendario con venti
+  // eventi, «Visita medico-legale CTU» non dice di chi si tratta, ed è la
+  // prima cosa che serve sapere.
+  let assistito = '';
+  if (proposta.matter_id) {
+    const { data: pratica } = await admin
+      .from('matters')
+      .select('clients(nome, cognome, ragione_sociale)')
+      .eq('id', proposta.matter_id).maybeSingle();
+    const c = Array.isArray(pratica?.clients) ? pratica?.clients[0] : pratica?.clients;
+    if (c) {
+      assistito = [c.cognome, c.nome].filter(Boolean).join(' ') || c.ragione_sociale || '';
+    }
+  }
+  const titolo = assistito && !proposta.titolo_proposto.toLowerCase().includes(assistito.toLowerCase())
+    ? `${assistito} — ${proposta.titolo_proposto}`
+    : proposta.titolo_proposto;
+
+  // Ogni tipo di proposta ha il proprio posto in calendario: un'udienza
+  // non è una visita peritale, e un termine processuale non è una
+  // scadenza amministrativa.
+  const TIPO_EVENTO: Record<string, string> = {
+    udienza: 'udienza',
+    ctu: 'appuntamento',
+    termine: 'termine_processuale',
+    scadenza: 'scadenza',
+    appuntamento: 'appuntamento',
+    altro: 'altro',
+  };
+
   // L'evento nasce solo qui, quando un essere umano ha detto di sì.
   const { data: evento, error: erroreEvento } = await admin.from('eventi').insert({
     studio_id: contesto.studioId,
     matter_id: proposta.matter_id,
-    titolo: proposta.titolo_proposto,
-    tipo: proposta.tipo_proposto === 'udienza' ? 'udienza' : 'termine_processuale',
+    titolo,
+    tipo: TIPO_EVENTO[proposta.tipo_proposto] ?? 'altro',
     data: proposta.data_proposta,
     // Mai all_day: gli eventi di lavoro hanno un orario, e senza finirebbero
     // in cima al giorno senza dire quando.
