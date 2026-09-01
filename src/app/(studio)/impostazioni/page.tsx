@@ -692,7 +692,11 @@ export default function ImpostazioniPage() {
           </div>
         )}
 
-        {pecAncora && !pecArretrato && !pecSincronizzando && (
+        {/* Si mostra sempre, non solo dopo una sincronizzazione che abbia
+            riportato arretrato: ricaricando la pagina quello stato si perde,
+            e il pulsante spariva pur essendoci ancora mezza casella da
+            prendere. Se non c'è niente da fare, lo dice premendolo. */}
+        {pecAccounts.length > 0 && !pecArretrato && !pecSincronizzando && (
           <button
             type="button" onClick={handleRecuperaArretrato}
             className="mb-3 rounded-md border border-bordeaux-700 px-4 py-2 text-sm font-semibold text-bordeaux-700 hover:bg-bordeaux-50"
