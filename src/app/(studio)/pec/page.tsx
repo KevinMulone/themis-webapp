@@ -47,7 +47,11 @@ export default function PecPage() {
   const supabase = createClient();
   const [messaggi, setMessaggi] = useState<Messaggio[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [scheda, setScheda] = useState<'messaggi' | 'ricevute'>('messaggi');
+  // Tre schede su un asse solo, invece di due schede più una tendina: le
+  // PEC ricevute, quelle inviate, e le attestazioni del gestore. Sono le
+  // tre pile in cui un avvocato divide la corrispondenza, e non si
+  // mescolano mai fra loro.
+  const [scheda, setScheda] = useState<'ricevute' | 'inviate' | 'attestazioni'>('ricevute');
   const [accountFiltro, setAccountFiltro] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -67,19 +71,35 @@ export default function PecPage() {
 
   useEffect(() => { load(); }, []);
 
-  const [direzioneFiltro, setDirezioneFiltro] = useState('');
   const [messaggioAperto, setMessaggioAperto] = useState('');
+
+  const conteggi = useMemo(() => {
+    let ricevute = 0, inviate = 0, attestazioni = 0;
+    for (const m of messaggi) {
+      if (accountFiltro && m.pec_account_id !== accountFiltro) continue;
+      if (RICEVUTE.has(m.tipo_pec)) attestazioni += 1;
+      else if ((m.direzione || 'ricevuta') === 'inviata') inviate += 1;
+      else ricevute += 1;
+    }
+    return { ricevute, inviate, attestazioni };
+  }, [messaggi, accountFiltro]);
 
   const filtrati = useMemo(() => {
     return messaggi.filter((m) => {
-      const eRicevuta = RICEVUTE.has(m.tipo_pec);
-      if (scheda === 'messaggi' && eRicevuta) return false;
-      if (scheda === 'ricevute' && !eRicevuta) return false;
+      const eAttestazione = RICEVUTE.has(m.tipo_pec);
+      const inUscita = (m.direzione || 'ricevuta') === 'inviata';
+
+      // Le attestazioni escono dalle prime due schede anche se tecnicamente
+      // arrivano: non sono corrispondenza, sono la prova che è partita.
+      if (scheda === 'attestazioni') { if (!eAttestazione) return false; }
+      else if (eAttestazione) return false;
+      else if (scheda === 'ricevute' && inUscita) return false;
+      else if (scheda === 'inviate' && !inUscita) return false;
+
       if (accountFiltro && m.pec_account_id !== accountFiltro) return false;
-      if (direzioneFiltro && (m.direzione || 'ricevuta') !== direzioneFiltro) return false;
       return true;
     });
-  }, [messaggi, scheda, accountFiltro, direzioneFiltro]);
+  }, [messaggi, scheda, accountFiltro]);
 
   const nomeAccount = (id: string) => accounts.find((a) => a.id === id)?.etichetta || '—';
 
@@ -98,32 +118,28 @@ export default function PecPage() {
       ) : (
         <>
           <div className="mb-4 flex flex-wrap items-center gap-3">
-            {/* "Messaggi" sono le PEC vere; "Ricevute di consegna" sono le
-                attestazioni del gestore. Il nome lungo è voluto: prima
-                diceva solo "Ricevute" e si confondeva con le PEC ricevute,
-                che sono un'altra cosa e stanno nell'altra scheda. */}
-            <div className="flex rounded-md border border-neutral-300 text-sm">
-              <button
-                onClick={() => setScheda('messaggi')}
-                className={`rounded-l-md px-3 py-1.5 ${scheda === 'messaggi' ? 'bg-bordeaux-700 text-white' : 'bg-white text-neutral-700 hover:bg-neutral-50'}`}
-              >
-                Messaggi
-              </button>
-              <button
-                onClick={() => setScheda('ricevute')}
-                className={`rounded-r-md border-l border-neutral-300 px-3 py-1.5 ${scheda === 'ricevute' ? 'bg-bordeaux-700 text-white' : 'bg-white text-neutral-700 hover:bg-neutral-50'}`}
-              >
-                Ricevute di consegna
-              </button>
+            <div className="flex overflow-hidden rounded-md border border-neutral-300 text-sm">
+              {([
+                ['ricevute', 'Ricevute', conteggi.ricevute],
+                ['inviate', 'Inviate', conteggi.inviate],
+                ['attestazioni', 'Attestazioni', conteggi.attestazioni],
+              ] as const).map(([chiave, etichetta, quante], i) => (
+                <button
+                  key={chiave}
+                  onClick={() => setScheda(chiave)}
+                  className={`px-3 py-1.5 ${i > 0 ? 'border-l border-neutral-300' : ''} ${
+                    scheda === chiave
+                      ? 'bg-bordeaux-700 text-white'
+                      : 'bg-white text-neutral-700 hover:bg-neutral-50'
+                  }`}
+                >
+                  {etichetta}
+                  <span className={scheda === chiave ? 'ml-1.5 text-white/70' : 'ml-1.5 text-neutral-400'}>
+                    {quante}
+                  </span>
+                </button>
+              ))}
             </div>
-            <select
-              value={direzioneFiltro} onChange={(e) => setDirezioneFiltro(e.target.value)}
-              className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm"
-            >
-              <option value="">In arrivo e in uscita</option>
-              <option value="ricevuta">Solo in arrivo</option>
-              <option value="inviata">Solo in uscita</option>
-            </select>
             {accounts.length > 1 && (
               <select
                 value={accountFiltro} onChange={(e) => setAccountFiltro(e.target.value)}
@@ -139,14 +155,19 @@ export default function PecPage() {
             {loading ? (
               <p className="p-6 text-sm text-neutral-500">Caricamento...</p>
             ) : filtrati.length === 0 ? (
-              <p className="p-6 text-sm text-neutral-500">Nessun messaggio in questa scheda.</p>
+              <p className="p-6 text-sm text-neutral-500">
+                {scheda === 'inviate'
+                  ? 'Nessuna PEC inviata. Se ne hai mandate, vanno prima scaricate dalle Impostazioni.'
+                  : scheda === 'attestazioni'
+                    ? 'Nessuna attestazione di accettazione o consegna.'
+                    : 'Nessuna PEC ricevuta.'}
+              </p>
             ) : (
               <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
                 <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
                   <tr>
                     <th className="px-4 py-2">Tipo</th>
-                    <th className="px-4 py-2">Verso</th>
                     <th className="px-4 py-2">Mittente</th>
                     <th className="px-4 py-2">Oggetto</th>
                     <th className="px-4 py-2">Data</th>
@@ -158,16 +179,7 @@ export default function PecPage() {
                   {filtrati.map((m) => (
                     <tr key={m.id} className="border-t border-neutral-100 hover:bg-neutral-50">
                       <td className="px-4 py-2 text-xs text-neutral-500">{LABEL_TIPO[m.tipo_pec] || m.tipo_pec}</td>
-                      <td className="px-4 py-2 text-xs">
-                        <span className={`rounded-full px-2 py-0.5 ${
-                          (m.direzione || 'ricevuta') === 'inviata'
-                            ? 'bg-bordeaux-50 text-bordeaux-700'
-                            : 'bg-neutral-100 text-neutral-600'
-                        }`}>
-                          {(m.direzione || 'ricevuta') === 'inviata' ? 'In uscita' : 'In arrivo'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2">{m.mittente || '—'}</td>
+                                            <td className="px-4 py-2">{m.mittente || '—'}</td>
                       <td className="px-4 py-2">
                         {m.archiviato === false ? (
                           <span className="text-neutral-700">
