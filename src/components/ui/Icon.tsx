@@ -14,7 +14,8 @@ export type NomeIcona =
   | 'dashboard' | 'clienti' | 'pratiche' | 'themis' | 'incarichi' | 'calendario'
   | 'pec' | 'genera' | 'calcolo' | 'parcelle' | 'patrocinio' | 'attivita'
   | 'collaboratori' | 'impostazioni' | 'esci' | 'piu' | 'freccia' | 'invio'
-  | 'documento' | 'orologio' | 'abbonamento';
+  | 'documento' | 'orologio' | 'abbonamento'
+  | 'lucchetto' | 'scudo' | 'utente' | 'puntini';
 
 const TRACCIATI: Record<NomeIcona, React.ReactNode> = {
   dashboard: (
@@ -145,6 +146,31 @@ const TRACCIATI: Record<NomeIcona, React.ReactNode> = {
   abbonamento: (
     <>
       <path d="M12 3.5 14.6 9l6 .9-4.3 4.2 1 6-5.3-2.8L6.7 20l1-6L3.4 9.9 9.4 9 12 3.5Z" />
+    </>
+  ),
+  lucchetto: (
+    <>
+      <rect x="4.5" y="10.5" width="15" height="10" rx="2" />
+      <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+    </>
+  ),
+  scudo: (
+    <>
+      <path d="M12 3l7.5 3v6c0 4.5-3 8-7.5 9.5C7.5 20 4.5 16.5 4.5 12V6L12 3Z" />
+      <path d="m9 12 2 2 4-4" />
+    </>
+  ),
+  utente: (
+    <>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+    </>
+  ),
+  puntini: (
+    <>
+      <circle cx="12" cy="5" r="1.2" />
+      <circle cx="12" cy="12" r="1.2" />
+      <circle cx="12" cy="19" r="1.2" />
     </>
   ),
 };
