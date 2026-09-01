@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import LetturaMessaggio from './LetturaMessaggio';
 import NuovaPec from './NuovaPec';
+import ScadenzeProposte from './ScadenzeProposte';
 
 type Messaggio = {
   id: string;
@@ -225,6 +226,8 @@ export default function PecPage() {
               </select>
             )}
           </div>
+
+          <ScadenzeProposte />
 
           <input
             value={cerca} onChange={(e) => setCerca(e.target.value)}
