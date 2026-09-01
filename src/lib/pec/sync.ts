@@ -136,7 +136,13 @@ export async function sincronizzaAccount(
             contentType: 'application/octet-stream',
             upsert: true,
           });
-        if (uploadError) throw new Error(`Salvataggio messaggio UID ${messaggio.uid}: ${uploadError.message}`);
+        // Se l'originale non entra nello storage si registra lo stesso il
+        // messaggio, senza il file: di una PEC contano prima di tutto
+        // mittente, oggetto e data, ed è quello che prova il rispetto di
+        // un termine. Buttare via anche quelli per non avere l'allegato
+        // sarebbe il baratto sbagliato.
+        const archiviato = !uploadError;
+        if (uploadError) saltati.push({ uid: messaggio.uid, motivo: uploadError.message });
 
         const { error: insertError } = await admin.from('pec_messaggi').insert({
           studio_id: account.studio_id,
@@ -150,7 +156,9 @@ export async function sincronizzaAccount(
           oggetto: interpretato.oggetto,
           data_invio: interpretato.dataInvio,
           data_ricezione: new Date().toISOString(),
-          storage_path_eml: storagePath,
+          storage_path_eml: archiviato ? storagePath : null,
+          archiviato,
+          nota_archivio: archiviato ? null : `Originale non archiviato: ${uploadError?.message}`,
         });
         // Codice 23505 = gia' registrato in un giro precedente: si ignora
         // invece di far fallire tutta la sincronizzazione.
@@ -194,8 +202,8 @@ export async function sincronizzaAccount(
     // I messaggi saltati restano scritti nell'ultimo errore: non fanno
     // fallire la sincronizzazione, ma non devono nemmeno sparire.
     const avviso = saltati.length
-      ? `${saltati.length} messaggi non archiviati e saltati (${saltati[0].motivo}). `
-        + 'Restano leggibili nella webmail del gestore.'
+      ? `${saltati.length} messaggi registrati senza l'originale (${saltati[0].motivo}). `
+        + 'Compaiono in elenco ma il .eml va letto nella webmail del gestore.'
       : null;
 
     await admin

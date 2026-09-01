@@ -16,6 +16,7 @@ type Messaggio = {
   data_ricezione: string;
   stato: string;
   direzione: string;
+  archiviato: boolean;
 };
 
 type Account = { id: string; etichetta: string };
@@ -55,7 +56,7 @@ export default function PecPage() {
     const [{ data: acc }, { data: msg }] = await Promise.all([
       supabase.from('pec_account').select('id, etichetta').order('created_at'),
       supabase.from('pec_messaggi')
-        .select('id, pec_account_id, matter_id, tipo_pec, mittente, destinatari, oggetto, data_invio, data_ricezione, stato, direzione')
+        .select('id, pec_account_id, matter_id, tipo_pec, mittente, destinatari, oggetto, data_invio, data_ricezione, stato, direzione, archiviato')
         .order('data_ricezione', { ascending: false })
         .limit(200),
     ]);
@@ -164,19 +165,35 @@ export default function PecPage() {
                       </td>
                       <td className="px-4 py-2">{m.mittente || '—'}</td>
                       <td className="px-4 py-2">
-                        <button
-                          type="button" onClick={() => setMessaggioAperto(m.id)}
-                          className="text-left text-bordeaux-700 hover:underline"
-                        >
-                          {m.oggetto || '(senza oggetto)'}
-                        </button>
+                        {m.archiviato === false ? (
+                          <span className="text-neutral-700">
+                            {m.oggetto || '(senza oggetto)'}
+                            <span
+                              className="ml-2 rounded-full bg-gold-100 px-2 py-0.5 text-[11px] text-gold-700"
+                              title="Il messaggio è troppo grande per l'archivio: resta leggibile nella webmail del gestore."
+                            >
+                              originale non archiviato
+                            </span>
+                          </span>
+                        ) : (
+                          <button
+                            type="button" onClick={() => setMessaggioAperto(m.id)}
+                            className="text-left text-bordeaux-700 hover:underline"
+                          >
+                            {m.oggetto || '(senza oggetto)'}
+                          </button>
+                        )}
                       </td>
                       <td className="px-4 py-2 text-xs text-neutral-500">{formattaData(m.data_ricezione)}</td>
                       {accounts.length > 1 && <td className="px-4 py-2 text-xs text-neutral-500">{nomeAccount(m.pec_account_id)}</td>}
                       <td className="px-4 py-2 text-right">
-                        <a href={`/api/pec/messaggio/${m.id}/download`} className="text-xs font-semibold text-neutral-500 hover:underline">
+{m.archiviato === false ? (
+                          <span className="text-xs text-neutral-300">—</span>
+                        ) : (
+                                                  <a href={`/api/pec/messaggio/${m.id}/download`} className="text-xs font-semibold text-neutral-500 hover:underline">
                           Scarica
                         </a>
+                        )}
                       </td>
                     </tr>
                   ))}
