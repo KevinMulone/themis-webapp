@@ -14,6 +14,7 @@ type Messaggio = {
   data_invio: string | null;
   data_ricezione: string;
   stato: string;
+  direzione: string;
 };
 
 type Account = { id: string; etichetta: string };
@@ -53,7 +54,7 @@ export default function PecPage() {
     const [{ data: acc }, { data: msg }] = await Promise.all([
       supabase.from('pec_account').select('id, etichetta').order('created_at'),
       supabase.from('pec_messaggi')
-        .select('id, pec_account_id, matter_id, tipo_pec, mittente, destinatari, oggetto, data_invio, data_ricezione, stato')
+        .select('id, pec_account_id, matter_id, tipo_pec, mittente, destinatari, oggetto, data_invio, data_ricezione, stato, direzione')
         .order('data_ricezione', { ascending: false })
         .limit(200),
     ]);
@@ -64,15 +65,18 @@ export default function PecPage() {
 
   useEffect(() => { load(); }, []);
 
+  const [direzioneFiltro, setDirezioneFiltro] = useState('');
+
   const filtrati = useMemo(() => {
     return messaggi.filter((m) => {
       const eRicevuta = RICEVUTE.has(m.tipo_pec);
       if (scheda === 'messaggi' && eRicevuta) return false;
       if (scheda === 'ricevute' && !eRicevuta) return false;
       if (accountFiltro && m.pec_account_id !== accountFiltro) return false;
+      if (direzioneFiltro && (m.direzione || 'ricevuta') !== direzioneFiltro) return false;
       return true;
     });
-  }, [messaggi, scheda, accountFiltro]);
+  }, [messaggi, scheda, accountFiltro, direzioneFiltro]);
 
   const nomeAccount = (id: string) => accounts.find((a) => a.id === id)?.etichetta || '—';
 
@@ -105,6 +109,14 @@ export default function PecPage() {
                 Ricevute
               </button>
             </div>
+            <select
+              value={direzioneFiltro} onChange={(e) => setDirezioneFiltro(e.target.value)}
+              className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm"
+            >
+              <option value="">Ricevute e inviate</option>
+              <option value="ricevuta">Solo ricevute</option>
+              <option value="inviata">Solo inviate</option>
+            </select>
             {accounts.length > 1 && (
               <select
                 value={accountFiltro} onChange={(e) => setAccountFiltro(e.target.value)}
@@ -127,6 +139,7 @@ export default function PecPage() {
                 <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
                   <tr>
                     <th className="px-4 py-2">Tipo</th>
+                    <th className="px-4 py-2">Verso</th>
                     <th className="px-4 py-2">Mittente</th>
                     <th className="px-4 py-2">Oggetto</th>
                     <th className="px-4 py-2">Ricevuto</th>
@@ -138,6 +151,15 @@ export default function PecPage() {
                   {filtrati.map((m) => (
                     <tr key={m.id} className="border-t border-neutral-100 hover:bg-neutral-50">
                       <td className="px-4 py-2 text-xs text-neutral-500">{LABEL_TIPO[m.tipo_pec] || m.tipo_pec}</td>
+                      <td className="px-4 py-2 text-xs">
+                        <span className={`rounded-full px-2 py-0.5 ${
+                          (m.direzione || 'ricevuta') === 'inviata'
+                            ? 'bg-bordeaux-50 text-bordeaux-700'
+                            : 'bg-neutral-100 text-neutral-600'
+                        }`}>
+                          {(m.direzione || 'ricevuta') === 'inviata' ? 'Inviata' : 'Ricevuta'}
+                        </span>
+                      </td>
                       <td className="px-4 py-2">{m.mittente || '—'}</td>
                       <td className="px-4 py-2">{m.oggetto || '—'}</td>
                       <td className="px-4 py-2 text-xs text-neutral-500">{formattaData(m.data_ricezione)}</td>

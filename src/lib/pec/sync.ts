@@ -1,6 +1,7 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { scaricaNuoviMessaggi } from './imap';
+import { scaricaNuoviMessaggi, elencaCartelle } from './imap';
+import { MAX_MESSAGGI_PER_GIRO } from './costanti';
 import { interpretaMessaggioPec } from './parse';
 import { decryptBuffer, encryptBuffer } from '@/lib/crypto/docEncryption';
 import { DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
@@ -50,51 +51,114 @@ export async function sincronizzaAccount(
       PEC_KEY_SCOPE_PREFIX + account.studio_id,
     ).toString('utf-8');
 
-    const esito = await scaricaNuoviMessaggi(
-      { host: account.imap_host, port: account.imap_port, user: account.imap_user, password },
-      account.last_seen_uid ?? 0,
-      account.uid_validity !== null && account.uid_validity !== undefined ? BigInt(account.uid_validity) : null,
-    );
+    const config = {
+      host: account.imap_host, port: account.imap_port, user: account.imap_user, password,
+    };
+
+    // Al primo giro non sappiamo che cartelle abbia la casella: si chiede
+    // al server. Si attivano ricevute, inviate e archivio; cestino e
+    // indesiderata restano fuori, perche' non sono corrispondenza.
+    let { data: cartelle } = await admin
+      .from('pec_cartelle')
+      .select('*')
+      .eq('pec_account_id', accountId)
+      .eq('attiva', true)
+      .order('ruolo');
+
+    if (!cartelle || cartelle.length === 0) {
+      const sulServer = await elencaCartelle(config);
+      const daAttivare = sulServer.filter((c) => c.ruolo !== 'altro');
+      // Se il server non dichiara nulla di riconoscibile, almeno INBOX.
+      const righe = (daAttivare.length > 0 ? daAttivare : [{
+        percorso: 'INBOX', nome: 'INBOX', messaggi: 0, ruolo: 'inbox' as const,
+      }]).map((c) => ({
+        pec_account_id: accountId,
+        studio_id: account.studio_id,
+        percorso: c.percorso,
+        ruolo: c.ruolo,
+        attiva: true,
+        // Le cartelle nuove ripartono da zero, tranne INBOX, che eredita il
+        // segnalibro gia' raggiunto: altrimenti riscaricherebbe tutto.
+        last_seen_uid: c.ruolo === 'inbox' ? (account.last_seen_uid ?? 0) : 0,
+        uid_validity: c.ruolo === 'inbox' ? account.uid_validity ?? null : null,
+      }));
+      await admin.from('pec_cartelle').upsert(righe, { onConflict: 'pec_account_id,percorso' });
+      const { data: riLette } = await admin
+        .from('pec_cartelle').select('*')
+        .eq('pec_account_id', accountId).eq('attiva', true).order('ruolo');
+      cartelle = riLette ?? [];
+    }
 
     let inseriti = 0;
-    for (const messaggio of esito.messaggi) {
-      const interpretato = await interpretaMessaggioPec(messaggio.sorgente);
-      const storagePath = `pec/${account.studio_id}/${account.id}/${messaggio.uid}.eml.enc`;
+    // Il tetto e' di tutto il giro, non di ogni cartella: e' il tempo della
+    // funzione a essere limitato, e non gliene importa da quale cartella
+    // vengano i messaggi.
+    let budget = MAX_MESSAGGI_PER_GIRO;
 
-      const { error: uploadError } = await admin.storage
-        .from(DOCUMENTS_BUCKET)
-        .upload(storagePath, encryptBuffer(messaggio.sorgente, account.studio_id), {
-          contentType: 'application/octet-stream',
-          upsert: true,
+    for (const cartella of cartelle) {
+      if (budget <= 0) break;
+
+      const esito = await scaricaNuoviMessaggi(
+        config,
+        cartella.percorso,
+        cartella.last_seen_uid ?? 0,
+        cartella.uid_validity !== null && cartella.uid_validity !== undefined
+          ? BigInt(cartella.uid_validity) : null,
+        budget,
+      );
+
+      for (const messaggio of esito.messaggi) {
+        const interpretato = await interpretaMessaggioPec(messaggio.sorgente);
+        // Il percorso include la cartella perche' gli UID si ripetono da una
+        // cartella all'altra: senza, l'inviata n. 5 sovrascriverebbe la
+        // ricevuta n. 5.
+        const cartellaSlug = cartella.percorso.replace(/[^A-Za-z0-9]+/g, '_');
+        const storagePath = `pec/${account.studio_id}/${account.id}/${cartellaSlug}/${messaggio.uid}.eml.enc`;
+
+        const { error: uploadError } = await admin.storage
+          .from(DOCUMENTS_BUCKET)
+          .upload(storagePath, encryptBuffer(messaggio.sorgente, account.studio_id), {
+            contentType: 'application/octet-stream',
+            upsert: true,
+          });
+        if (uploadError) throw new Error(`Salvataggio messaggio UID ${messaggio.uid}: ${uploadError.message}`);
+
+        const { error: insertError } = await admin.from('pec_messaggi').insert({
+          studio_id: account.studio_id,
+          pec_account_id: account.id,
+          cartella: cartella.percorso,
+          direzione: cartella.ruolo === 'inviata' ? 'inviata' : 'ricevuta',
+          imap_uid: messaggio.uid,
+          tipo_pec: interpretato.tipoPec,
+          mittente: interpretato.mittente,
+          destinatari: interpretato.destinatari,
+          oggetto: interpretato.oggetto,
+          data_invio: interpretato.dataInvio,
+          data_ricezione: new Date().toISOString(),
+          storage_path_eml: storagePath,
         });
-      if (uploadError) throw new Error(`Salvataggio messaggio UID ${messaggio.uid}: ${uploadError.message}`);
-
-      const { error: insertError } = await admin.from('pec_messaggi').insert({
-        studio_id: account.studio_id,
-        pec_account_id: account.id,
-        imap_uid: messaggio.uid,
-        tipo_pec: interpretato.tipoPec,
-        mittente: interpretato.mittente,
-        destinatari: interpretato.destinatari,
-        oggetto: interpretato.oggetto,
-        data_invio: interpretato.dataInvio,
-        data_ricezione: new Date().toISOString(),
-        storage_path_eml: storagePath,
-      });
-      // Codice 23505 = violazione di unicità (pec_account_id, imap_uid): il
-      // messaggio è già stato registrato in un giro precedente, si ignora
-      // invece di far fallire l'intera sincronizzazione.
-      if (insertError && insertError.code !== '23505') {
-        throw new Error(`Registrazione messaggio UID ${messaggio.uid}: ${insertError.message}`);
+        // Codice 23505 = gia' registrato in un giro precedente: si ignora
+        // invece di far fallire tutta la sincronizzazione.
+        if (insertError && insertError.code !== '23505') {
+          throw new Error(`Registrazione messaggio UID ${messaggio.uid}: ${insertError.message}`);
+        }
+        if (!insertError) inseriti += 1;
+        budget -= 1;
       }
-      if (!insertError) inseriti += 1;
+
+      await admin
+        .from('pec_cartelle')
+        .update({
+          last_seen_uid: esito.ultimoUidVisto ?? cartella.last_seen_uid,
+          uid_validity: esito.uidValidity.toString(),
+          ultimo_controllo_at: new Date().toISOString(),
+        })
+        .eq('id', cartella.id);
     }
 
     await admin
       .from('pec_account')
       .update({
-        last_seen_uid: esito.ultimoUidVisto ?? account.last_seen_uid,
-        uid_validity: esito.uidValidity.toString(),
         ultimo_controllo_at: new Date().toISOString(),
         ultimo_errore: null,
         updated_at: new Date().toISOString(),

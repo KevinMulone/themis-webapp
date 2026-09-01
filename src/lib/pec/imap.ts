@@ -36,8 +36,11 @@ export type EsitoSincronizzazione = {
  */
 export async function scaricaNuoviMessaggi(
   config: ConfigurazioneImap,
+  cartella: string,
   daUidEsclusivo: number,
   uidValiditySalvato: bigint | null,
+  /** Quanti se ne possono ancora prendere in questo giro, fra tutte le cartelle. */
+  massimo: number = MAX_MESSAGGI_PER_GIRO,
 ): Promise<EsitoSincronizzazione> {
   const client = new ImapFlow({
     host: config.host,
@@ -49,7 +52,7 @@ export async function scaricaNuoviMessaggi(
 
   await client.connect();
   try {
-    const lock = await client.getMailboxLock('INBOX');
+    const lock = await client.getMailboxLock(cartella);
     try {
       const uidValidity = client.mailbox && typeof client.mailbox !== 'boolean' ? client.mailbox.uidValidity : BigInt(0);
       const uidValidityCambiato = uidValiditySalvato !== null && uidValiditySalvato !== uidValidity;
@@ -65,7 +68,7 @@ export async function scaricaNuoviMessaggi(
         if (messaggio.uid <= daUidEffettivo || !messaggio.source) continue;
         messaggi.push({ uid: messaggio.uid, sorgente: messaggio.source });
         if (ultimoUidVisto === null || messaggio.uid > ultimoUidVisto) ultimoUidVisto = messaggio.uid;
-        if (messaggi.length >= MAX_MESSAGGI_PER_GIRO) break;
+        if (messaggi.length >= massimo) break;
       }
 
       messaggi.sort((a, b) => a.uid - b.uid);
@@ -78,7 +81,30 @@ export async function scaricaNuoviMessaggi(
   }
 }
 
-export type CartellaImap = { percorso: string; nome: string; messaggi: number };
+export type RuoloCartella = 'inbox' | 'inviata' | 'archivio' | 'altro';
+export type CartellaImap = {
+  percorso: string; nome: string; messaggi: number; ruolo: RuoloCartella;
+};
+
+/**
+ * A cosa serve una cartella.
+ *
+ * Si guarda prima l'attributo dichiarato dal server (`\\Sent`, `\\Archive`):
+ * è la fonte affidabile. Solo se manca si ricade sul nome, che cambia da
+ * gestore a gestore e da lingua a lingua — «Posta inviata», «Sent»,
+ * «Inviata».
+ */
+function ruoloDiCartella(percorso: string, attributi: Set<string> | undefined): RuoloCartella {
+  const flag = (f: string) => attributi?.has(f) ?? false;
+  if (percorso.toUpperCase() === 'INBOX') return 'inbox';
+  if (flag('\\Sent')) return 'inviata';
+  if (flag('\\Archive') || flag('\\All')) return 'archivio';
+
+  const n = percorso.toLowerCase();
+  if (n.includes('inviat') || n.includes('sent')) return 'inviata';
+  if (n.includes('archiv')) return 'archivio';
+  return 'altro';
+}
 
 /**
  * Elenca le cartelle della casella con quanti messaggi contengono.
@@ -104,11 +130,15 @@ export async function elencaCartelle(config: ConfigurazioneImap): Promise<Cartel
           percorso: casella.path,
           nome: casella.name || casella.path,
           messaggi: stato.messages ?? 0,
+          ruolo: ruoloDiCartella(casella.path, casella.flags),
         });
       } catch {
         // Una cartella che non si lascia interrogare non deve far fallire
         // l'elenco: si segna con -1 e si prosegue.
-        cartelle.push({ percorso: casella.path, nome: casella.name || casella.path, messaggi: -1 });
+        cartelle.push({
+          percorso: casella.path, nome: casella.name || casella.path, messaggi: -1,
+          ruolo: ruoloDiCartella(casella.path, casella.flags),
+        });
       }
     }
     return cartelle;
