@@ -116,9 +116,9 @@ export default function PecPage() {
               value={direzioneFiltro} onChange={(e) => setDirezioneFiltro(e.target.value)}
               className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm"
             >
-              <option value="">Ricevute e inviate</option>
-              <option value="ricevuta">Solo ricevute</option>
-              <option value="inviata">Solo inviate</option>
+              <option value="">In arrivo e in uscita</option>
+              <option value="ricevuta">Solo in arrivo</option>
+              <option value="inviata">Solo in uscita</option>
             </select>
             {accounts.length > 1 && (
               <select
@@ -160,7 +160,7 @@ export default function PecPage() {
                             ? 'bg-bordeaux-50 text-bordeaux-700'
                             : 'bg-neutral-100 text-neutral-600'
                         }`}>
-                          {(m.direzione || 'ricevuta') === 'inviata' ? 'Inviata' : 'Ricevuta'}
+                          {(m.direzione || 'ricevuta') === 'inviata' ? 'In uscita' : 'In arrivo'}
                         </span>
                       </td>
                       <td className="px-4 py-2">{m.mittente || '—'}</td>
