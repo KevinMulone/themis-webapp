@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { aiutoSegnaposto } from '@/lib/suggerimenti';
+import { aiutoSegnaposto, FORI } from '@/lib/suggerimenti';
+import { valoriUsati, registraUso } from '@/lib/usati';
 import { TIPI_PRATICA, labelFromOptions, clientLabel } from '@/lib/constants';
 
 type Matter = { id: string; tipo_pratica: string; clients?: { nome: string | null; cognome: string | null; ragione_sociale: string | null; tipo_soggetto: string } };
@@ -22,6 +23,7 @@ export default function GeneraPage() {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<{ documento_id: string; nome_file: string } | null>(null);
   const [error, setError] = useState('');
+  const [difensori, setDifensori] = useState<string[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -31,6 +33,10 @@ export default function GeneraPage() {
       ]);
       setMatters((m as unknown as Matter[]) || []);
       setTemplates(t || []);
+      // I difensori proposti sono le persone dello studio: sono quelle che
+      // firmano davvero, e non vanno digitate ogni volta.
+      const { data: membri } = await supabase.from('studio_membri').select('nome, email');
+      setDifensori((membri || []).map((x) => x.nome || x.email).filter(Boolean) as string[]);
     })();
   }, []);
 
@@ -62,6 +68,9 @@ export default function GeneraPage() {
     setGenerating(false);
     if (!res.ok || !body.ok) { setError(body.error || 'Generazione non riuscita'); return; }
     setResult({ documento_id: body.documento_id, nome_file: body.nome_file });
+    // Si impara solo da ciò che è andato a buon fine: un valore scritto e
+    // poi scartato non merita di essere proposto la prossima volta.
+    for (const [chiave, valore] of Object.entries(manualValues)) registraUso(chiave, valore);
   }
 
   return (
@@ -101,6 +110,19 @@ export default function GeneraPage() {
             <p className="text-xs font-semibold text-neutral-500">Campi da compilare</p>
             {placeholders.map((p) => {
               const aiuto = aiutoSegnaposto(p.placeholder_key, p.etichetta);
+              const chiave = p.placeholder_key.toLowerCase();
+
+              // Due campi hanno un elenco sensato di valori possibili: il
+              // difensore (le persone dello studio, più quelli già scritti)
+              // e il foro. Gli altri restano campi liberi: una tendina su
+              // un campo senza un insieme vero di valori è solo un ostacolo.
+              const proposte = chiave.includes('avvocato') || chiave.includes('difensore')
+                ? [...new Set([...difensori, ...valoriUsati(p.placeholder_key)])]
+                : chiave.includes('foro')
+                  ? [...new Set([...valoriUsati(p.placeholder_key), ...FORI])]
+                  : [];
+              const idElenco = `elenco-${p.placeholder_key}`;
+
               return (
                 <div key={p.placeholder_key}>
                   <label className="mb-1 block text-xs text-neutral-500">
@@ -109,9 +131,16 @@ export default function GeneraPage() {
                   <input
                     type={p.tipo_campo === 'data' ? 'date' : p.tipo_campo === 'numero' || p.tipo_campo === 'importo' ? 'number' : 'text'}
                     value={manualValues[p.placeholder_key] || ''}
+                    list={proposte.length ? idElenco : undefined}
+                    autoComplete={proposte.length ? 'off' : undefined}
                     onChange={(e) => setManualValues({ ...manualValues, [p.placeholder_key]: e.target.value })}
                     className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
                   />
+                  {proposte.length > 0 && (
+                    <datalist id={idElenco}>
+                      {proposte.map((v) => <option key={v} value={v} />)}
+                    </datalist>
+                  )}
                   {aiuto && <p className="mt-1 text-[11px] text-neutral-400">{aiuto}</p>}
                 </div>
               );

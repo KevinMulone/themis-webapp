@@ -9,6 +9,7 @@ import { TIPI_PRATICA, STATI_PRATICA, labelFromOptions, clientLabel, formatDateI
 type Client = { id: string; tipo_soggetto: string; nome: string | null; cognome: string | null; ragione_sociale: string | null };
 type Matter = {
   id: string; client_id: string; tipo_pratica: string; stato: string; updated_at: string;
+  assegnato_a: string | null;
   clients?: Client;
 };
 
@@ -21,19 +22,28 @@ export default function PraticheePage() {
   const [creating, setCreating] = useState(false);
   const [newClientId, setNewClientId] = useState('');
   const [newTipo, setNewTipo] = useState('sinistro');
+  const [membri, setMembri] = useState<Record<string, string>>({});
 
   async function load() {
     setLoading(true);
-    const [{ data }, { data: clientsData }] = await Promise.all([
+    const [{ data }, { data: clientsData }, { data: membriData }] = await Promise.all([
       supabase.from('matters')
         .select('*, clients(id, tipo_soggetto, nome, cognome, ragione_sociale)')
         .neq('stato', 'archiviata')
         .order('updated_at', { ascending: false }),
       supabase.from('clients').select('id, tipo_soggetto, nome, cognome, ragione_sociale')
         .eq('archiviato', false).order('cognome'),
+      supabase.from('studio_membri').select('user_id, nome, email'),
     ]);
     setMatters((data as Matter[]) || []);
     setClients(clientsData || []);
+    // Il nome si risolve qui e non con una join: studio_membri non ha una
+    // chiave esterna verso matters che PostgREST possa seguire.
+    const rosa: Record<string, string> = {};
+    for (const m of membriData || []) {
+      if (m.user_id) rosa[m.user_id] = m.nome || m.email || 'collaboratore';
+    }
+    setMembri(rosa);
     setLoading(false);
   }
 
@@ -80,6 +90,7 @@ export default function PraticheePage() {
                 <th className="px-4 py-2">Tipo</th>
                 <th className="px-4 py-2">Stato</th>
                 <th className="px-4 py-2">Aggiornata</th>
+                <th className="px-4 py-2">Assegnata a</th>
               </tr>
             </thead>
             <tbody>
@@ -93,6 +104,11 @@ export default function PraticheePage() {
                   <td className="px-4 py-2">{labelFromOptions(TIPI_PRATICA, m.tipo_pratica)}</td>
                   <td className="px-4 py-2">{labelFromOptions(STATI_PRATICA, m.stato)}</td>
                   <td className="px-4 py-2">{formatDateIt(m.updated_at?.slice(0, 10))}</td>
+                  <td className="px-4 py-2">
+                    {m.assegnato_a
+                      ? (membri[m.assegnato_a] ?? 'collaboratore rimosso')
+                      : <span className="text-neutral-400">non assegnata</span>}
+                  </td>
                 </tr>
               ))}
             </tbody>

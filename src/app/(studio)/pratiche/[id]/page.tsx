@@ -22,6 +22,7 @@ type Matter = {
   rg_numero: string | null; rg_anno: string | null; giudice: string | null;
   data_apertura: string | null; data_chiusura: string | null;
   descrizione: string | null; metodo_pagamento: string | null;
+  assegnato_a: string | null;
 };
 type Sinistro = {
   id: string; matter_id: string; data_sinistro: string | null; luogo_sinistro: string | null;
@@ -56,6 +57,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const { studioId } = useStudio();
   const router = useRouter();
   const [matter, setMatter] = useState<Matter | null>(null);
+  const [membriStudio, setMembriStudio] = useState<{ user_id: string; nome: string | null; email: string }[]>([]);
   const [client, setClient] = useState<{ id: string; tipo_soggetto: string; nome: string | null; cognome: string | null; ragione_sociale: string | null } | null>(null);
   const [sinistro, setSinistro] = useState<Sinistro | null>(null);
   const [testimoni, setTestimoni] = useState<Testimone[]>([]);
@@ -122,6 +124,10 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   async function load() {
     loadDocumenti();
     loadRichieste();
+    supabase.from('studio_membri').select('user_id, nome, email').eq('stato', 'attivo')
+      .then(({ data }) => setMembriStudio(
+        (data || []).filter((m) => m.user_id) as { user_id: string; nome: string | null; email: string }[],
+      ));
     const { data: m } = await supabase.from('matters').select('*').eq('id', id).single();
     if (!m) return;
     setMatter(m);
@@ -263,6 +269,21 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             <select name="stato" defaultValue={matter.stato} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
               {STATI_PRATICA.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Assegnata a</label>
+            <select
+              name="assegnato_a" defaultValue={matter.assegnato_a ?? ''}
+              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            >
+              <option value="">Non assegnata</option>
+              {membriStudio.map((m) => (
+                <option key={m.user_id} value={m.user_id}>{m.nome || m.email}</option>
+              ))}
+            </select>
+            <p className="mt-1 text-[11px] text-neutral-400">
+              Chi segue la pratica nel suo insieme, distinto dai singoli incarichi
+            </p>
           </div>
           <Field label="Controparte" name="controparte_nome" defaultValue={matter.controparte_nome} />
           <Field opzioni={COMPAGNIE_ASSICURATIVE} label="Compagnia assicurativa" name="compagnia_assicurativa" defaultValue={matter.compagnia_assicurativa} />

@@ -16,6 +16,41 @@ export const COMPAGNIE_ASSICURATIVE = [
 ];
 
 /** Uffici giudiziari ricorrenti, con quelli siciliani in testa. */
+/**
+ * Fori da offrire come suggerimento nei moduli.
+ *
+ * Sono i capoluoghi di provincia (con il nome corretto della sede, non
+ * quello della provincia: Trani e non Barletta-Andria-Trani) più le sedi
+ * non capoluogo che lo studio già usa.
+ *
+ * NON è l'elenco ufficiale completo dei circondari di tribunale: non sono
+ * riuscito a procurarmelo da una fonte attendibile, e ricostruirlo a
+ * memoria farebbe ricomparire sedi soppresse dalla riforma della
+ * geografia giudiziaria — un errore che in un atto si paga. Il campo
+ * resta scrivibile a mano: una sede mancante non blocca nulla, si
+ * aggiunge qui quando serve.
+ */
+export const FORI = [
+  'Agrigento', 'Alessandria', 'Ancona', 'Aosta', 'Arezzo', 'Ascoli Piceno',
+  'Asti', 'Avellino', 'Barcellona P.G.', 'Bari', 'Belluno', 'Benevento',
+  'Bergamo', 'Biella', 'Bologna', 'Bolzano', 'Brescia', 'Brindisi',
+  'Cagliari', 'Caltanissetta', 'Campobasso', 'Caserta', 'Catania',
+  'Catanzaro', 'Chieti', 'Como', 'Cosenza', 'Cremona', 'Crotone', 'Cuneo',
+  'Enna', 'Fermo', 'Ferrara', 'Firenze', 'Foggia', 'Forlì', 'Frosinone',
+  'Gela', 'Genova', 'Gorizia', 'Grosseto', 'Imperia', 'Isernia', 'L\'Aquila',
+  'La Spezia', 'Latina', 'Lecce', 'Lecco', 'Livorno', 'Lodi', 'Lucca',
+  'Macerata', 'Mantova', 'Marsala', 'Massa', 'Matera', 'Messina', 'Milano',
+  'Modena', 'Monza', 'Napoli', 'Novara', 'Nuoro', 'Oristano', 'Padova',
+  'Palermo', 'Parma', 'Patti', 'Pavia', 'Perugia', 'Pesaro', 'Pescara',
+  'Piacenza', 'Pisa', 'Pistoia', 'Pordenone', 'Potenza', 'Prato', 'Ragusa',
+  'Ravenna', 'Reggio Calabria', 'Reggio Emilia', 'Rieti', 'Rimini', 'Roma',
+  'Rovigo', 'Salerno', 'Sassari', 'Savona', 'Sciacca', 'Siena', 'Siracusa',
+  'Sondrio', 'Taranto', 'Teramo', 'Termini Imerese', 'Terni', 'Torino',
+  'Trani', 'Trapani', 'Trento', 'Treviso', 'Trieste', 'Udine', 'Varese',
+  'Venezia', 'Verbania', 'Vercelli', 'Verona', 'Vibo Valentia', 'Vicenza',
+  'Viterbo',
+];
+
 export const TRIBUNALI = [
   'Tribunale di Caltanissetta', 'Tribunale di Catania', 'Tribunale di Enna',
   'Tribunale di Agrigento', 'Tribunale di Gela', 'Tribunale di Siracusa',

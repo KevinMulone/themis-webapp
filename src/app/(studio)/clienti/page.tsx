@@ -1,5 +1,7 @@
 'use client';
 
+import CampoComune from './CampoComune';
+
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
@@ -33,6 +35,7 @@ export default function ClientiPage() {
   const { studioId } = useStudio();
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState('');
+  const [mostraArchiviati, setMostraArchiviati] = useState(false);
   const [editing, setEditing] = useState<Partial<Client> | null>(null);
   const [loading, setLoading] = useState(true);
   const [inviteModal, setInviteModal] = useState<{
@@ -46,13 +49,13 @@ export default function ClientiPage() {
     const { data } = await supabase
       .from('clients')
       .select('*')
-      .eq('archiviato', false)
+      .eq('archiviato', mostraArchiviati)
       .order('cognome', { ascending: true });
     setClients(data || []);
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [mostraArchiviati]);
 
   async function loadClientDocs(clientId: string) {
     setLoadingDocs(true);
@@ -169,12 +172,28 @@ export default function ClientiPage() {
           + Nuovo cliente
         </button>
       </div>
-      <input
-        className="mb-4 w-full max-w-md rounded-md border border-neutral-300 px-3 py-2 text-sm"
-        placeholder="Cerca per nome, cognome, ragione sociale, CF..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <input
+          className="w-full max-w-md rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          placeholder="Cerca per nome, cognome, ragione sociale, CF..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        {/* Due elenchi distinti, non un filtro che li mescola: un cliente
+            archiviato non deve comparire per sbaglio in una ricerca
+            ordinaria. */}
+        <button
+          type="button"
+          onClick={() => setMostraArchiviati(!mostraArchiviati)}
+          className={`shrink-0 rounded-md border px-3 py-2 text-sm font-medium ${
+            mostraArchiviati
+              ? 'border-bordeaux-700 bg-bordeaux-700 text-white'
+              : 'border-neutral-300 text-neutral-600 hover:bg-neutral-50'
+          }`}
+        >
+          {mostraArchiviati ? 'Torna agli attivi' : 'Archiviati'}
+        </button>
+      </div>
 
       {loading ? (
         <p className="text-sm text-neutral-500">Caricamento...</p>
@@ -246,9 +265,10 @@ export default function ClientiPage() {
                 </>
               )}
               <Field label="Indirizzo" name="indirizzo" defaultValue={editing.indirizzo} full />
-              <Field label="CAP" name="cap" defaultValue={editing.cap} />
-              <Field label="Città" name="citta" defaultValue={editing.citta} />
-              <Field label="Provincia" name="provincia" defaultValue={editing.provincia} />
+              <CampoComune
+                key={editing.id ?? 'nuovo'}
+                citta={editing.citta} provincia={editing.provincia} cap={editing.cap}
+              />
               <Field label="Telefono" name="telefono" defaultValue={editing.telefono} />
               <Field label="Email" name="email" defaultValue={editing.email} />
               <Field label="PEC" name="pec" defaultValue={editing.pec} />

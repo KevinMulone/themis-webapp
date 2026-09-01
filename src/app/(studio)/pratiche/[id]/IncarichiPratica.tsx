@@ -61,8 +61,9 @@ export default function IncarichiPratica({ matterId, studioId }: { matterId: str
     e.preventDefault();
     setErrore('');
     const form = new FormData(e.currentTarget);
-    const titolo = (form.get('titolo') as string || '').trim();
-    if (!titolo) return;
+    // Non è più obbligatorio: chi apre un incarico di fretta lo intitola
+    // dopo. Meglio un incarico da rinominare che un incarico non creato.
+    const titolo = (form.get('titolo') as string || '').trim() || 'Da definire';
     setCreando(true);
     const { error } = await supabase.from('incarichi').insert({
       studio_id: studioId,
@@ -169,8 +170,16 @@ export default function IncarichiPratica({ matterId, studioId }: { matterId: str
       )}
 
       <form onSubmit={handleCrea} className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
-        <input name="titolo" required placeholder="Es. Preparare la memoria di replica"
-          className="col-span-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+        <div className="col-span-full">
+          <label className="mb-1 block text-xs text-neutral-500">
+            Oggetto dell&apos;incarico{' '}
+            <span className="text-neutral-400">
+              (che cosa va fatto, in poche parole — si può lasciare vuoto e scriverlo dopo)
+            </span>
+          </label>
+          <input name="titolo" placeholder="Es. Preparare la memoria di replica"
+            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+        </div>
         <select name="assegnato_a" defaultValue="" className="rounded-md border border-neutral-300 px-3 py-2 text-sm">
           <option value="">Non assegnato</option>
           {attivi.map((m) => <option key={m.user_id} value={m.user_id}>{m.nome || m.email}</option>)}

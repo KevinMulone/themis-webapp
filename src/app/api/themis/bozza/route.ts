@@ -84,7 +84,7 @@ export async function POST(request: Request) {
 
   const { data: pratica } = await supabase
     .from('matters')
-    .select('*, clients(tipo_soggetto, nome, cognome, ragione_sociale, codice_fiscale, indirizzo, comune, email, telefono)')
+    .select('*, clients(tipo_soggetto, nome, cognome, ragione_sociale, codice_fiscale, indirizzo, citta, provincia, email, telefono)')
     .eq('id', matterId)
     .single();
   if (!pratica) return NextResponse.json({ error: 'Pratica non trovata' }, { status: 404 });
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
     `Tipo di pratica: ${pratica.tipo_pratica}`,
     nomeCliente && `Assistito: ${nomeCliente}`,
     cliente?.codice_fiscale && `Codice fiscale assistito: ${cliente.codice_fiscale}`,
-    cliente?.indirizzo && `Residenza assistito: ${cliente.indirizzo}${cliente.comune ? `, ${cliente.comune}` : ''}`,
+    cliente?.indirizzo && `Residenza assistito: ${cliente.indirizzo}${cliente.citta ? `, ${cliente.citta}` : ''}`,
     pratica.controparte_nome && `Controparte: ${pratica.controparte_nome}`,
     pratica.compagnia_assicurativa && `Compagnia assicurativa: ${pratica.compagnia_assicurativa}`,
     pratica.numero_sinistro && `Numero di sinistro: ${pratica.numero_sinistro}`,
