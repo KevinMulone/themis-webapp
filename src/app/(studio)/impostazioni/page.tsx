@@ -270,15 +270,20 @@ export default function ImpostazioniPage() {
       });
       const body = await res.json();
       if (!res.ok) { setPecSyncMsg(`Errore: ${body.error}`); return; }
-      const risultati = (body.risultati || []) as { messaggiScaricati: number; restanti?: number }[];
+      const risultati = (body.risultati || []) as
+        { messaggiScaricati: number; restanti?: number; saltati?: number }[];
       const totale = risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
+      const saltati = risultati.reduce((s, r) => s + (r.saltati ?? 0), 0);
       // Ora il server dice quante ne restano davvero, invece di farlo
       // dedurre dal fatto che il giro era pieno.
       const ancora = risultati.reduce((s, r) => s + (r.restanti ?? 0), 0);
       setPecAncora(ancora > 0);
-      setPecSyncMsg(totale > 0
-        ? `${totale} messaggi scaricati${ancora > 0 ? `, altri ${ancora} da prendere.` : '.'}`
-        : 'Nessun messaggio nuovo.');
+      setPecSyncMsg(
+        (totale > 0
+          ? `${totale} messaggi scaricati${ancora > 0 ? `, altri ${ancora} da prendere.` : '.'}`
+          : 'Nessun messaggio nuovo.')
+        + (saltati > 0 ? ` ${saltati} non archiviati perché troppo grandi: restano nella webmail.` : ''),
+      );
       load();
     } catch {
       setPecSyncMsg('La sincronizzazione si è interrotta. Riprova.');

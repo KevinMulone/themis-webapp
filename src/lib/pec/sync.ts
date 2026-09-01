@@ -14,6 +14,8 @@ export type RisultatoSincronizzazioneAccount = {
   messaggiScaricati: number;
   /** Quanti ne restano da prendere nella direzione richiesta. */
   restanti?: number;
+  /** Quanti non si sono potuti archiviare (di solito: troppo grandi). */
+  saltati?: number;
   errore?: string;
 };
 
@@ -100,6 +102,7 @@ export async function sincronizzaAccount(
 
     let inseriti = 0;
     let restanti = 0;
+    const saltati: { uid: number; motivo: string }[] = [];
     // Il tetto e' di tutto il giro, non di ogni cartella: e' il tempo della
     // funzione a essere limitato, e non gliene importa da quale cartella
     // vengano i messaggi.
@@ -119,6 +122,7 @@ export async function sincronizzaAccount(
       restanti += esito.restanti;
 
       for (const messaggio of esito.messaggi) {
+        try {
         const interpretato = await interpretaMessaggioPec(messaggio.sorgente);
         // Il percorso include la cartella perche' gli UID si ripetono da una
         // cartella all'altra: senza, l'inviata n. 5 sovrascriverebbe la
@@ -154,6 +158,17 @@ export async function sincronizzaAccount(
           throw new Error(`Registrazione messaggio UID ${messaggio.uid}: ${insertError.message}`);
         }
         if (!insertError) inseriti += 1;
+        } catch (erroreMessaggio) {
+          // UN messaggio che non si riesce ad archiviare NON deve fermare la
+          // casella. Prima l'eccezione interrompeva il giro, il segnalibro
+          // non avanzava, e al giro successivo si ritentava lo stesso
+          // messaggio: una PEC con un allegato oltre il limite dello storage
+          // bloccava tutto per sempre, in silenzio.
+          saltati.push({
+            uid: messaggio.uid,
+            motivo: erroreMessaggio instanceof Error ? erroreMessaggio.message : 'errore sconosciuto',
+          });
+        }
         budget -= 1;
       }
 
@@ -176,16 +191,23 @@ export async function sincronizzaAccount(
         .eq('id', cartella.id);
     }
 
+    // I messaggi saltati restano scritti nell'ultimo errore: non fanno
+    // fallire la sincronizzazione, ma non devono nemmeno sparire.
+    const avviso = saltati.length
+      ? `${saltati.length} messaggi non archiviati e saltati (${saltati[0].motivo}). `
+        + 'Restano leggibili nella webmail del gestore.'
+      : null;
+
     await admin
       .from('pec_account')
       .update({
         ultimo_controllo_at: new Date().toISOString(),
-        ultimo_errore: null,
+        ultimo_errore: avviso,
         updated_at: new Date().toISOString(),
       })
       .eq('id', accountId);
 
-    return { accountId, ok: true, messaggiScaricati: inseriti, restanti };
+    return { accountId, ok: true, messaggiScaricati: inseriti, restanti, saltati: saltati.length };
   } catch (err) {
     const messaggioErrore = descriviErrore(err);
     await admin
