@@ -36,6 +36,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
   const [scrivendoThemis, setScrivendoThemis] = useState(false);
   const [creditoThemis, setCreditoThemis] = useState<Credito | null>(null);
   const [erroreThemis, setErroreThemis] = useState('');
+  const [notaThemis, setNotaThemis] = useState('');
 
   const [fase, setFase] = useState<'scrittura' | 'conferma'>('scrittura');
   const [inCorso, setInCorso] = useState(false);
@@ -103,6 +104,19 @@ export default function NuovaPec({ onChiudi, onInviata }: {
     if (body.oggetto) setOggetto(body.oggetto);
     setTesto(body.testo || '');
     setCreditoThemis(body.credito || null);
+
+    // Se ha riconosciuto da solo la pratica, va detto: l'avvocato deve
+    // sapere su quale fascicolo ha lavorato, non fidarsi e basta.
+    const note: string[] = [];
+    if (body.praticaUsata && !matterId) {
+      setMatterId(body.praticaUsata.id);
+      note.push(`Ho riconosciuto la pratica: ${body.praticaUsata.etichetta}.`);
+    }
+    if (!destinatari.trim() && body.destinatariSuggeriti?.length) {
+      setDestinatari(body.destinatariSuggeriti[0]);
+      note.push(`Destinatario preso dalla corrispondenza precedente: ${body.destinatariSuggeriti[0]}. Verificalo.`);
+    }
+    setNotaThemis(note.join(' '));
   }
 
   async function invia() {
@@ -206,6 +220,9 @@ export default function NuovaPec({ onChiudi, onInviata }: {
                 </button>
               </div>
               {erroreThemis && <p className="mt-1 text-xs text-red-600">{erroreThemis}</p>}
+              {notaThemis && (
+                <p className="mt-1 rounded-md bg-gold-100 px-2 py-1 text-xs text-gold-800">{notaThemis}</p>
+              )}
               <p className="mt-1 text-[11px] text-neutral-400">
                 Themis prende i fatti dalla pratica collegata e dagli allegati che scegli.
                 Dove non sa, lascia un segnaposto invece di inventare. Rileggi sempre prima di inviare.

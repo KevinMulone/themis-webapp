@@ -19,7 +19,9 @@ Una PEC di uno studio non è una email: è una comunicazione formale che può fa
 
 REGOLE SUI FATTI:
 - Nomi, date, importi, numeri di pratica, di sinistro e di ruolo si prendono ALLA LETTERA dai dati che ricevi. Mai ricostruiti.
-- Se un dato che il testo richiede non risulta, scrivi [DA COMPLETARE: che cosa manca]. Un segnaposto si nota, un dato verosimile no.
+- PRIMA di ricorrere a un segnaposto, CERCA il dato: nei dati della pratica, nella corrispondenza PEC già scambiata (lì stanno i nomi dei liquidatori, i numeri di sinistro citati dalla compagnia, le date dei solleciti precedenti) e nei documenti allegati. Un [DA COMPLETARE] su un dato che è scritto nel fascicolo è un errore, non prudenza.
+- Il segnaposto [DA COMPLETARE: che cosa manca] resta per ciò che davvero non risulta da nessuna parte. In quel caso è obbligatorio: un dato verosimile e falso è molto peggio di un buco visibile.
+- Non serve intestare il messaggio con l'indirizzo del destinatario: la PEC lo porta già. Basta l'appellativo, e solo se il nome risulta.
 - Non dare per avvenuti fatti che non risultano, e non annunciare allegati che non ti sono stati indicati.
 
 REGOLE SUL DIRITTO:
@@ -63,9 +65,44 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   const blocchi: Anthropic.ContentBlockParam[] = [];
   let scheda = 'Nessuna pratica collegata.';
+  let storicoPec = '';
+  let praticaUsata: { id: string; etichetta: string } | null = null;
   const nomiAllegati: string[] = [];
+  const destinatariSuggeriti: string[] = [];
 
-  if (matterId) {
+  // Se il difensore non ha collegato una pratica, si prova a riconoscerla
+  // dalle parole che ha scritto: «sollecita al liquidatore di Mannarino»
+  // contiene già il nome del fascicolo. Cercarla da soli è meglio che
+  // riempire l'atto di segnaposto — ma solo se la corrispondenza è UNA,
+  // perché scegliere fra due Mannarino sarebbe indovinare.
+  let matterScelto: string | null = matterId || null;
+  if (!matterScelto) {
+    const parole = argomento
+      .split(/[^\p{L}]+/u)
+      .filter((w: string) => w.length >= 4)
+      .slice(0, 8);
+    const trovati = new Set<string>();
+    for (const parola of parole) {
+      const like = `%${parola}%`;
+      const [{ data: perCliente }, { data: perControparte }] = await Promise.all([
+        supabase.from('matters')
+          .select('id, clients!inner(cognome, nome, ragione_sociale)')
+          .or(`cognome.ilike.${like},nome.ilike.${like},ragione_sociale.ilike.${like}`,
+            { referencedTable: 'clients' })
+          .neq('stato', 'archiviata').limit(5),
+        supabase.from('matters').select('id')
+          .or(`controparte_nome.ilike.${like},compagnia_assicurativa.ilike.${like}`)
+          .neq('stato', 'archiviata').limit(5),
+      ]);
+      for (const r of [...(perCliente ?? []), ...(perControparte ?? [])]) trovati.add(r.id);
+    }
+    // Una sola pratica riconosciuta: la si usa. Più d'una: si lascia
+    // decidere all'avvocato, e i segnaposto restano.
+    if (trovati.size === 1) matterScelto = [...trovati][0];
+  }
+
+  if (matterScelto) {
+    const matterId = matterScelto;
     const { data: pratica } = await supabase
       .from('matters')
       .select('*, clients(tipo_soggetto, nome, cognome, ragione_sociale, codice_fiscale)')
@@ -89,6 +126,41 @@ export async function POST(request: Request) {
         sinistro?.numero_sinistro && `Numero sinistro: ${sinistro.numero_sinistro}`,
         sinistro?.dinamica && `Dinamica: ${sinistro.dinamica}`,
       ].filter(Boolean).join('\n');
+
+      praticaUsata = {
+        id: matterId,
+        etichetta: [pratica?.controparte_nome, pratica?.compagnia_assicurativa]
+          .filter(Boolean).join(' — ') || 'pratica collegata',
+      };
+    }
+
+    // Le PEC già scambiate su questa pratica: è lì che stanno il nome del
+    // liquidatore, il numero di sinistro citato dalla compagnia e la data
+    // dell'ultimo sollecito. Senza, Themis chiede di completare cose che
+    // sono già scritte nel fascicolo.
+    const { data: pec } = await supabase
+      .from('pec_messaggi')
+      .select('mittente, destinatari, oggetto, data_invio, direzione')
+      .eq('matter_id', matterId)
+      .order('data_invio', { ascending: false })
+      .limit(15);
+    if (pec && pec.length > 0) {
+      storicoPec = pec.map((m) => [
+        m.direzione === 'inviata' ? 'INVIATA' : 'RICEVUTA',
+        m.data_invio ? new Date(m.data_invio).toLocaleDateString('it-IT') : 's.d.',
+        m.direzione === 'inviata' ? `a ${m.destinatari ?? '?'}` : `da ${m.mittente ?? '?'}`,
+        `«${m.oggetto ?? 'senza oggetto'}»`,
+      ].join(' · ')).join('\n');
+
+      for (const m of pec) {
+        const campo = m.direzione === 'inviata' ? m.destinatari : m.mittente;
+        const trovati = (campo ?? '').match(/[\w.+-]+@[\w.-]+\.\w+/g) ?? [];
+        for (const indirizzo of trovati) {
+          // Gli indirizzi dei gestori non sono controparti: sono postini.
+          if (/posta-certificata@/i.test(indirizzo)) continue;
+          if (!destinatariSuggeriti.includes(indirizzo)) destinatariSuggeriti.push(indirizzo);
+        }
+      }
     }
 
     const scelti: string[] = Array.isArray(documentiIds) ? documentiIds.slice(0, 5) : [];
@@ -135,8 +207,17 @@ export async function POST(request: Request) {
           { type: 'text', text: `DATI DELLA PRATICA\n${scheda}` },
           {
             type: 'text',
+            text: storicoPec
+              ? `CORRISPONDENZA PEC GIÀ SCAMBIATA SU QUESTA PRATICA (dalla più recente):\n${storicoPec}`
+              : 'Nessuna PEC precedente su questa pratica.',
+          },
+          {
+            type: 'text',
             text: `Destinatari: ${Array.isArray(destinatari) && destinatari.length
-              ? destinatari.join(', ') : '[DA COMPLETARE: destinatario]'}`,
+              ? destinatari.join(', ')
+              : destinatariSuggeriti.length
+                ? `non ancora indicati; dalla corrispondenza precedente risultano: ${destinatariSuggeriti.join(', ')}`
+                : 'non ancora indicati'}`,
           },
           {
             type: 'text',
@@ -160,7 +241,7 @@ export async function POST(request: Request) {
     const testo = (taglio === -1 ? completo : completo.slice(taglio + SEPARATORE.length)).trim();
 
     const dopo = await creditoStudio(contesto.studioId, contesto.plan);
-    return NextResponse.json({ ok: true, oggetto, testo, credito: creditoPubblico(dopo) });
+    return NextResponse.json({ ok: true, oggetto, testo, praticaUsata, destinatariSuggeriti, credito: creditoPubblico(dopo) });
   } catch (errore) {
     const m = errore instanceof Error ? errore.message : 'Errore imprevisto';
     return NextResponse.json({ error: `Richiesta non riuscita: ${m}` }, { status: 502 });
