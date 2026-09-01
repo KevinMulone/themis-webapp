@@ -182,6 +182,24 @@ Registro diverso dagli atti: frasi brevi, niente latino, niente formule di rito.
     struttura: `Denuncia-querela. Destinatario (Procura della Repubblica); oggetto con l'indicazione dei reati ipotizzati; querelante e querelati; premessa in fatto numerata; profili di reato, ciascuno con la norma e la condotta corrispondente; formale atto di querela con istanza di punizione; allegati.`,
   },
   {
+    chiave: 'procura',
+    label: 'Procura alle liti',
+    aiuto: 'Formula di procura da far sottoscrivere all\'assistito.',
+    struttura: `Procura alle liti: formula di rito da compilare con i dati dell'assistito e dei difensori. Il testo non va riscritto.`,
+  },
+  {
+    chiave: 'dichiarazione_sostitutiva',
+    label: 'Dichiarazione sostitutiva (reddito)',
+    aiuto: 'Autocertificazione ex art. 152 disp. att. c.p.c. o art. 42 d.l. 269/2003.',
+    struttura: `Dichiarazione sostitutiva di certificazione sul reddito, formula di rito da compilare.`,
+  },
+  {
+    chiave: 'relata_attestazione',
+    label: 'Relata di notifica e attestazione di conformità',
+    aiuto: 'Notifica in proprio ex L. 53/94 con attestazione degli allegati.',
+    struttura: `Relata di notifica in proprio e attestazione di conformità: formule di rito da compilare, con l'elenco degli allegati ripetuto identico nelle due sezioni.`,
+  },
+  {
     chiave: 'libero',
     label: 'Altro (descrivi tu)',
     aiuto: "Descrivi nelle istruzioni che atto serve e come va impostato.",

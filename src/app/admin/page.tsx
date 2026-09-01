@@ -78,6 +78,8 @@ export default function AdminPage() {
   const [consumoMese, setConsumoMese] = useState<{ totaleMillesimi: number; studiAttivi: number; richieste: number } | null>(null);
   const [consumoTotale, setConsumoTotale] = useState<{ totaleMillesimi: number; richieste: number; studi: number } | null>(null);
   const [consumoPerStudio, setConsumoPerStudio] = useState<ConsumoStudio[]>([]);
+  const [salvandoLimiti, setSalvandoLimiti] = useState(false);
+  const [limitiSalvati, setLimitiSalvati] = useState(false);
   const [durataChiave, setDurataChiave] = useState(30);
   const [pianoChiave, setPianoChiave] = useState<PlanKey>('monthly');
   const [chiaveGenerata, setChiaveGenerata] = useState<string | null>(null);
@@ -117,6 +119,34 @@ export default function AdminPage() {
     });
     if (res.ok) addLog(`Limite assistente ${plan}: ${(creditoCent / 100).toFixed(2)} $/mese.`);
     else { const b = await res.json(); addLog(`Errore limite ${plan}: ${b.error}`); }
+  }
+
+  /**
+   * Salva tutti i piani insieme.
+   *
+   * I cursori salvavano già da soli al rilascio, ma senza dirlo: si
+   * restava col dubbio di aver spostato senza confermare. Il pulsante non
+   * aggiunge una funzione, aggiunge la certezza di averla usata.
+   */
+  async function salvaTuttiILimiti() {
+    setSalvandoLimiti(true);
+    setLimitiSalvati(false);
+    const piani = Object.keys(PLANS) as PlanKey[];
+    const esiti = await Promise.all(piani.map(async (k) => {
+      const res = await fetch('/api/admin/limiti-assistente', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: k, creditoCent: limiti[k] ?? 0 }),
+      });
+      if (!res.ok) { const b = await res.json(); addLog(`Errore limite ${k}: ${b.error}`); }
+      return res.ok;
+    }));
+    setSalvandoLimiti(false);
+    if (esiti.every(Boolean)) {
+      addLog(`Limiti salvati: ${piani.map((k) => `${PLANS[k].label} ${((limiti[k] ?? 0) / 100).toFixed(2)} $`).join(' · ')}`);
+      setLimitiSalvati(true);
+      setTimeout(() => setLimitiSalvati(false), 3000);
+    }
+    loadLimiti();
   }
 
   useEffect(() => { load(); loadLimiti(); }, []);
@@ -342,6 +372,16 @@ export default function AdminPage() {
                 </div>
               );
             })}
+          </div>
+
+          <div className="mt-4 flex items-center justify-end gap-3">
+            {limitiSalvati && <span className="text-xs text-green-500">Salvato</span>}
+            <button
+              type="button" onClick={salvaTuttiILimiti} disabled={salvandoLimiti}
+              className="rounded-md bg-gold-600 px-4 py-2 text-xs font-semibold text-neutral-950 hover:bg-gold-500 disabled:opacity-50"
+            >
+              {salvandoLimiti ? 'Salvataggio...' : 'Salva i limiti'}
+            </button>
           </div>
 
           <div className="mt-6 border-t border-neutral-800 pt-4">
