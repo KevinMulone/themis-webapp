@@ -36,6 +36,10 @@ export async function GET(_request: Request, ctx: RouteContext<'/api/pec/messagg
     // Scope della riga, non di chi legge.
     const sorgente = decryptBuffer(Buffer.from(await file.arrayBuffer()), messaggio.studio_id);
     const aperto = await apriMessaggioPec(sorgente);
+
+    // Aprirlo è leggerlo: si segna qui e non dal browser, così vale anche
+    // se la pagina viene chiusa mentre si legge.
+    await admin.from('pec_messaggi').update({ letta: true }).eq('id', messaggio.id);
     return NextResponse.json({ ok: true, ...aperto, tipoPec: messaggio.tipo_pec, direzione: messaggio.direzione });
   } catch (errore) {
     const m = errore instanceof Error ? errore.message : 'Errore imprevisto';

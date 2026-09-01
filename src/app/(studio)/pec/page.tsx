@@ -20,6 +20,7 @@ type Messaggio = {
   stato: string;
   direzione: string;
   archiviato: boolean;
+  letta: boolean;
 };
 
 type Account = { id: string; etichetta: string };
@@ -78,7 +79,7 @@ export default function PecPage() {
     const [{ data: acc }, { data: msg }] = await Promise.all([
       supabase.from('pec_account').select('id, etichetta').order('created_at'),
       supabase.from('pec_messaggi')
-        .select('id, pec_account_id, matter_id, tipo_pec, mittente, destinatari, oggetto, data_invio, data_ricezione, stato, direzione, archiviato')
+        .select('id, pec_account_id, matter_id, tipo_pec, mittente, destinatari, oggetto, data_invio, data_ricezione, stato, direzione, archiviato, letta')
         .order('data_ricezione', { ascending: false })
         .limit(200),
     ]);
@@ -263,7 +264,12 @@ export default function PecPage() {
                 </thead>
                 <tbody>
                   {filtrati.map((m) => (
-                    <tr key={m.id} className="border-t border-neutral-100 hover:bg-neutral-50">
+                    <tr
+                      key={m.id}
+                      className={`border-t border-neutral-100 hover:bg-neutral-50 ${
+                        m.letta === false ? 'font-semibold text-neutral-900' : ''
+                      }`}
+                    >
                       <td className="px-4 py-2 text-xs text-neutral-500">{LABEL_TIPO[m.tipo_pec] || m.tipo_pec}</td>
                                             <td className="px-4 py-2">{m.mittente || '—'}</td>
                       <td className="px-4 py-2">
