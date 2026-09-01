@@ -80,6 +80,7 @@ export default function AdminPage() {
   const [consumoPerStudio, setConsumoPerStudio] = useState<ConsumoStudio[]>([]);
   const [salvandoLimiti, setSalvandoLimiti] = useState(false);
   const [limitiSalvati, setLimitiSalvati] = useState(false);
+  const [erroreLimiti, setErroreLimiti] = useState('');
   const [durataChiave, setDurataChiave] = useState(30);
   const [pianoChiave, setPianoChiave] = useState<PlanKey>('monthly');
   const [chiaveGenerata, setChiaveGenerata] = useState<string | null>(null);
@@ -106,7 +107,14 @@ export default function AdminPage() {
     const body = await res.json();
     const mappa: Record<string, number> = {};
     for (const l of body.limiti || []) mappa[l.plan] = l.credito_cent;
-    setLimiti(mappa);
+    // Se il server non ha la riga di un piano, si TIENE il valore già sullo
+    // schermo invece di azzerarlo. Un cursore che torna a zero da solo fa
+    // credere di aver perso il lavoro, e nasconde il vero problema — che è
+    // la riga mancante, non il salvataggio.
+    setLimiti((precedenti) => ({ ...precedenti, ...mappa }));
+    if ((body.limiti || []).length === 0) {
+      setErroreLimiti('Il database non ha ancora i limiti per nessun piano: esegui la migrazione 013.');
+    }
     setConsumoMese(body.consumoMese || null);
     setConsumoTotale(body.consumoTotale || null);
     setConsumoPerStudio(body.perStudio || []);
@@ -132,12 +140,17 @@ export default function AdminPage() {
     setSalvandoLimiti(true);
     setLimitiSalvati(false);
     const piani = Object.keys(PLANS) as PlanKey[];
+    setErroreLimiti('');
     const esiti = await Promise.all(piani.map(async (k) => {
       const res = await fetch('/api/admin/limiti-assistente', {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: k, creditoCent: limiti[k] ?? 0 }),
       });
-      if (!res.ok) { const b = await res.json(); addLog(`Errore limite ${k}: ${b.error}`); }
+      if (!res.ok) {
+        const b = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        addLog(`Errore limite ${k}: ${b.error}`);
+        setErroreLimiti(`${PLANS[k].label}: ${b.error}`);
+      }
       return res.ok;
     }));
     setSalvandoLimiti(false);
@@ -375,7 +388,8 @@ export default function AdminPage() {
           </div>
 
           <div className="mt-4 flex items-center justify-end gap-3">
-            {limitiSalvati && <span className="text-xs text-green-500">Salvato</span>}
+            {erroreLimiti && <span className="text-xs text-red-400">{erroreLimiti}</span>}
+            {limitiSalvati && !erroreLimiti && <span className="text-xs text-green-500">Salvato</span>}
             <button
               type="button" onClick={salvaTuttiILimiti} disabled={salvandoLimiti}
               className="rounded-md bg-gold-600 px-4 py-2 text-xs font-semibold text-neutral-950 hover:bg-gold-500 disabled:opacity-50"
