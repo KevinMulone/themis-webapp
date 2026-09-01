@@ -42,10 +42,25 @@ export default function SincronizzazionePec() {
       // giro costa una connessione al gestore.
       if (!vivo || document.hidden || !tocca()) return;
       try {
-        await fetch('/api/pec/sync', {
+        const res = await fetch('/api/pec/sync', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ modo: 'nuovi' }),
         });
+        const body = await res.json();
+        const risultati = (body?.risultati ?? []) as { messaggiScaricati: number; letti?: number }[];
+        const nuovi = risultati.reduce((s, r) => s + (r.letti ?? 0), 0);
+
+        // Se non è arrivato niente di nuovo, il giro non si spreca: si fa
+        // un passo di arretrato. Così l'archivio si completa da solo,
+        // venticinque messaggi ogni tre minuti, senza che nessuno debba
+        // premere un pulsante finché non è finito. Le PEC nuove restano
+        // comunque prima: l'arretrato prende solo il turno avanzato.
+        if (nuovi === 0) {
+          await fetch('/api/pec/sync', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ modo: 'arretrato' }),
+          });
+        }
       } catch {
         // Rete assente o casella non configurata: si riprova al giro dopo,
         // in silenzio. Questo è un servizio di fondo, non deve disturbare.
