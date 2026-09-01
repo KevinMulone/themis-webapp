@@ -686,8 +686,8 @@ export default function ImpostazioniPage() {
               ))}
             </ul>
             <p className="mt-2 text-[11px] text-neutral-500">
-              Oggi Themis legge solo INBOX. Se i messaggi che cerchi sono in un&apos;altra
-              cartella, è per questo che non compaiono.
+              Themis legge la posta in arrivo, le inviate e gli archivi. Restano fuori
+              cestino, indesiderata e bozze: non sono corrispondenza.
             </p>
           </div>
         )}
