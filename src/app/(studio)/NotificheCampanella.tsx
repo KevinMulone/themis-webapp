@@ -33,6 +33,29 @@ export default function NotificheCampanella() {
   const [aperto, setAperto] = useState(false);
   const [scheda, setScheda] = useState<'mie' | 'studio'>('mie');
   const contenitore = useRef<HTMLDivElement>(null);
+  const bottone = useRef<HTMLButtonElement>(null);
+  const [posizione, setPosizione] = useState({ top: 0, left: 0 });
+
+  /**
+   * Il pannello si posiziona rispetto alla finestra, non al contenitore.
+   *
+   * La campanella vive dentro la barra laterale, che è più stretta del
+   * pannello e ritaglia ciò che ne esce: qualunque direzione prendesse,
+   * veniva tagliato. Misurando il pulsante e disegnando il pannello in
+   * posizione fissa si esce da quel ritaglio, e non si dipende più da
+   * quanto è larga la barra.
+   */
+  function misura() {
+    const r = bottone.current?.getBoundingClientRect();
+    if (!r) return;
+    const larghezza = 320;
+    const margine = 8;
+    setPosizione({
+      top: r.bottom + margine,
+      // Non deve uscire dal bordo destro su schermi stretti.
+      left: Math.max(margine, Math.min(r.left, window.innerWidth - larghezza - margine)),
+    });
+  }
 
   const load = useCallback(async () => {
     // Le scadenze non hanno un evento a cui agganciarsi: si avvicinano da
@@ -57,6 +80,14 @@ export default function NotificheCampanella() {
   }, [load, router]));
 
   // Chiude il pannello cliccando fuori.
+  // Se la finestra cambia dimensione mentre il pannello è aperto, la
+  // posizione misurata non vale più.
+  useEffect(() => {
+    if (!aperto) return;
+    window.addEventListener('resize', misura);
+    return () => window.removeEventListener('resize', misura);
+  }, [aperto]);
+
   useEffect(() => {
     if (!aperto) return;
     function fuori(e: MouseEvent) {
@@ -90,7 +121,8 @@ export default function NotificheCampanella() {
   return (
     <div ref={contenitore} className="relative">
       <button
-        onClick={() => { setAperto(!aperto); if (!aperto) load(); }}
+        ref={bottone}
+        onClick={() => { misura(); setAperto(!aperto); if (!aperto) load(); }}
         aria-label="Notifiche"
         className="relative rounded-md p-2 text-neutral-500 hover:bg-gold-100 hover:text-bordeaux-800"
       >
@@ -106,12 +138,11 @@ export default function NotificheCampanella() {
         )}
       </button>
 
-      {/* Si apre verso destra: la campanella sta nella barra laterale, a filo
-          del bordo sinistro dello schermo. Aprendo verso sinistra — come fa di
-          norma un menù a discesa — il pannello finiva fuori dalla finestra e si
-          leggeva a metà. */}
       {aperto && (
-        <div className="absolute left-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-neutral-200 bg-white shadow-lg">
+        <div
+          style={{ top: posizione.top, left: posizione.left }}
+          className="fixed z-50 w-80 max-w-[calc(100vw-1rem)] rounded-xl border border-neutral-200 bg-white shadow-lg"
+        >
           <div className="flex items-center justify-between border-b border-neutral-100 px-3 py-2">
             <div className="flex gap-1 text-xs">
               <button
@@ -134,7 +165,7 @@ export default function NotificheCampanella() {
             </button>
           </div>
 
-          <ul className="max-h-96 divide-y divide-neutral-100 overflow-y-auto">
+          <ul className="max-h-[min(24rem,60vh)] divide-y divide-neutral-100 overflow-y-auto">
             {visibili.length === 0 ? (
               <li className="px-3 py-6 text-center text-sm text-neutral-400">Nessuna notifica.</li>
             ) : visibili.map((n) => (
