@@ -426,7 +426,11 @@ export default function AdminPage() {
                               : quota >= 0.8 ? 'text-gold-500' : 'text-neutral-300'
                           }`}>
                             {usd(c.meseMillesimi)}
-                            {tetto > 0 && <span className="text-neutral-600"> / {usd(tetto)}</span>}
+                            {tetto > 0 && (
+                              <span className="text-neutral-600">
+                                {' / '}{usd(tetto)} · {Math.round(quota * 100)}%
+                              </span>
+                            )}
                           </td>
                           <td className="py-1.5 text-right tabular-nums text-neutral-400">
                             {usd(c.totaleMillesimi)}

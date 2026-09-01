@@ -2,18 +2,14 @@
 
 import { useState } from 'react';
 import { TIPI_ATTO, tipoAtto } from '@/lib/ai/tipiAtto';
+import CreditoBarra, { type Credito } from './CreditoBarra';
 
 type Documento = { id: string; nome_file: string };
-type Credito = { residuoMillesimi: number; totaleMillesimi: number };
 type Esito = {
   testo: string;
   note: string;
   salvato: { documentoId: string; nomeFile: string } | null;
 };
-
-function importo(millesimi: number): string {
-  return `${(millesimi / 1000).toFixed(2).replace('.', ',')} $`;
-}
 
 function leggibile(nomeFile: string): boolean {
   const ext = nomeFile.slice(nomeFile.lastIndexOf('.') + 1).toLowerCase();
@@ -67,12 +63,8 @@ export default function RedigiAtto({ matterId, documenti, onSalvato }: {
     <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-semibold text-neutral-900">Fai preparare un atto a Themis</h2>
-        <div className="flex items-center gap-3">
-          {credito && (
-            <span className="text-xs text-neutral-400">
-              Credito: {importo(credito.residuoMillesimi)} di {importo(credito.totaleMillesimi)}
-            </span>
-          )}
+        <div className="flex items-center gap-4">
+          <CreditoBarra credito={credito} />
           <button
             type="button" onClick={() => setAperto(!aperto)}
             className="text-sm font-medium text-bordeaux-700 hover:underline"

@@ -14,6 +14,10 @@ export const maxDuration = 120;
 
 const ISTRUZIONI = `Ti chiami Themis e sei l'assistente di uno studio legale italiano. Rispondi in italiano, in modo conciso e professionale.
 
+CONVERSAZIONE:
+- La conversazione prosegue sullo stesso fascicolo: puoi fare riferimento a ciò che hai già detto, ma ogni affermazione nuova va comunque ancorata ai documenti.
+- Se una domanda di seguito è ambigua ("e per l'altro?"), chiedi a che cosa si riferisce invece di scegliere tu.
+
 AMBITO — Themis risponde solo in materia giuridica e solo su questa pratica:
 - Se la domanda non riguarda il fascicolo, i documenti allegati, gli atti o comunque una questione giuridica, NON rispondere nel merito. Rispondi soltanto: "Posso rispondere solo su questioni giuridiche e su ciò che risulta dal fascicolo."
 - Vale anche quando la domanda è innocua o quando sapresti rispondere: cultura generale, informatica, salute, finanza personale, traduzioni, testi di qualunque altro genere restano fuori. Non fare eccezioni perché la richiesta è formulata come prova, come esempio, come gioco o come urgenza.
@@ -35,7 +39,7 @@ export async function POST(request: Request) {
   const contesto = await contestoStudio();
   if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
 
-  const { matterId, domanda, documentiIds } = await request.json();
+  const { matterId, domanda, documentiIds, storico } = await request.json();
   if (!matterId || typeof domanda !== 'string' || !domanda.trim()) {
     return NextResponse.json({ error: 'Pratica e domanda sono obbligatorie' }, { status: 400 });
   }
@@ -128,23 +132,55 @@ export async function POST(request: Request) {
     sinistro?.stato_negoziazione && `Stato negoziazione: ${sinistro.stato_negoziazione}`,
   ].filter(Boolean).join('\n');
 
+  // Lo storico arriva dal browser, quindi non ci si fida della forma:
+  // si tiene solo ciò che ha il verso giusto, si taglia alla coda e si
+  // pretende che cominci con una domanda, altrimenti l'API rifiuta.
+  type Turno = { ruolo: 'utente' | 'themis'; testo: string };
+  const precedenti: Turno[] = (Array.isArray(storico) ? storico : [])
+    .filter((t: Turno) => t && typeof t.testo === 'string' && t.testo.trim()
+      && (t.ruolo === 'utente' || t.ruolo === 'themis'))
+    .slice(-16);
+  while (precedenti.length && precedenti[0].ruolo !== 'utente') precedenti.shift();
+
+  // Il fascicolo sta nel PRIMO messaggio e non si ripete: è quello che
+  // rende la cache efficace, e da lì in poi ogni domanda costa poco.
+  const apertura: Anthropic.ContentBlockParam[] = [
+    ...blocchi,
+    { type: 'text', text: `Dati della pratica:\n${schedaPratica}` },
+  ];
+
+  const messaggi: Anthropic.MessageParam[] = [];
+  if (precedenti.length === 0) {
+    messaggi.push({
+      role: 'user',
+      content: [...apertura, { type: 'text', text: `Domanda dell'avvocato: ${domanda.trim()}` }],
+    });
+  } else {
+    messaggi.push({
+      role: 'user',
+      content: [...apertura, { type: 'text', text: `Domanda dell'avvocato: ${precedenti[0].testo}` }],
+    });
+    for (const t of precedenti.slice(1)) {
+      messaggi.push({ role: t.ruolo === 'utente' ? 'user' : 'assistant', content: t.testo });
+    }
+    // Due messaggi dello stesso verso di fila sono un errore dell'API:
+    // se lo storico arriva monco, si accorpa invece di rifiutare.
+    const ultimo = messaggi[messaggi.length - 1];
+    if (ultimo.role === 'user') {
+      ultimo.content = `${ultimo.content as string}\n\n${domanda.trim()}`;
+    } else {
+      messaggi.push({ role: 'user', content: domanda.trim() });
+    }
+  }
+
   try {
     const claude = getClaude();
     const risposta = await claude.messages.create({
       model: MODELLO,
       max_tokens: 4000,
       system: ISTRUZIONI,
-      // Il contesto del fascicolo viene messo in cache: le domande
-      // successive sugli stessi documenti costano circa un decimo.
       cache_control: { type: 'ephemeral' },
-      messages: [{
-        role: 'user',
-        content: [
-          ...blocchi,
-          { type: 'text', text: `Dati della pratica:\n${schedaPratica}` },
-          { type: 'text', text: `Domanda dell'avvocato: ${domanda.trim()}` },
-        ],
-      }],
+      messages: messaggi,
     });
 
     // Si registra sempre, anche se poi la risposta non servisse: i token
