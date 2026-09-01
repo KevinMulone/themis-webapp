@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { Icon } from '@/components/ui/Icon';
 
 type Proposta = {
   id: string;
@@ -69,33 +70,45 @@ export default function ScadenzeProposte() {
   }
 
   return (
-    <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-      <div className="mb-1 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-semibold text-neutral-900">
-          Scadenze trovate nelle PEC
-          {proposte.length > 0 && (
-            <span className="ml-2 rounded-full bg-bordeaux-700 px-2 py-0.5 text-xs text-white">
-              {proposte.length}
-            </span>
-          )}
-        </h2>
+    <div className="mb-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex min-w-60 flex-1 gap-4">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-50 text-gold-600">
+            <Icon nome="pec" className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="flex flex-wrap items-center gap-2 font-semibold text-neutral-900">
+              Scadenze trovate nelle PEC
+              {proposte.length > 0 && (
+                <span className="rounded-full bg-bordeaux-700 px-2 py-0.5 text-xs text-white">
+                  {proposte.length}
+                </span>
+              )}
+            </h2>
+            {messaggio ? (
+              <p className="mt-0.5 text-sm text-neutral-600">{messaggio}</p>
+            ) : proposte.length === 0 ? (
+              <p className="mt-0.5 text-sm text-neutral-500">
+                Nessuna proposta in attesa. Premi <strong>Cerca scadenze</strong> e Themis leggerà
+                le PEC non ancora esaminate.
+              </p>
+            ) : (
+              <p className="mt-0.5 text-sm text-neutral-500">
+                Controlla la frase di origine prima di aggiungerle al calendario.
+              </p>
+            )}
+          </div>
+        </div>
         <button
           type="button" onClick={analizza} disabled={analisi}
-          className="rounded-md border border-bordeaux-700 px-3 py-1.5 text-sm font-medium text-bordeaux-700 hover:bg-bordeaux-50 disabled:opacity-50"
+          className="shrink-0 rounded-lg border border-bordeaux-700 px-4 py-2.5 text-sm font-medium text-bordeaux-700 transition-colors hover:bg-bordeaux-50 disabled:opacity-50"
         >
           {analisi ? 'Themis sta leggendo...' : 'Cerca scadenze'}
         </button>
       </div>
 
-      {messaggio && <p className="mb-3 text-sm text-neutral-600">{messaggio}</p>}
-
-      {proposte.length === 0 ? (
-        <p className="text-sm text-neutral-500">
-          Nessuna proposta in attesa. Premi <strong>Cerca scadenze</strong> e Themis leggerà le PEC
-          non ancora esaminate.
-        </p>
-      ) : (
-        <ul className="divide-y divide-neutral-100">
+      {proposte.length === 0 ? null : (
+        <ul className="mt-4 divide-y divide-neutral-100 border-t border-neutral-100">
           {proposte.map((p) => (
             <li key={p.id} className="py-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
