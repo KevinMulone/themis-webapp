@@ -53,6 +53,10 @@ export async function creditoStudio(studioId: string, plan: string | null): Prom
   // vuota e un errore si assomigliano troppo, e confonderli significa
   // spendere senza tetto. Nel dubbio si nega.
   if (error) {
+    // Negare l'accesso è giusto, tacere il motivo no: senza questa riga
+    // l'unico segnale è un «non disponibile» che non dice niente a nessuno,
+    // e la causa va cercata a tentoni. Si legge nei log del server.
+    console.error('Credito non leggibile per lo studio', studioId, '—', error.message);
     return { usatoMillesimi: 0, totaleMillesimi: 0, residuoMillesimi: 0, esaurito: true };
   }
 
