@@ -63,6 +63,9 @@ export default function ImpostazioniPage() {
   const [pecSalvando, setPecSalvando] = useState(false);
   const [pecSincronizzando, setPecSincronizzando] = useState(false);
   const [pecSyncMsg, setPecSyncMsg] = useState('');
+  const [pecPasswordId, setPecPasswordId] = useState('');
+  const [pecNuovaPassword, setPecNuovaPassword] = useState('');
+  const [pecPwdMsg, setPecPwdMsg] = useState('');
   const pecFormRef = useRef<HTMLFormElement>(null);
   const [abbonamento, setAbbonamento] = useState<Abbonamento | null>(null);
   const [portaleLoading, setPortaleLoading] = useState(false);
@@ -137,6 +140,36 @@ export default function ImpostazioniPage() {
   async function handleRemoveLetterhead() {
     if (!confirm("Rimuovere l'intestazione?")) return;
     await fetch('/api/settings/letterhead', { method: 'DELETE' });
+    load();
+  }
+
+  /**
+   * Cambia solo la password di una casella già inserita.
+   *
+   * Prima l'unico modo era rimuovere e riaggiungere: quattro campi
+   * riscritti per cambiarne uno, e con una password che di solito si
+   * sbaglia un paio di volte prima di azzeccarla. Gli altri parametri
+   * vengono rimandati identici, perché la route li richiede tutti.
+   */
+  async function handleCambiaPassword(a: PecAccount) {
+    if (!pecNuovaPassword.trim()) return;
+    setPecPwdMsg('');
+    const res = await fetch('/api/pec/account', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: a.id, etichetta: a.etichetta, indirizzo_pec: a.indirizzo_pec,
+        imap_host: a.imap_host, imap_port: a.imap_port, imap_user: a.imap_user,
+        password: pecNuovaPassword,
+      }),
+    });
+    if (!res.ok) {
+      const b = await res.json().catch(() => ({ error: 'Errore' }));
+      setPecPwdMsg(b.error || 'Non riuscito');
+      return;
+    }
+    setPecNuovaPassword('');
+    setPecPasswordId('');
+    setPecPwdMsg('');
     load();
   }
 
@@ -481,10 +514,42 @@ export default function ImpostazioniPage() {
                       : 'Non ancora sincronizzata'}
                   </div>
                   {a.ultimo_errore && <div className="text-xs text-red-600">Errore: {a.ultimo_errore}</div>}
+
+                  {pecPasswordId === a.id && (
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <input
+                        type="password" autoComplete="new-password"
+                        value={pecNuovaPassword}
+                        onChange={(e) => setPecNuovaPassword(e.target.value)}
+                        placeholder="Password per programmi di posta"
+                        className="w-64 rounded-md border border-neutral-300 px-3 py-1.5 text-sm"
+                      />
+                      <button
+                        type="button" onClick={() => handleCambiaPassword(a)}
+                        disabled={!pecNuovaPassword.trim()}
+                        className="rounded-md bg-bordeaux-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                      >
+                        Salva password
+                      </button>
+                      {pecPwdMsg && <span className="text-xs text-red-600">{pecPwdMsg}</span>}
+                    </div>
+                  )}
                 </div>
-                <button onClick={() => handleDeletePecAccount(a.id)} className="text-xs text-red-600 hover:underline">
-                  Rimuovi
-                </button>
+                <div className="flex shrink-0 items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPecPasswordId(pecPasswordId === a.id ? '' : a.id);
+                      setPecNuovaPassword(''); setPecPwdMsg('');
+                    }}
+                    className="text-xs text-bordeaux-700 hover:underline"
+                  >
+                    {pecPasswordId === a.id ? 'Annulla' : 'Cambia password'}
+                  </button>
+                  <button onClick={() => handleDeletePecAccount(a.id)} className="text-xs text-red-600 hover:underline">
+                    Rimuovi
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
