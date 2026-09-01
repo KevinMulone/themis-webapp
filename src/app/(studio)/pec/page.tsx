@@ -98,6 +98,10 @@ export default function PecPage() {
       ) : (
         <>
           <div className="mb-4 flex flex-wrap items-center gap-3">
+            {/* "Messaggi" sono le PEC vere; "Ricevute di consegna" sono le
+                attestazioni del gestore. Il nome lungo è voluto: prima
+                diceva solo "Ricevute" e si confondeva con le PEC ricevute,
+                che sono un'altra cosa e stanno nell'altra scheda. */}
             <div className="flex rounded-md border border-neutral-300 text-sm">
               <button
                 onClick={() => setScheda('messaggi')}
@@ -109,7 +113,7 @@ export default function PecPage() {
                 onClick={() => setScheda('ricevute')}
                 className={`rounded-r-md border-l border-neutral-300 px-3 py-1.5 ${scheda === 'ricevute' ? 'bg-bordeaux-700 text-white' : 'bg-white text-neutral-700 hover:bg-neutral-50'}`}
               >
-                Ricevute
+                Ricevute di consegna
               </button>
             </div>
             <select
