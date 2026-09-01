@@ -16,32 +16,39 @@ export type MessaggioGrezzo = {
   sorgente: Buffer;
 };
 
-export type EsitoSincronizzazione = {
+export type EsitoScarico = {
   uidValidity: bigint;
-  /** UID più alto tra quelli restituiti in questo giro (da salvare come nuovo segnalibro). */
-  ultimoUidVisto: number | null;
+  /** true se UIDVALIDITY è cambiato e i segnalibri sono stati azzerati. */
+  azzerato: boolean;
   messaggi: MessaggioGrezzo[];
+  uidMassimoPreso: number | null;
+  uidMinimoPreso: number | null;
+  restanti: number;
 };
 
 /**
- * Scarica i messaggi nuovi di una casella IMAP a partire dal segnalibro
- * salvato (`daUidEsclusivo`: si scaricano solo UID strettamente maggiori).
+ * Scarica messaggi da una cartella, dal capo giusto.
  *
- * Gli UID IMAP sono stabili solo finché non cambia UIDVALIDITY della
- * cartella. Se `uidValiditySalvato` è indicato e non coincide con quello
- * corrente della cartella, il segnalibro precedente non è più affidabile e
- * si riparte da zero su questa cartella (altrimenti si rischia di saltare
- * messaggi in silenzio). Il nuovo UIDVALIDITY va comunque salvato dal
- * chiamante, coincida o no con quello precedente.
+ * `modo: 'nuovi'` prende i più recenti non ancora presi: è quello che
+ * serve quasi sempre, perché una PEC arrivata stamattina vale più di una
+ * di tre anni fa. `modo: 'arretrato'` scende invece nel passato, a
+ * ritroso, e serve solo a chi vuole ricostruire lo storico.
+ *
+ * Gli UID sono stabili finché non cambia UIDVALIDITY della cartella: se
+ * cambia, i segnalibri non valgono più e si riparte, altrimenti si
+ * salterebbero messaggi in silenzio.
  */
-export async function scaricaNuoviMessaggi(
+export async function scaricaMessaggi(
   config: ConfigurazioneImap,
   cartella: string,
-  daUidEsclusivo: number,
-  uidValiditySalvato: bigint | null,
-  /** Quanti se ne possono ancora prendere in questo giro, fra tutte le cartelle. */
-  massimo: number = MAX_MESSAGGI_PER_GIRO,
-): Promise<EsitoSincronizzazione> {
+  opzioni: {
+    modo: 'nuovi' | 'arretrato';
+    lastSeenUid: number;
+    arretratoFinoA: number | null;
+    uidValiditySalvato: bigint | null;
+    massimo: number;
+  },
+): Promise<EsitoScarico> {
   const client = new ImapFlow({
     host: config.host,
     port: config.port,
@@ -54,25 +61,49 @@ export async function scaricaNuoviMessaggi(
   try {
     const lock = await client.getMailboxLock(cartella);
     try {
-      const uidValidity = client.mailbox && typeof client.mailbox !== 'boolean' ? client.mailbox.uidValidity : BigInt(0);
-      const uidValidityCambiato = uidValiditySalvato !== null && uidValiditySalvato !== uidValidity;
-      const daUidEffettivo = uidValidityCambiato ? 0 : daUidEsclusivo;
+      const uidValidity = client.mailbox && typeof client.mailbox !== 'boolean'
+        ? client.mailbox.uidValidity : BigInt(0);
+      const azzera = opzioni.uidValiditySalvato !== null
+        && opzioni.uidValiditySalvato !== uidValidity;
+
+      const lastSeen = azzera ? 0 : opzioni.lastSeenUid;
+      const finoA = azzera ? null : opzioni.arretratoFinoA;
+
+      // L'elenco degli UID presenti: sono solo numeri, e averli tutti
+      // evita di indovinare dove comincia e dove finisce la cartella.
+      const tutti = (await client.search({ all: true }, { uid: true })) || [];
+      const ordinati = [...tutti].sort((a, b) => a - b);
+
+      const candidati = opzioni.modo === 'nuovi'
+        // I più recenti fra quelli mai presi, dal più recente in giù.
+        ? ordinati.filter((u) => u > lastSeen).slice(-opzioni.massimo)
+        // Il passato, dal più recente dei vecchi in giù.
+        : ordinati.filter((u) => finoA === null || u < finoA).slice(-opzioni.massimo);
+
       const messaggi: MessaggioGrezzo[] = [];
-      let ultimoUidVisto: number | null = null;
-
-      const range = `${daUidEffettivo + 1}:*`;
-      for await (const messaggio of client.fetch(range, { uid: true, source: true }, { uid: true })) {
-        // Con range aperto ("N:*") un server IMAP può restituire l'ultimo
-        // messaggio esistente anche se il suo UID è <= daUidEffettivo,
-        // quando non ce ne sono di più recenti: va scartato esplicitamente.
-        if (messaggio.uid <= daUidEffettivo || !messaggio.source) continue;
-        messaggi.push({ uid: messaggio.uid, sorgente: messaggio.source });
-        if (ultimoUidVisto === null || messaggio.uid > ultimoUidVisto) ultimoUidVisto = messaggio.uid;
-        if (messaggi.length >= massimo) break;
+      if (candidati.length > 0) {
+        for await (const messaggio of client.fetch(
+          candidati.join(','), { uid: true, source: true }, { uid: true },
+        )) {
+          if (!messaggio.source) continue;
+          messaggi.push({ uid: messaggio.uid, sorgente: messaggio.source });
+        }
       }
-
       messaggi.sort((a, b) => a.uid - b.uid);
-      return { uidValidity, ultimoUidVisto, messaggi };
+
+      const uidPresi = messaggi.map((m) => m.uid);
+      return {
+        uidValidity,
+        azzerato: azzera,
+        messaggi,
+        uidMassimoPreso: uidPresi.length ? Math.max(...uidPresi) : null,
+        uidMinimoPreso: uidPresi.length ? Math.min(...uidPresi) : null,
+        // Quanti ne restano dietro: serve all'interfaccia per dire se c'è
+        // ancora arretrato da recuperare.
+        restanti: opzioni.modo === 'nuovi'
+          ? Math.max(0, ordinati.filter((u) => u > lastSeen).length - messaggi.length)
+          : Math.max(0, ordinati.filter((u) => finoA === null || u < finoA).length - messaggi.length),
+      };
     } finally {
       lock.release();
     }

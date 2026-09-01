@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_PRATICA, labelFromOptions } from '@/lib/constants';
-import { MAX_MESSAGGI_PER_GIRO } from '@/lib/pec/costanti';
 
 type Template = { id: string; nome: string; categoria: string | null; descrizione: string | null; studio_id: string | null };
 type Settings = { font_family: string; font_size_pt: number; line_spacing: number };
@@ -265,19 +264,20 @@ export default function ImpostazioniPage() {
     setPecAncora(false);
     setPecSecondi(0);
     try {
-      const res = await fetch('/api/pec/sync', { method: 'POST' });
+      const res = await fetch('/api/pec/sync', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modo: 'nuovi' }),
+      });
       const body = await res.json();
       if (!res.ok) { setPecSyncMsg(`Errore: ${body.error}`); return; }
-      const risultati = (body.risultati || []) as { messaggiScaricati: number }[];
+      const risultati = (body.risultati || []) as { messaggiScaricati: number; restanti?: number }[];
       const totale = risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
-      // Ogni giro scarica al massimo MAX_MESSAGGI_PER_GIRO messaggi, per non
-      // far scadere la funzione su una casella con anni di arretrato. Se il
-      // tetto è stato raggiunto, ce n'è quasi certamente dell'altro: va
-      // detto, altrimenti si crede di aver finito.
-      const alTetto = risultati.some((r) => r.messaggiScaricati >= MAX_MESSAGGI_PER_GIRO);
-      setPecAncora(alTetto);
+      // Ora il server dice quante ne restano davvero, invece di farlo
+      // dedurre dal fatto che il giro era pieno.
+      const ancora = risultati.reduce((s, r) => s + (r.restanti ?? 0), 0);
+      setPecAncora(ancora > 0);
       setPecSyncMsg(totale > 0
-        ? `${totale} messaggi scaricati.`
+        ? `${totale} messaggi scaricati${ancora > 0 ? `, altri ${ancora} da prendere.` : '.'}`
         : 'Nessun messaggio nuovo.');
       load();
     } catch {
@@ -310,12 +310,15 @@ export default function ImpostazioniPage() {
     // "dieci" per un difetto suo.
     for (let giro = 1; giro <= 200 && !pecInterrompi.current; giro++) {
       setPecGiro(giro);
-      let risultati: { messaggiScaricati: number }[] = [];
+      let risultati: { messaggiScaricati: number; restanti?: number }[] = [];
       try {
-        const res = await fetch('/api/pec/sync', { method: 'POST' });
+        const res = await fetch('/api/pec/sync', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ modo: 'arretrato' }),
+        });
         const body = await res.json();
         if (!res.ok) { setPecSyncMsg(`Interrotto al giro ${giro}: ${body.error}`); break; }
-        risultati = (body.risultati || []) as { messaggiScaricati: number }[];
+        risultati = (body.risultati || []) as { messaggiScaricati: number; restanti?: number }[];
       } catch {
         setPecSyncMsg(`Interrotto al giro ${giro}: connessione persa. I messaggi già scaricati restano.`);
         break;
@@ -324,7 +327,8 @@ export default function ImpostazioniPage() {
       const scaricati = risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
       totale += scaricati;
       setPecTotaleArretrato(totale);
-      if (!risultati.some((r) => r.messaggiScaricati >= MAX_MESSAGGI_PER_GIRO)) {
+      const ancora = risultati.reduce((s, r) => s + (r.restanti ?? 0), 0);
+      if (scaricati === 0 || ancora === 0) {
         setPecSyncMsg(`Arretrato recuperato: ${totale} messaggi in ${giro} giri.`);
         setPecAncora(false);
         break;
@@ -589,7 +593,7 @@ export default function ImpostazioniPage() {
               onClick={handleSyncPec} disabled={pecSincronizzando}
               className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50 disabled:opacity-50"
             >
-              {pecSincronizzando ? 'Sincronizzazione...' : 'Sincronizza ora'}
+              {pecSincronizzando ? 'Sincronizzazione...' : 'Scarica le nuove'}
             </button>
           )}
         </div>
@@ -647,7 +651,7 @@ export default function ImpostazioniPage() {
             type="button" onClick={handleRecuperaArretrato}
             className="mb-3 rounded-md border border-bordeaux-700 px-4 py-2 text-sm font-semibold text-bordeaux-700 hover:bg-bordeaux-50"
           >
-            Recupera tutto l&apos;arretrato
+            Recupera anche le PEC più vecchie
           </button>
         )}
 

@@ -1,6 +1,6 @@
 import 'server-only';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { scaricaNuoviMessaggi, elencaCartelle } from './imap';
+import { scaricaMessaggi, elencaCartelle } from './imap';
 import { MAX_MESSAGGI_PER_GIRO } from './costanti';
 import { interpretaMessaggioPec } from './parse';
 import { decryptBuffer, encryptBuffer } from '@/lib/crypto/docEncryption';
@@ -12,6 +12,8 @@ export type RisultatoSincronizzazioneAccount = {
   accountId: string;
   ok: boolean;
   messaggiScaricati: number;
+  /** Quanti ne restano da prendere nella direzione richiesta. */
+  restanti?: number;
   errore?: string;
 };
 
@@ -28,6 +30,7 @@ export type RisultatoSincronizzazioneAccount = {
 export async function sincronizzaAccount(
   admin: SupabaseClient,
   accountId: string,
+  modo: 'nuovi' | 'arretrato' = 'nuovi',
 ): Promise<RisultatoSincronizzazioneAccount> {
   const { data: account, error: accountError } = await admin
     .from('pec_account')
@@ -62,8 +65,7 @@ export async function sincronizzaAccount(
       .from('pec_cartelle')
       .select('*')
       .eq('pec_account_id', accountId)
-      .eq('attiva', true)
-      .order('ruolo');
+      .eq('attiva', true);
 
     if (!cartelle || cartelle.length === 0) {
       const sulServer = await elencaCartelle(config);
@@ -85,11 +87,19 @@ export async function sincronizzaAccount(
       await admin.from('pec_cartelle').upsert(righe, { onConflict: 'pec_account_id,percorso' });
       const { data: riLette } = await admin
         .from('pec_cartelle').select('*')
-        .eq('pec_account_id', accountId).eq('attiva', true).order('ruolo');
+        .eq('pec_account_id', accountId).eq('attiva', true);
       cartelle = riLette ?? [];
     }
 
+    // Le ricevute prima delle inviate, l'archivio per ultimo. Ordinare per
+    // nome metteva "archivio" davanti a tutto, e su una casella con anni di
+    // storico si mangiava l'intero giro senza che arrivasse una sola PEC
+    // nuova.
+    const PRIORITA: Record<string, number> = { inbox: 0, inviata: 1, archivio: 2, altro: 3 };
+    cartelle = [...cartelle].sort((a, b) => (PRIORITA[a.ruolo] ?? 9) - (PRIORITA[b.ruolo] ?? 9));
+
     let inseriti = 0;
+    let restanti = 0;
     // Il tetto e' di tutto il giro, non di ogni cartella: e' il tempo della
     // funzione a essere limitato, e non gliene importa da quale cartella
     // vengano i messaggi.
@@ -98,14 +108,15 @@ export async function sincronizzaAccount(
     for (const cartella of cartelle) {
       if (budget <= 0) break;
 
-      const esito = await scaricaNuoviMessaggi(
-        config,
-        cartella.percorso,
-        cartella.last_seen_uid ?? 0,
-        cartella.uid_validity !== null && cartella.uid_validity !== undefined
+      const esito = await scaricaMessaggi(config, cartella.percorso, {
+        modo,
+        lastSeenUid: cartella.last_seen_uid ?? 0,
+        arretratoFinoA: cartella.arretrato_fino_a ?? null,
+        uidValiditySalvato: cartella.uid_validity !== null && cartella.uid_validity !== undefined
           ? BigInt(cartella.uid_validity) : null,
-        budget,
-      );
+        massimo: budget,
+      });
+      restanti += esito.restanti;
 
       for (const messaggio of esito.messaggi) {
         const interpretato = await interpretaMessaggioPec(messaggio.sorgente);
@@ -146,10 +157,19 @@ export async function sincronizzaAccount(
         budget -= 1;
       }
 
+      // I due segnalibri si muovono in direzioni opposte: quello dei nuovi
+      // solo verso l'alto, quello dell'arretrato solo verso il basso.
+      const nuovoAlto = Math.max(cartella.last_seen_uid ?? 0, esito.uidMassimoPreso ?? 0);
+      const bassoAttuale = esito.azzerato ? null : cartella.arretrato_fino_a;
+      const nuovoBasso = esito.uidMinimoPreso === null
+        ? bassoAttuale
+        : Math.min(bassoAttuale ?? Number.MAX_SAFE_INTEGER, esito.uidMinimoPreso);
+
       await admin
         .from('pec_cartelle')
         .update({
-          last_seen_uid: esito.ultimoUidVisto ?? cartella.last_seen_uid,
+          last_seen_uid: nuovoAlto,
+          arretrato_fino_a: nuovoBasso,
           uid_validity: esito.uidValidity.toString(),
           ultimo_controllo_at: new Date().toISOString(),
         })
@@ -165,7 +185,7 @@ export async function sincronizzaAccount(
       })
       .eq('id', accountId);
 
-    return { accountId, ok: true, messaggiScaricati: inseriti };
+    return { accountId, ok: true, messaggiScaricati: inseriti, restanti };
   } catch (err) {
     const messaggioErrore = descriviErrore(err);
     await admin

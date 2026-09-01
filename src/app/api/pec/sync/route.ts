@@ -36,9 +36,19 @@ export async function POST(request: Request) {
   const { data: accounts, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // 'nuovi' porta le PEC recenti, 'arretrato' scende nel passato.
+  // Il valore di riserva è 'nuovi': è quello che serve quasi sempre.
+  let modo: 'nuovi' | 'arretrato' = 'nuovi';
+  try {
+    const corpo = await request.json();
+    if (corpo?.modo === 'arretrato') modo = 'arretrato';
+  } catch {
+    // Nessun corpo: va bene, si resta su 'nuovi'.
+  }
+
   const risultati = [];
   for (const account of accounts ?? []) {
-    risultati.push(await sincronizzaAccount(admin, account.id));
+    risultati.push(await sincronizzaAccount(admin, account.id, modo));
   }
 
   return NextResponse.json({ ok: true, risultati });
