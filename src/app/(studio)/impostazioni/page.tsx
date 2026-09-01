@@ -697,7 +697,7 @@ export default function ImpostazioniPage() {
             type="button" onClick={handleRecuperaArretrato}
             className="mb-3 rounded-md border border-bordeaux-700 px-4 py-2 text-sm font-semibold text-bordeaux-700 hover:bg-bordeaux-50"
           >
-            Recupera anche le PEC più vecchie
+            Completa l&apos;archivio
           </button>
         )}
 
@@ -709,7 +709,8 @@ export default function ImpostazioniPage() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-xs text-neutral-600">
                 Giro {pecGiro} · {pecTotaleArretrato} messaggi recuperati finora.
-                Puoi lasciare la pagina aperta e fare altro.
+                Scende dalle più recenti verso le più vecchie. Puoi lasciare la pagina
+                aperta e fare altro.
               </p>
               <button
                 type="button" onClick={() => { pecInterrompi.current = true; }}
