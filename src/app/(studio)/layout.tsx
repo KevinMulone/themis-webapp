@@ -21,6 +21,7 @@ const NAV = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/clienti', label: 'Clienti' },
   { href: '/pratiche', label: 'Pratiche' },
+  { href: '/themis', label: 'Themis' },
   { href: '/incarichi', label: 'I miei incarichi' },
   { href: '/calendario', label: 'Calendario' },
   { href: '/pec', label: 'PEC' },
