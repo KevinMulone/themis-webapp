@@ -77,3 +77,42 @@ export async function scaricaNuoviMessaggi(
     await client.logout();
   }
 }
+
+export type CartellaImap = { percorso: string; nome: string; messaggi: number };
+
+/**
+ * Elenca le cartelle della casella con quanti messaggi contengono.
+ *
+ * Serve a rispondere a una domanda che altrimenti si risolve a
+ * indovinelli: «non le scarica tutte» può voler dire che mancano le
+ * inviate, che mancano quelle in archivio, o che il segnalibro si è
+ * fermato. Con i numeri del server accanto ai nostri, si vede quale.
+ */
+export async function elencaCartelle(config: ConfigurazioneImap): Promise<CartellaImap[]> {
+  const client = new ImapFlow({
+    host: config.host, port: config.port, secure: true,
+    auth: { user: config.user, pass: config.password }, logger: false,
+  });
+  await client.connect();
+  try {
+    const cartelle: CartellaImap[] = [];
+    for (const casella of await client.list()) {
+      if (casella.flags?.has('\\Noselect')) continue;
+      try {
+        const stato = await client.status(casella.path, { messages: true });
+        cartelle.push({
+          percorso: casella.path,
+          nome: casella.name || casella.path,
+          messaggi: stato.messages ?? 0,
+        });
+      } catch {
+        // Una cartella che non si lascia interrogare non deve far fallire
+        // l'elenco: si segna con -1 e si prosegue.
+        cartelle.push({ percorso: casella.path, nome: casella.name || casella.path, messaggi: -1 });
+      }
+    }
+    return cartelle;
+  } finally {
+    await client.logout();
+  }
+}

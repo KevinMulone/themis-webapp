@@ -70,6 +70,9 @@ export default function ImpostazioniPage() {
   const [pecGiro, setPecGiro] = useState(0);
   const [pecTotaleArretrato, setPecTotaleArretrato] = useState(0);
   const pecInterrompi = useRef(false);
+  const [pecCartelle, setPecCartelle] = useState<{ nome: string; percorso: string; messaggi: number }[] | null>(null);
+  const [pecScaricati, setPecScaricati] = useState(0);
+  const [pecDiagnosi, setPecDiagnosi] = useState('');
   const [pecPasswordId, setPecPasswordId] = useState('');
   const [pecNuovaPassword, setPecNuovaPassword] = useState('');
   const [pecPwdMsg, setPecPwdMsg] = useState('');
@@ -333,6 +336,17 @@ export default function ImpostazioniPage() {
     }
     setPecArretrato(false);
     load();
+  }
+
+  async function handleCartellePec(id: string) {
+    setPecDiagnosi('Lettura delle cartelle...');
+    setPecCartelle(null);
+    const res = await fetch(`/api/pec/cartelle?id=${id}`);
+    const body = await res.json();
+    if (!res.ok) { setPecDiagnosi(`Errore: ${body.error}`); return; }
+    setPecCartelle(body.cartelle || []);
+    setPecScaricati(body.scaricati ?? 0);
+    setPecDiagnosi('');
   }
 
   async function handleGestisciAbbonamento() {
@@ -605,6 +619,29 @@ export default function ImpostazioniPage() {
           </p>
         )}
 
+        {pecDiagnosi && <p className="mb-3 text-sm text-neutral-600">{pecDiagnosi}</p>}
+        {pecCartelle && (
+          <div className="mb-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+            <p className="mb-2 text-xs font-semibold text-neutral-700">
+              Cartelle sul server · Themis ne ha archiviati {pecScaricati}
+            </p>
+            <ul className="space-y-0.5 text-xs text-neutral-600">
+              {pecCartelle.map((c) => (
+                <li key={c.percorso} className="flex justify-between gap-4">
+                  <span className="truncate">{c.nome}<span className="text-neutral-400"> ({c.percorso})</span></span>
+                  <span className="shrink-0 tabular-nums">
+                    {c.messaggi < 0 ? 'non leggibile' : `${c.messaggi} messaggi`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-2 text-[11px] text-neutral-500">
+              Oggi Themis legge solo INBOX. Se i messaggi che cerchi sono in un&apos;altra
+              cartella, è per questo che non compaiono.
+            </p>
+          </div>
+        )}
+
         {pecAncora && !pecArretrato && !pecSincronizzando && (
           <button
             type="button" onClick={handleRecuperaArretrato}
@@ -667,6 +704,12 @@ export default function ImpostazioniPage() {
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
+                  <button
+                    type="button" onClick={() => handleCartellePec(a.id)}
+                    className="text-xs text-neutral-500 hover:underline"
+                  >
+                    Cosa c&apos;è sul server
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
