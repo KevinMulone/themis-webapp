@@ -12,6 +12,8 @@ export type RisultatoSincronizzazioneAccount = {
   accountId: string;
   ok: boolean;
   messaggiScaricati: number;
+  /** Quanti ne sono stati letti dal server in questo giro (anche se già presenti). */
+  letti?: number;
   /** Quanti ne restano da prendere nella direzione richiesta. */
   restanti?: number;
   /** Quanti non si sono potuti archiviare (di solito: troppo grandi). */
@@ -101,6 +103,7 @@ export async function sincronizzaAccount(
     cartelle = [...cartelle].sort((a, b) => (PRIORITA[a.ruolo] ?? 9) - (PRIORITA[b.ruolo] ?? 9));
 
     let inseriti = 0;
+    let letti = 0;
     let restanti = 0;
     const saltati: { uid: number; motivo: string }[] = [];
     // Il tetto e' di tutto il giro, non di ogni cartella: e' il tempo della
@@ -120,6 +123,7 @@ export async function sincronizzaAccount(
         massimo: budget,
       });
       restanti += esito.restanti;
+      letti += esito.messaggi.length;
 
       for (const messaggio of esito.messaggi) {
         try {
@@ -215,7 +219,7 @@ export async function sincronizzaAccount(
       })
       .eq('id', accountId);
 
-    return { accountId, ok: true, messaggiScaricati: inseriti, restanti, saltati: saltati.length };
+    return { accountId, ok: true, messaggiScaricati: inseriti, letti, restanti, saltati: saltati.length };
   } catch (err) {
     const messaggioErrore = descriviErrore(err);
     await admin

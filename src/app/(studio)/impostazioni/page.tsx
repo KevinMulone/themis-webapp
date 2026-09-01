@@ -315,7 +315,7 @@ export default function ImpostazioniPage() {
     // "dieci" per un difetto suo.
     for (let giro = 1; giro <= 200 && !pecInterrompi.current; giro++) {
       setPecGiro(giro);
-      let risultati: { messaggiScaricati: number; restanti?: number }[] = [];
+      let risultati: { messaggiScaricati: number; letti?: number; restanti?: number }[] = [];
       try {
         const res = await fetch('/api/pec/sync', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -323,18 +323,26 @@ export default function ImpostazioniPage() {
         });
         const body = await res.json();
         if (!res.ok) { setPecSyncMsg(`Interrotto al giro ${giro}: ${body.error}`); break; }
-        risultati = (body.risultati || []) as { messaggiScaricati: number; restanti?: number }[];
+        risultati = (body.risultati || []) as
+          { messaggiScaricati: number; letti?: number; restanti?: number }[];
       } catch {
         setPecSyncMsg(`Interrotto al giro ${giro}: connessione persa. I messaggi già scaricati restano.`);
         break;
       }
 
-      const scaricati = risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
-      totale += scaricati;
+      totale += risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
       setPecTotaleArretrato(totale);
       const ancora = risultati.reduce((s, r) => s + (r.restanti ?? 0), 0);
-      if (scaricati === 0 || ancora === 0) {
-        setPecSyncMsg(`Arretrato recuperato: ${totale} messaggi in ${giro} giri.`);
+      const letti = risultati.reduce((s, r) => s + (r.letti ?? 0), 0);
+
+      // Ci si ferma su quanti ne ha LETTI il server, non su quanti ne ha
+      // inseriti. Durante una rilettura i primi giri ripassano messaggi già
+      // presenti: zero inserimenti, ma il lavoro non è finito affatto.
+      // Fermarsi lì spegneva il recupero al primo giro.
+      if (letti === 0 || ancora === 0) {
+        setPecSyncMsg(totale > 0
+          ? `Ripasso completato: ${totale} messaggi nuovi in ${giro} giri.`
+          : `Ripasso completato in ${giro} giri: non mancava nulla.`);
         setPecAncora(false);
         break;
       }
