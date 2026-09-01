@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import LetturaMessaggio from './LetturaMessaggio';
+import NuovaPec from './NuovaPec';
 
 type Messaggio = {
   id: string;
@@ -72,6 +73,7 @@ export default function PecPage() {
   useEffect(() => { load(); }, []);
 
   const [messaggioAperto, setMessaggioAperto] = useState('');
+  const [scrivendo, setScrivendo] = useState(false);
 
   const conteggi = useMemo(() => {
     let ricevute = 0, inviate = 0, attestazioni = 0;
@@ -118,6 +120,12 @@ export default function PecPage() {
       ) : (
         <>
           <div className="mb-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button" onClick={() => setScrivendo(true)}
+              className="rounded-md bg-bordeaux-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
+            >
+              Nuova PEC
+            </button>
             <div className="flex overflow-hidden rounded-md border border-neutral-300 text-sm">
               {([
                 ['ricevute', 'Ricevute', conteggi.ricevute],
@@ -228,6 +236,10 @@ export default function PecPage() {
 
       {messaggioAperto && (
         <LetturaMessaggio messaggioId={messaggioAperto} onChiudi={() => setMessaggioAperto('')} />
+      )}
+
+      {scrivendo && (
+        <NuovaPec onChiudi={() => setScrivendo(false)} onInviata={load} />
       )}
     </div>
   );
