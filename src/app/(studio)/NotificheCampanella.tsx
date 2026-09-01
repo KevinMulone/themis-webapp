@@ -106,12 +106,12 @@ export default function NotificheCampanella() {
         )}
       </button>
 
+      {/* Si apre verso destra: la campanella sta nella barra laterale, a filo
+          del bordo sinistro dello schermo. Aprendo verso sinistra — come fa di
+          norma un menù a discesa — il pannello finiva fuori dalla finestra e si
+          leggeva a metà. */}
       {aperto && (
-        {/* Si apre verso destra: la campanella sta nella barra laterale, a
-              filo del bordo sinistro dello schermo. Aprendo verso sinistra —
-              come fa di norma un menù a discesa — il pannello finiva fuori
-              dalla finestra e si leggeva a metà. */}
-          <div className="absolute left-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-neutral-200 bg-white shadow-lg">
+        <div className="absolute left-0 z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-neutral-200 bg-white shadow-lg">
           <div className="flex items-center justify-between border-b border-neutral-100 px-3 py-2">
             <div className="flex gap-1 text-xs">
               <button
