@@ -45,6 +45,21 @@ function formattaData(iso: string | null): string {
   return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+/**
+ * Cerca in mittente, destinatari e oggetto.
+ *
+ * Tutti i termini devono comparire, non uno qualsiasi: cercando
+ * "mannarino generali" si vuole la PEC che riguarda entrambi, non
+ * l'unione di due elenchi.
+ */
+function corrisponde(m: { mittente: string | null; destinatari: string | null; oggetto: string | null },
+  query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  const pagliaio = [m.mittente, m.destinatari, m.oggetto].filter(Boolean).join(' ').toLowerCase();
+  return q.split(/\s+/).every((parola) => pagliaio.includes(parola));
+}
+
 export default function PecPage() {
   const supabase = createClient();
   const [messaggi, setMessaggi] = useState<Messaggio[]>([]);
@@ -77,17 +92,55 @@ export default function PecPage() {
 
   const [messaggioAperto, setMessaggioAperto] = useState('');
   const [scrivendo, setScrivendo] = useState(false);
+  const [cerca, setCerca] = useState('');
+  const [periodo, setPeriodo] = useState('');
+
+  /** La data che conta per l'archivio è quella del messaggio. */
+  function periodoDi(m: Messaggio): string {
+    const d = new Date(m.data_invio || m.data_ricezione);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+
+  const MESI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno',
+    'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+
+  function nomePeriodo(chiave: string): string {
+    const [anno, mese] = chiave.split('-');
+    return `${MESI[Number(mese) - 1]} ${anno}`;
+  }
+
+  const periodi = useMemo(() => {
+    const conta = new Map<string, number>();
+    for (const m of messaggi) {
+      const k = periodoDi(m);
+      conta.set(k, (conta.get(k) ?? 0) + 1);
+    }
+    return [...conta.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+  }, [messaggi]);
+
+  // Si parte dal mese in corso — è l'archiviazione automatica del primo
+  // del mese, ottenuta raggruppando invece che spostando: nessun file
+  // cambia posto, quindi non si può perdere niente. Se il mese in corso è
+  // vuoto si mostra tutto, altrimenti si aprirebbe su una pagina bianca.
+  useEffect(() => {
+    if (periodo || periodi.length === 0) return;
+    const oggi = new Date();
+    const corrente = `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2, '0')}`;
+    setPeriodo(periodi.some(([k]) => k === corrente) ? corrente : 'tutti');
+  }, [periodi, periodo]);
 
   const conteggi = useMemo(() => {
     let ricevute = 0, inviate = 0, attestazioni = 0;
     for (const m of messaggi) {
       if (accountFiltro && m.pec_account_id !== accountFiltro) continue;
+      if (periodo && periodo !== 'tutti' && periodoDi(m) !== periodo) continue;
+      if (!corrisponde(m, cerca)) continue;
       if (RICEVUTE.has(m.tipo_pec)) attestazioni += 1;
       else if ((m.direzione || 'ricevuta') === 'inviata') inviate += 1;
       else ricevute += 1;
     }
     return { ricevute, inviate, attestazioni };
-  }, [messaggi, accountFiltro]);
+  }, [messaggi, accountFiltro, periodo, cerca]);
 
   const filtrati = useMemo(() => {
     return messaggi.filter((m) => {
@@ -102,9 +155,11 @@ export default function PecPage() {
       else if (scheda === 'inviate' && !inUscita) return false;
 
       if (accountFiltro && m.pec_account_id !== accountFiltro) return false;
+      if (periodo && periodo !== 'tutti' && periodoDi(m) !== periodo) return false;
+      if (!corrisponde(m, cerca)) return false;
       return true;
     });
-  }, [messaggi, scheda, accountFiltro]);
+  }, [messaggi, scheda, accountFiltro, periodo, cerca]);
 
   const nomeAccount = (id: string) => accounts.find((a) => a.id === id)?.etichetta || '—';
 
@@ -151,6 +206,15 @@ export default function PecPage() {
                 </button>
               ))}
             </div>
+            <select
+              value={periodo} onChange={(e) => setPeriodo(e.target.value)}
+              className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm"
+            >
+              <option value="tutti">Tutti i periodi ({messaggi.length})</option>
+              {periodi.map(([chiave, quante]) => (
+                <option key={chiave} value={chiave}>{nomePeriodo(chiave)} ({quante})</option>
+              ))}
+            </select>
             {accounts.length > 1 && (
               <select
                 value={accountFiltro} onChange={(e) => setAccountFiltro(e.target.value)}
@@ -162,12 +226,20 @@ export default function PecPage() {
             )}
           </div>
 
+          <input
+            value={cerca} onChange={(e) => setCerca(e.target.value)}
+            placeholder="Cerca per mittente, destinatario o oggetto..."
+            className="mb-4 w-full max-w-xl rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          />
+
           <div className="rounded-xl border border-neutral-200 bg-white shadow-sm">
             {loading ? (
               <p className="p-6 text-sm text-neutral-500">Caricamento...</p>
             ) : filtrati.length === 0 ? (
               <p className="p-6 text-sm text-neutral-500">
-                {scheda === 'inviate'
+                {cerca.trim()
+                  ? `Nessun risultato per «${cerca.trim()}»${periodo !== 'tutti' ? ' in questo periodo.' : '.'}`
+                  : scheda === 'inviate'
                   ? 'Nessuna PEC inviata. Se ne hai mandate, vanno prima scaricate dalle Impostazioni.'
                   : scheda === 'attestazioni'
                     ? 'Nessuna attestazione di accettazione o consegna.'
