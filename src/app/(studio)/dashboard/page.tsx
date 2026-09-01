@@ -5,6 +5,7 @@ import { contestoStudio } from '@/lib/studio/contesto';
 import { oggiIso, addDaysIso } from '@/lib/dateUtils';
 import { TIPI_EVENTO, TIPI_PRATICA, STATI_PRATICA, labelFromOptions, clientLabel, formatDateIt } from '@/lib/constants';
 import { STATI_APERTI } from '@/lib/incarichi';
+import { Icon, type NomeIcona } from '@/components/ui/Icon';
 
 type ScadenzaRow = { id: string; titolo: string; tipo: string; data: string; ora_inizio: string | null };
 type ClienteRef = { tipo_soggetto: string; nome: string | null; cognome: string | null; ragione_sociale: string | null };
@@ -21,6 +22,90 @@ function giorniA(dataIso: string, oggi: string): string {
 function primoCliente(c: ClienteRef | ClienteRef[] | null): ClienteRef | null {
   if (!c) return null;
   return Array.isArray(c) ? c[0] || null : c;
+}
+
+/**
+ * I colori delle tessere.
+ *
+ * Scritti per intero e non composti a runtime: Tailwind include nel
+ * foglio di stile solo le classi che trova scritte così nel sorgente.
+ * Una classe assemblata con un template letterale non verrebbe mai
+ * vista, e il colore sparirebbe dal sito pubblicato pur essendo giusto
+ * nel codice.
+ */
+const TINTE = {
+  rosa: 'bg-rose-50 text-rose-500',
+  ambra: 'bg-amber-50 text-amber-500',
+  viola: 'bg-violet-50 text-violet-500',
+  verde: 'bg-emerald-50 text-emerald-500',
+  blu: 'bg-sky-50 text-sky-500',
+  bordeaux: 'bg-bordeaux-50 text-bordeaux-600',
+} as const;
+
+/**
+ * Una tessera del riepilogo: icona colorata, numero, etichetta.
+ *
+ * È sempre un collegamento: un numero che incuriosisce e non si può
+ * aprire è una frustrazione. Dove il numero conta un problema da
+ * gestire (prenotazioni in attesa, incarichi aperti) diventa ambra
+ * quando è maggiore di zero — il colore segnala che c'è da fare
+ * qualcosa, non decora.
+ */
+function Tessera({ href, icona, tinta, valore, titolo, sottotitolo, allerta = false }: {
+  href: string; icona: NomeIcona; tinta: keyof typeof TINTE;
+  valore: number | string; titolo: string; sottotitolo?: string; allerta?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-colors hover:border-bordeaux-300"
+    >
+      <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${TINTE[tinta]}`}>
+        <Icon nome={icona} className="h-5 w-5" />
+      </div>
+      <div className={`text-3xl font-bold ${allerta ? 'text-amber-600' : 'text-neutral-900'}`}>
+        {valore}
+      </div>
+      <div className="mt-1 text-sm font-medium text-neutral-700">{titolo}</div>
+      <div className="mt-auto flex items-end justify-between gap-2 pt-2">
+        <span className="text-xs text-neutral-400">{sottotitolo}</span>
+        <Icon nome="freccia" className="h-4 w-4 text-neutral-300 group-hover:text-bordeaux-600" />
+      </div>
+    </Link>
+  );
+}
+
+/** L'intestazione di una sezione: titolo a sinistra, collegamento a destra. */
+function TestataSezione({ icona, titolo, href, azione }: {
+  icona: NomeIcona; titolo: string; href: string; azione: string;
+}) {
+  return (
+    <div className="mb-4 flex items-center justify-between gap-3">
+      <h2 className="flex items-center gap-2 font-semibold text-neutral-900">
+        <Icon nome={icona} className="h-[18px] w-[18px] text-bordeaux-600" />
+        {titolo}
+      </h2>
+      <Link
+        href={href}
+        className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:border-bordeaux-300 hover:text-bordeaux-700"
+      >
+        {azione}
+      </Link>
+    </div>
+  );
+}
+
+/** Le scorciatoie in fondo: le cinque cose che si fanno più spesso. */
+function AzioneRapida({ href, icona, testo }: { href: string; icona: NomeIcona; testo: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center gap-2.5 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:border-bordeaux-300 hover:text-bordeaux-700"
+    >
+      <Icon nome={icona} className="h-[18px] w-[18px] text-bordeaux-600" />
+      {testo}
+    </Link>
+  );
 }
 
 export default async function DashboardPage() {
@@ -52,7 +137,10 @@ export default async function DashboardPage() {
     supabase.from('matters').select('id', { count: 'exact', head: true }).eq('studio_id', studioId).neq('stato', 'archiviata'),
     supabase.from('eventi').select('id', { count: 'exact', head: true }).in('tipo', tipiScadenza).gte('data', oggi).lte('data', tra7gg),
     supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('stato', 'in_attesa'),
-    supabase.from('pec_messaggi').select('id', { count: 'exact', head: true }).eq('tipo_pec', 'posta-certificata'),
+    // Solo le PEC non lette: un totale che sale e non scende mai non è
+    // un'informazione su cui agire, è un contatore d'archivio.
+    supabase.from('pec_messaggi').select('id', { count: 'exact', head: true })
+      .eq('tipo_pec', 'posta-certificata').eq('letta', false),
     supabase.from('incarichi').select('id', { count: 'exact', head: true })
       .eq('assegnato_a', ctx.userId).in('stato', STATI_APERTI),
     supabase.from('eventi')
@@ -72,58 +160,85 @@ export default async function DashboardPage() {
   const scadenze = (prossimeScadenze || []) as ScadenzaRow[];
   const pratiche = (praticheRecenti || []) as unknown as PraticaRow[];
 
-  return (
-    <div>
-      <h1 className="mb-6 text-2xl font-display font-semibold text-neutral-900">Dashboard</h1>
+  const oggiEsteso = new Date(oggi).toLocaleDateString('it-IT', {
+    day: 'numeric', month: 'long', year: 'numeric',
+  });
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-          <div className="text-3xl font-bold text-bordeaux-700">{clientsCount ?? 0}</div>
-          <div className="text-sm text-neutral-500">Clienti</div>
+  return (
+    <div className="mx-auto max-w-7xl">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-semibold text-neutral-900">Dashboard</h1>
+          <p className="mt-1 text-sm text-neutral-500">
+            Bentornato, ecco cosa sta succedendo oggi.
+          </p>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-          <div className="text-3xl font-bold text-bordeaux-700">{matterCount ?? 0}</div>
-          <div className="text-sm text-neutral-500">Pratiche attive</div>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-600">
+            <Icon nome="calendario" className="h-4 w-4 text-neutral-400" />
+            {oggiEsteso}
+          </span>
+          <Link
+            href="/pratiche"
+            className="flex items-center gap-2 rounded-lg bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
+          >
+            <Icon nome="piu" className="h-4 w-4" />
+            Nuova pratica
+          </Link>
         </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-          <div className="text-3xl font-bold text-bordeaux-700">{prossimeScadenzeCount ?? 0}</div>
-          <div className="text-sm text-neutral-500">Udienze/termini (7gg)</div>
-        </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-          <div className={`text-3xl font-bold ${(prenotazioniInAttesaCount ?? 0) > 0 ? 'text-amber-600' : 'text-bordeaux-700'}`}>
-            {prenotazioniInAttesaCount ?? 0}
-          </div>
-          <div className="text-sm text-neutral-500">Prenotazioni da confermare</div>
-        </div>
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-          <div className="text-3xl font-bold text-bordeaux-700">{pecCount ?? 0}</div>
-          <div className="text-sm text-neutral-500">Messaggi PEC</div>
-        </div>
-        <Link href="/incarichi" className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm hover:border-bordeaux-700">
-          <div className={`text-3xl font-bold ${(incarichiCount ?? 0) > 0 ? 'text-amber-600' : 'text-bordeaux-700'}`}>
-            {incarichiCount ?? 0}
-          </div>
-          <div className="text-sm text-neutral-500">Incarichi da fare</div>
-        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+        <Tessera
+          href="/clienti" icona="clienti" tinta="rosa"
+          valore={clientsCount ?? 0} titolo="Clienti" sottotitolo="Totali"
+        />
+        <Tessera
+          href="/pratiche" icona="pratiche" tinta="ambra"
+          valore={matterCount ?? 0} titolo="Pratiche attive" sottotitolo="In corso"
+        />
+        <Tessera
+          href="/calendario" icona="calendario" tinta="viola"
+          valore={prossimeScadenzeCount ?? 0} titolo="Udienze/termini" sottotitolo="(7gg)"
+        />
+        <Tessera
+          href="/calendario" icona="invio" tinta="verde"
+          valore={prenotazioniInAttesaCount ?? 0} titolo="Prenotazioni da confermare"
+          allerta={(prenotazioniInAttesaCount ?? 0) > 0}
+        />
+        <Tessera
+          href="/pec" icona="pec" tinta="blu"
+          valore={pecCount ?? 0} titolo="Messaggi PEC" sottotitolo="Non letti"
+          allerta={(pecCount ?? 0) > 0}
+        />
+        <Tessera
+          href="/incarichi" icona="incarichi" tinta="bordeaux"
+          valore={incarichiCount ?? 0} titolo="Incarichi da fare" sottotitolo="Aperti"
+          allerta={(incarichiCount ?? 0) > 0}
+        />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-3 font-semibold text-neutral-900">Prossime scadenze</h2>
+        <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <TestataSezione icona="orologio" titolo="Prossime scadenze" href="/calendario" azione="Vedi calendario" />
           {scadenze.length === 0 ? (
-            <p className="text-sm text-neutral-400">Nessuna udienza o termine in vista.</p>
+            <div className="py-10 text-center">
+              <Icon nome="calendario" className="mx-auto h-10 w-10 text-neutral-200" />
+              <p className="mt-3 text-sm text-neutral-500">Nessuna udienza o termine in vista.</p>
+              <p className="text-sm text-neutral-400">Goditi la giornata.</p>
+            </div>
           ) : (
             <ul className="divide-y divide-neutral-100 text-sm">
               {scadenze.map((ev) => (
-                <li key={ev.id} className="flex items-center justify-between gap-3 py-2">
-                  <div>
-                    <div className="font-medium text-neutral-800">{ev.titolo}</div>
+                <li key={ev.id} className="flex items-center justify-between gap-3 py-3">
+                  <div className="min-w-0">
+                    <div className="truncate font-medium text-neutral-800">{ev.titolo}</div>
                     <div className="text-xs text-neutral-400">
                       {labelFromOptions(TIPI_EVENTO, ev.tipo)} · {formatDateIt(ev.data)}
                       {ev.ora_inizio && ` ${ev.ora_inizio.slice(0, 5)}`}
                     </div>
                   </div>
-                  <span className="whitespace-nowrap rounded-full bg-neutral-100 px-2 py-1 text-xs text-neutral-600">
+                  <span className="shrink-0 whitespace-nowrap rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">
                     {giorniA(ev.data, oggi)}
                   </span>
                 </li>
@@ -132,24 +247,52 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-3 font-semibold text-neutral-900">Pratiche recenti</h2>
+        <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <TestataSezione icona="pratiche" titolo="Pratiche recenti" href="/pratiche" azione="Vedi tutte" />
           {pratiche.length === 0 ? (
-            <p className="text-sm text-neutral-400">Nessuna pratica ancora.</p>
+            <div className="py-10 text-center">
+              <Icon nome="pratiche" className="mx-auto h-10 w-10 text-neutral-200" />
+              <p className="mt-3 text-sm text-neutral-500">Nessuna pratica ancora.</p>
+            </div>
           ) : (
             <ul className="divide-y divide-neutral-100 text-sm">
               {pratiche.map((m) => (
-                <li key={m.id} className="py-2">
-                  <Link href={`/pratiche/${m.id}`} className="block hover:text-bordeaux-700">
-                    <div className="font-medium text-neutral-800">{clientLabel(primoCliente(m.clients) || undefined)}</div>
-                    <div className="text-xs text-neutral-400">
-                      {labelFromOptions(TIPI_PRATICA, m.tipo_pratica)} · {labelFromOptions(STATI_PRATICA, m.stato)}
-                    </div>
+                <li key={m.id}>
+                  <Link
+                    href={`/pratiche/${m.id}`}
+                    className="group flex items-center gap-3 py-3 transition-colors hover:text-bordeaux-700"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-bordeaux-50 text-bordeaux-600">
+                      <Icon nome="documento" className="h-[18px] w-[18px]" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-medium text-neutral-800 group-hover:text-bordeaux-700">
+                        {clientLabel(primoCliente(m.clients) || undefined)}
+                      </span>
+                      <span className="block text-xs text-neutral-400">
+                        {labelFromOptions(TIPI_PRATICA, m.tipo_pratica)} · {labelFromOptions(STATI_PRATICA, m.stato)}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-xs text-neutral-400">
+                      {formatDateIt(m.updated_at.slice(0, 10))}
+                    </span>
+                    <Icon nome="freccia" className="h-4 w-4 shrink-0 text-neutral-300" />
                   </Link>
                 </li>
               ))}
             </ul>
           )}
+        </div>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 font-semibold text-neutral-900">Azioni rapide</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <AzioneRapida href="/clienti" icona="clienti" testo="Nuovo cliente" />
+          <AzioneRapida href="/pratiche" icona="pratiche" testo="Nuova pratica" />
+          <AzioneRapida href="/pec" icona="pec" testo="Nuova PEC" />
+          <AzioneRapida href="/incarichi" icona="incarichi" testo="Nuovo incarico" />
+          <AzioneRapida href="/calendario" icona="calendario" testo="Nuovo appuntamento" />
         </div>
       </div>
     </div>

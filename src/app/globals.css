@@ -20,6 +20,10 @@
 
   --color-bordeaux-50: #fbf1f3;
   --color-bordeaux-100: #f5dbe1;
+  /* 200 e 300 mancavano: le classi che li usavano (hover:border-bordeaux-300)
+     non producevano nulla, e l'effetto restava invisibile senza un errore. */
+  --color-bordeaux-200: #ecbcc7;
+  --color-bordeaux-300: #db8ba0;
   --color-bordeaux-400: #bf5170;
   --color-bordeaux-500: #9e3255;
   --color-bordeaux-600: #7c2440;
@@ -28,12 +32,19 @@
   --color-bordeaux-900: #451224;
   --color-bordeaux-950: #2e0c18;
 
+  /* Anche qui mancavano tonalità già usate nel codice: i riquadri d'avviso
+     ("Da controllare prima di firmare") chiedevano bg-gold-50 e text-gold-800
+     e li ottenevano trasparenti, cioè senza sfondo e col testo del colore
+     ereditato. */
+  --color-gold-50: #fdf8e9;
   --color-gold-100: #f9edc7;
+  --color-gold-200: #f3dc8e;
   --color-gold-300: #eabf4c;
   --color-gold-400: #e0b34a;
   --color-gold-500: #c9932a;
   --color-gold-600: #a5741f;
   --color-gold-700: #7f591c;
+  --color-gold-800: #653f14;
 }
 
 /* Qui c'era un blocco @media (prefers-color-scheme: dark) lasciato dallo
