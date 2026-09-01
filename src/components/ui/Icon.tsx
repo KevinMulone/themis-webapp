@@ -15,7 +15,7 @@ export type NomeIcona =
   | 'pec' | 'genera' | 'calcolo' | 'parcelle' | 'patrocinio' | 'attivita'
   | 'collaboratori' | 'impostazioni' | 'esci' | 'piu' | 'freccia' | 'invio'
   | 'documento' | 'orologio' | 'abbonamento'
-  | 'lucchetto' | 'scudo' | 'utente' | 'puntini';
+  | 'lucchetto' | 'scudo' | 'utente' | 'puntini' | 'stelle' | 'matita';
 
 const TRACCIATI: Record<NomeIcona, React.ReactNode> = {
   dashboard: (
@@ -171,6 +171,18 @@ const TRACCIATI: Record<NomeIcona, React.ReactNode> = {
       <circle cx="12" cy="5" r="1.2" />
       <circle cx="12" cy="12" r="1.2" />
       <circle cx="12" cy="19" r="1.2" />
+    </>
+  ),
+  stelle: (
+    <>
+      <path d="M13 3l1.6 4.4L19 9l-4.4 1.6L13 15l-1.6-4.4L7 9l4.4-1.6L13 3Z" />
+      <path d="M6 15l.8 2.2L9 18l-2.2.8L6 21l-.8-2.2L3 18l2.2-.8L6 15Z" />
+    </>
+  ),
+  matita: (
+    <>
+      <path d="M4 20h4L20 8a2.8 2.8 0 0 0-4-4L4 16v4Z" />
+      <path d="m14.5 5.5 4 4" />
     </>
   ),
 };
