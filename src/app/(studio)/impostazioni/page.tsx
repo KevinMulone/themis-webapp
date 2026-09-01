@@ -347,6 +347,39 @@ export default function ImpostazioniPage() {
     load();
   }
 
+  /**
+   * Rilegge la casella da capo.
+   *
+   * Serve quando dei messaggi sono stati scavalcati e il segnalibro è
+   * andato avanti senza di loro. Non crea doppioni: l'unicità su
+   * (casella, cartella, uid) fa scartare da sola ciò che c'è già.
+   */
+  async function handleRileggiTutto() {
+    if (!confirm(
+      'Rileggere la casella da capo?\n\nServe se qualche messaggio è stato saltato. '
+      + 'Non crea doppioni, ma può richiedere parecchi giri se la casella è grande.',
+    )) return;
+    setPecSincronizzando(true);
+    setPecSyncMsg('');
+    setPecSecondi(0);
+    try {
+      const res = await fetch('/api/pec/sync', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modo: 'nuovi', azzera: true }),
+      });
+      const body = await res.json();
+      if (!res.ok) { setPecSyncMsg(`Errore: ${body.error}`); return; }
+      const risultati = (body.risultati || []) as { messaggiScaricati: number; restanti?: number }[];
+      const totale = risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
+      setPecAncora(true);
+      setPecSyncMsg(`Rilettura avviata: ${totale} messaggi in questo giro. `
+        + 'Ora usa «Recupera anche le PEC più vecchie» per ripassare tutta la casella.');
+      load();
+    } finally {
+      setPecSincronizzando(false);
+    }
+  }
+
   async function handleCartellePec(id: string) {
     setPecDiagnosi('Lettura delle cartelle...');
     setPecCartelle(null);
@@ -713,6 +746,12 @@ export default function ImpostazioniPage() {
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
+                  <button
+                    type="button" onClick={handleRileggiTutto}
+                    className="text-xs text-neutral-500 hover:underline"
+                  >
+                    Rileggi da capo
+                  </button>
                   <button
                     type="button" onClick={() => handleCartellePec(a.id)}
                     className="text-xs text-neutral-500 hover:underline"

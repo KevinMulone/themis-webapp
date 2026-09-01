@@ -39,11 +39,27 @@ export async function POST(request: Request) {
   // 'nuovi' porta le PEC recenti, 'arretrato' scende nel passato.
   // Il valore di riserva è 'nuovi': è quello che serve quasi sempre.
   let modo: 'nuovi' | 'arretrato' = 'nuovi';
+  let azzera = false;
   try {
     const corpo = await request.json();
     if (corpo?.modo === 'arretrato') modo = 'arretrato';
+    azzera = corpo?.azzera === true;
   } catch {
     // Nessun corpo: va bene, si resta su 'nuovi'.
+  }
+
+  // Rilettura da capo: si riportano i segnalibri all'inizio. Non crea
+  // doppioni, perché l'unicità su (casella, cartella, uid) fa scartare da
+  // sola ciò che c'è già: si reinseriscono solo i messaggi mancanti.
+  if (azzera) {
+    // Solo le caselle che questa richiesta ha già il diritto di vedere:
+    // `accounts` è stato filtrato per studio poche righe sopra.
+    const ids = (accounts ?? []).map((a) => a.id);
+    if (ids.length > 0) {
+      await admin.from('pec_cartelle')
+        .update({ last_seen_uid: 0, arretrato_fino_a: null })
+        .in('pec_account_id', ids);
+    }
   }
 
   const risultati = [];

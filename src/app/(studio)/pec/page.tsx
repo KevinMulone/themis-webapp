@@ -145,7 +145,7 @@ export default function PecPage() {
                     <th className="px-4 py-2">Verso</th>
                     <th className="px-4 py-2">Mittente</th>
                     <th className="px-4 py-2">Oggetto</th>
-                    <th className="px-4 py-2">Ricevuto</th>
+                    <th className="px-4 py-2">Data</th>
                     {accounts.length > 1 && <th className="px-4 py-2">Casella</th>}
                     <th className="px-4 py-2" />
                   </tr>
@@ -184,7 +184,12 @@ export default function PecPage() {
                           </button>
                         )}
                       </td>
-                      <td className="px-4 py-2 text-xs text-neutral-500">{formattaData(m.data_ricezione)}</td>
+                      <td className="px-4 py-2 text-xs text-neutral-500">
+                        {/* La data del messaggio, non quella in cui Themis
+                            l'ha scaricato: la seconda dice solo quando ci
+                            siamo collegati noi. */}
+                        {formattaData(m.data_invio || m.data_ricezione)}
+                      </td>
                       {accounts.length > 1 && <td className="px-4 py-2 text-xs text-neutral-500">{nomeAccount(m.pec_account_id)}</td>}
                       <td className="px-4 py-2 text-right">
 {m.archiviato === false ? (
