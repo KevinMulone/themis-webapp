@@ -66,6 +66,10 @@ export default function ImpostazioniPage() {
   const [pecSyncMsg, setPecSyncMsg] = useState('');
   const [pecSecondi, setPecSecondi] = useState(0);
   const [pecAncora, setPecAncora] = useState(false);
+  const [pecArretrato, setPecArretrato] = useState(false);
+  const [pecGiro, setPecGiro] = useState(0);
+  const [pecTotaleArretrato, setPecTotaleArretrato] = useState(0);
+  const pecInterrompi = useRef(false);
   const [pecPasswordId, setPecPasswordId] = useState('');
   const [pecNuovaPassword, setPecNuovaPassword] = useState('');
   const [pecPwdMsg, setPecPwdMsg] = useState('');
@@ -278,6 +282,57 @@ export default function ImpostazioniPage() {
     } finally {
       setPecSincronizzando(false);
     }
+  }
+
+  /**
+   * Recupera l'arretrato ripetendo la sincronizzazione fino a esaurimento.
+   *
+   * Il ciclo sta nel browser e non nel server, e non è un ripiego: ogni
+   * giro è una richiesta che finisce per conto suo, quindi il tempo massimo
+   * della funzione non viene mai sfiorato, e i messaggi già scaricati
+   * restano salvati anche se il giro successivo fallisce. Un ciclo lato
+   * server su una casella con anni di arretrato scadrebbe a metà, e
+   * ricomincerebbe da capo ogni volta.
+   */
+  async function handleRecuperaArretrato() {
+    setPecArretrato(true);
+    pecInterrompi.current = false;
+    setPecGiro(0);
+    setPecTotaleArretrato(0);
+    setPecSyncMsg('');
+    let totale = 0;
+
+    // Tetto di sicurezza: 200 giri sono 2.000 messaggi. Serve a non
+    // lasciare un ciclo infinito acceso se il server rispondesse sempre
+    // "dieci" per un difetto suo.
+    for (let giro = 1; giro <= 200 && !pecInterrompi.current; giro++) {
+      setPecGiro(giro);
+      let risultati: { messaggiScaricati: number }[] = [];
+      try {
+        const res = await fetch('/api/pec/sync', { method: 'POST' });
+        const body = await res.json();
+        if (!res.ok) { setPecSyncMsg(`Interrotto al giro ${giro}: ${body.error}`); break; }
+        risultati = (body.risultati || []) as { messaggiScaricati: number }[];
+      } catch {
+        setPecSyncMsg(`Interrotto al giro ${giro}: connessione persa. I messaggi già scaricati restano.`);
+        break;
+      }
+
+      const scaricati = risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
+      totale += scaricati;
+      setPecTotaleArretrato(totale);
+      if (!risultati.some((r) => r.messaggiScaricati >= MAX_MESSAGGI_PER_GIRO)) {
+        setPecSyncMsg(`Arretrato recuperato: ${totale} messaggi in ${giro} giri.`);
+        setPecAncora(false);
+        break;
+      }
+    }
+
+    if (pecInterrompi.current) {
+      setPecSyncMsg(`Fermato: ${totale} messaggi recuperati. Puoi riprendere quando vuoi.`);
+    }
+    setPecArretrato(false);
+    load();
   }
 
   async function handleGestisciAbbonamento() {
@@ -544,12 +599,39 @@ export default function ImpostazioniPage() {
         {pecSyncMsg && (
           <p className="mb-3 text-sm text-neutral-600">
             {pecSyncMsg}
-            {pecAncora && (
-              <span className="ml-1 text-neutral-500">
-                Ce ne sono altri in attesa: premi di nuovo «Sincronizza ora».
-              </span>
+            {pecAncora && !pecArretrato && (
+              <span className="ml-1 text-neutral-500">Ce ne sono altri in attesa.</span>
             )}
           </p>
+        )}
+
+        {pecAncora && !pecArretrato && !pecSincronizzando && (
+          <button
+            type="button" onClick={handleRecuperaArretrato}
+            className="mb-3 rounded-md border border-bordeaux-700 px-4 py-2 text-sm font-semibold text-bordeaux-700 hover:bg-bordeaux-50"
+          >
+            Recupera tutto l&apos;arretrato
+          </button>
+        )}
+
+        {pecArretrato && (
+          <div className="mb-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+            <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-neutral-200">
+              <div className="h-full w-1/3 animate-[scorri_1.2s_ease-in-out_infinite] rounded-full bg-bordeaux-700" />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-neutral-600">
+                Giro {pecGiro} · {pecTotaleArretrato} messaggi recuperati finora.
+                Puoi lasciare la pagina aperta e fare altro.
+              </p>
+              <button
+                type="button" onClick={() => { pecInterrompi.current = true; }}
+                className="text-xs text-red-600 hover:underline"
+              >
+                Ferma
+              </button>
+            </div>
+          </div>
         )}
         {pecAccounts.length > 0 && (
           <ul className="mb-4 divide-y divide-neutral-100 text-sm">

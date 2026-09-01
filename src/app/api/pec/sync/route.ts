@@ -4,6 +4,11 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { sincronizzaAccount } from '@/lib/pec/sync';
 import { contestoStudio } from '@/lib/studio/contesto';
 
+export const runtime = 'nodejs';
+/** Un giro scarica al massimo dieci messaggi, ma ciascuno va decifrato,
+ *  ricifrato e caricato: due minuti sono un margine onesto. */
+export const maxDuration = 120;
+
 // Chiamata da due possibili "mittenti":
 // 1. Il cron esterno (pg_cron/pg_net su Supabase, o il cron di Vercel), con
 //    "Authorization: Bearer <CRON_SECRET>" — sincronizza TUTTE le caselle
