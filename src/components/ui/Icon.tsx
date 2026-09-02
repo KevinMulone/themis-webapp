@@ -16,7 +16,7 @@ export type NomeIcona =
   | 'collaboratori' | 'impostazioni' | 'esci' | 'piu' | 'freccia' | 'invio'
   | 'documento' | 'orologio' | 'abbonamento'
   | 'lucchetto' | 'scudo' | 'utente' | 'puntini' | 'stelle' | 'matita'
-  | 'occhio' | 'campanella' | 'scarica';
+  | 'occhio' | 'campanella' | 'scarica' | 'whatsapp';
 
 const TRACCIATI: Record<NomeIcona, React.ReactNode> = {
   dashboard: (
@@ -203,6 +203,12 @@ const TRACCIATI: Record<NomeIcona, React.ReactNode> = {
       <path d="M12 3v12" />
       <path d="m7.5 10.5 4.5 4.5 4.5-4.5" />
       <path d="M4 20h16" />
+    </>
+  ),
+  whatsapp: (
+    <>
+      <path d="M12 3C7 3 3 6.6 3 11c0 2.1 1 4 2.6 5.4L5 21l4.9-1.3c.7.2 1.4.3 2.1.3 5 0 9-3.6 9-8s-4-9-9-9Z" />
+      <path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" />
     </>
   ),
 };

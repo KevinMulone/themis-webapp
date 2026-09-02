@@ -85,6 +85,22 @@ export default function PrivacyPage() {
           Google — oppure direttamente dalla pagina delle autorizzazioni dell&apos;account Google.
         </p>
 
+        <h2 className="pt-2 font-semibold text-neutral-900">Collegamento WhatsApp</h2>
+        <p>
+          Il collegamento di un numero WhatsApp è <strong>facoltativo</strong> e si attiva solo su richiesta
+          esplicita dello studio, che deve usare un numero dedicato all&apos;attività e non quello personale
+          di un professionista. Se attivato, i messaggi ricevuti sul numero collegato sono letti da Themis
+          per proporre allo studio scadenze e bozze di risposta: nessun appuntamento viene aggiunto al
+          calendario e nessuna risposta viene inviata senza una decisione esplicita di chi lavora nello
+          studio.
+        </p>
+        <p>
+          Il collegamento non utilizza l&apos;interfaccia ufficiale messa a disposizione da Meta per le
+          aziende, ma un servizio che replica il funzionamento di WhatsApp Web: i messaggi restano cifrati
+          nella rete di WhatsApp/Meta secondo le garanzie di quella piattaforma, e sono cifrati anche presso
+          Themis prima di essere archiviati, con la stessa modalità usata per i documenti dei fascicoli.
+        </p>
+
         <h2 className="pt-2 font-semibold text-neutral-900">Come sono protetti</h2>
         <p>
           Ogni documento caricato è cifrato prima di essere archiviato, con una chiave derivata dallo
@@ -96,10 +112,12 @@ export default function PrivacyPage() {
         <h2 className="pt-2 font-semibold text-neutral-900">Fornitori che trattano dati per conto di Themis</h2>
         <p>
           Infrastruttura di database e archiviazione, hosting dell&apos;applicazione, servizio di pagamento,
-          invio delle email di servizio, e — limitatamente ai documenti che l&apos;utente sceglie di
-          sottoporre all&apos;assistente — il fornitore del modello di intelligenza artificiale. I documenti
-          inviati all&apos;assistente non vengono usati per addestrare modelli. L&apos;elenco aggiornato dei
-          fornitori, con le relative garanzie per i trasferimenti extra-UE, è disponibile su richiesta.
+          invio delle email di servizio, il fornitore del modello di intelligenza artificiale — limitatamente
+          ai documenti e ai messaggi che l&apos;utente sceglie di sottoporre all&apos;assistente — e, se il
+          collegamento WhatsApp è attivato, WhatsApp/Meta come gestore della rete di messaggistica e il
+          servizio che mantiene attiva quella connessione per conto dello studio. I contenuti inviati
+          all&apos;assistente non vengono usati per addestrare modelli. L&apos;elenco aggiornato dei fornitori,
+          con le relative garanzie per i trasferimenti extra-UE, è disponibile su richiesta.
         </p>
 
         <h2 className="pt-2 font-semibold text-neutral-900">Per quanto tempo</h2>

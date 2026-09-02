@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_PRATICA, labelFromOptions } from '@/lib/constants';
 import { leggiIcs, type ImpegnoImportato as ImpegnoLetto } from '@/lib/calendario/leggiIcs';
+import ImpostazioniWhatsapp from './ImpostazioniWhatsapp';
 
 type Template = { id: string; nome: string; categoria: string | null; descrizione: string | null; studio_id: string | null };
 type Settings = { font_family: string; font_size_pt: number; line_spacing: number };
@@ -1169,6 +1170,8 @@ export default function ImpostazioniPage() {
           </div>
         )}
       </div>
+
+      <ImpostazioniWhatsapp />
 
       <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <div className="mb-3 flex items-center justify-between">

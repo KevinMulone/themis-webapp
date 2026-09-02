@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.env
+# Le credenziali di sessione WhatsApp di ogni studio: mai nel repository.
+dati/

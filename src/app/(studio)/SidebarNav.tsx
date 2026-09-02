@@ -26,6 +26,7 @@ const ICONE: Record<string, NomeIcona> = {
   '/incarichi': 'incarichi',
   '/calendario': 'calendario',
   '/pec': 'pec',
+  '/whatsapp': 'whatsapp',
   '/genera': 'genera',
   '/deposito': 'invio',
   '/calcolo-danno': 'calcolo',

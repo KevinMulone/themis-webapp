@@ -1,0 +1,26 @@
+{
+  "name": "themis-whatsapp-worker",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Servizio a sé, sempre acceso, che tiene aperta la connessione WhatsApp per Themis. Non fa parte della webapp Next.js e NON va su Vercel: richiede un host con processo persistente (Railway, Fly.io, o simile) — vedi README.md.",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@hapi/boom": "10.0.1",
+    "@whiskeysockets/baileys": "6.7.24",
+    "express": "4.21.2",
+    "pino": "9.6.0",
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "@types/express": "4.17.21",
+    "@types/node": "22.10.5",
+    "@types/qrcode": "1.5.5",
+    "tsx": "4.19.2",
+    "typescript": "5.7.3"
+  }
+}
