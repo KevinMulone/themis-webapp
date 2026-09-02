@@ -7,6 +7,14 @@ import { TIPI_PRATICA, labelFromOptions } from '@/lib/constants';
 
 type Template = { id: string; nome: string; categoria: string | null; descrizione: string | null; studio_id: string | null };
 type Settings = { font_family: string; font_size_pt: number; line_spacing: number };
+type DatiAvvocato = {
+  avvocato_cognome: string; avvocato_nome: string; avvocato_codice_fiscale: string;
+  avvocato_indirizzo: string; avvocato_cap: string; avvocato_citta: string; avvocato_provincia: string;
+};
+const AVVOCATO_VUOTO: DatiAvvocato = {
+  avvocato_cognome: '', avvocato_nome: '', avvocato_codice_fiscale: '',
+  avvocato_indirizzo: '', avvocato_cap: '', avvocato_citta: '', avvocato_provincia: '',
+};
 type DayRule = { open: boolean; start_time: string; end_time: string };
 type PecAccount = {
   id: string; etichetta: string; indirizzo_pec: string; imap_host: string; imap_port: number;
@@ -47,6 +55,7 @@ export default function ImpostazioniPage() {
   const { studioId, userId, ruolo } = useStudio();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [settings, setSettings] = useState<Settings>({ font_family: 'Times New Roman', font_size_pt: 12, line_spacing: 1.5 });
+  const [avvocato, setAvvocato] = useState<DatiAvvocato>(AVVOCATO_VUOTO);
   const [letterhead, setLetterhead] = useState<{ exists: boolean; data_url?: string }>({ exists: false });
   const [uploadingTemplate, setUploadingTemplate] = useState(false);
   const [slotMinutes, setSlotMinutes] = useState(30);
@@ -107,7 +116,15 @@ export default function ImpostazioniPage() {
     ]);
     setTemplates(tpl || []);
     setAbbonamento(studio || null);
-    if (s) setSettings({ font_family: s.font_family, font_size_pt: s.font_size_pt, line_spacing: s.line_spacing });
+    if (s) {
+      setSettings({ font_family: s.font_family, font_size_pt: s.font_size_pt, line_spacing: s.line_spacing });
+      setAvvocato({
+        avvocato_cognome: s.avvocato_cognome || '', avvocato_nome: s.avvocato_nome || '',
+        avvocato_codice_fiscale: s.avvocato_codice_fiscale || '', avvocato_indirizzo: s.avvocato_indirizzo || '',
+        avvocato_cap: s.avvocato_cap || '', avvocato_citta: s.avvocato_citta || '',
+        avvocato_provincia: s.avvocato_provincia || '',
+      });
+    }
     setLetterhead(await letterheadRes.json());
 
     if (rules && rules.length > 0) {
@@ -193,6 +210,29 @@ export default function ImpostazioniPage() {
     };
     await supabase.from('studio_settings').upsert(payload, { onConflict: 'studio_id' });
     alert('Impostazioni salvate');
+  }
+
+  /**
+   * Cognome, nome, codice fiscale e domicilio del difensore: gli unici dati
+   * anagrafici che Themis non aveva mai chiesto, perché servivano solo per
+   * il prontuario di deposito (schermata "Avvocato" di SLpct), non per
+   * generare atti o fatture. Compilati una volta, restano qui.
+   */
+  async function handleSaveAvvocato(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const payload = {
+      studio_id: studioId,
+      avvocato_cognome: (form.get('avvocato_cognome') as string) || null,
+      avvocato_nome: (form.get('avvocato_nome') as string) || null,
+      avvocato_codice_fiscale: (form.get('avvocato_codice_fiscale') as string) || null,
+      avvocato_indirizzo: (form.get('avvocato_indirizzo') as string) || null,
+      avvocato_cap: (form.get('avvocato_cap') as string) || null,
+      avvocato_citta: (form.get('avvocato_citta') as string) || null,
+      avvocato_provincia: (form.get('avvocato_provincia') as string) || null,
+    };
+    await supabase.from('studio_settings').upsert(payload, { onConflict: 'studio_id' });
+    alert('Dati salvati');
   }
 
   async function handleChangePassword(e: React.FormEvent<HTMLFormElement>) {
@@ -581,6 +621,49 @@ export default function ImpostazioniPage() {
             <select name="line_spacing" defaultValue={settings.line_spacing} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
               {LINE_SPACING_CHOICES.map((v) => <option key={v} value={v}>{v}</option>)}
             </select>
+          </div>
+        </div>
+        <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
+          <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
+            Salva
+          </button>
+        </div>
+      </form>
+
+      <form onSubmit={handleSaveAvvocato} className="mb-4 rounded-xl bg-neutral-50 p-6">
+        <h2 className="mb-1 font-semibold text-neutral-900">Dati del difensore per il deposito</h2>
+        <p className="mb-3 text-xs text-neutral-500">
+          Servono al prontuario di deposito nella pratica — la schermata &quot;Avvocato&quot; che SLpct chiede
+          a ogni busta. Compilali una volta sola.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Cognome</label>
+            <input name="avvocato_cognome" defaultValue={avvocato.avvocato_cognome} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Nome</label>
+            <input name="avvocato_nome" defaultValue={avvocato.avvocato_nome} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Codice fiscale</label>
+            <input name="avvocato_codice_fiscale" defaultValue={avvocato.avvocato_codice_fiscale} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm uppercase outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Indirizzo dello studio</label>
+            <input name="avvocato_indirizzo" defaultValue={avvocato.avvocato_indirizzo} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">CAP</label>
+            <input name="avvocato_cap" defaultValue={avvocato.avvocato_cap} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Città</label>
+            <input name="avvocato_citta" defaultValue={avvocato.avvocato_citta} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-neutral-500">Provincia</label>
+            <input name="avvocato_provincia" maxLength={2} defaultValue={avvocato.avvocato_provincia} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm uppercase outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
         </div>
         <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">

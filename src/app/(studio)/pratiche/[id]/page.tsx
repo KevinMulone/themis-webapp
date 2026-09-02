@@ -7,6 +7,7 @@ import { useStudio } from '@/lib/studio/StudioProvider';
 import { AIUTO_CAMPI, COMPAGNIE_ASSICURATIVE, TRIBUNALI } from '@/lib/suggerimenti';
 import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import IncarichiPratica from './IncarichiPratica';
+import PreparaDeposito from './PreparaDeposito';
 import ChiediAlFascicolo from './ChiediAlFascicolo';
 import RedigiAtto from './RedigiAtto';
 import {
@@ -343,6 +344,17 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           </ul>
         )}
       </div>
+
+      <PreparaDeposito
+        matterId={id}
+        clientId={matter.client_id}
+        matter={{
+          tipo_pratica: matter.tipo_pratica, tribunale: matter.tribunale, sezione: matter.sezione,
+          rg_numero: matter.rg_numero, rg_anno: matter.rg_anno, giudice: matter.giudice,
+          controparte_nome: matter.controparte_nome, data_apertura: matter.data_apertura,
+        }}
+        documenti={documenti}
+      />
 
       <ChiediAlFascicolo matterId={id} documenti={documenti} />
 

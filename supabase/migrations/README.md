@@ -39,6 +39,7 @@ si esegue.
 | `011_realtime.sql` | ✅ sì |
 | `012_ai.sql` | ❌ **no** |
 | `013_limiti_assistente.sql` | ❌ **no** — insieme alla 012 |
+| `026_dati_professionista_deposito.sql` | ❌ **no** |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 
