@@ -17,6 +17,7 @@ type Evento = {
   id: string; matter_id: string | null; titolo: string; tipo: string;
   data: string; ora_inizio: string | null; ora_fine: string | null;
   all_day: boolean; luogo: string | null; note: string | null;
+  google_event_id: string | null;
 };
 type Matter = { id: string; client_id: string; tipo_pratica: string; clients?: { nome: string | null; cognome: string | null; ragione_sociale: string | null; tipo_soggetto: string } };
 type Appointment = { id: string; data: string; ora_inizio: string; ora_fine: string; nome_cliente: string | null; stato: string };
@@ -273,17 +274,33 @@ export default function CalendarioPage() {
       matter_id: form.get('matter_id') || null,
     };
     if (!allDay && !payload.ora_inizio) { alert("L'orario di inizio è obbligatorio (salvo evento di tipo ferie)"); return; }
-    await supabase.from('eventi').insert(payload);
+    const { data: creato } = await supabase.from('eventi').insert(payload).select('id').single();
     setFormDate(null);
     setFormTime('');
     load();
+    // Il riflesso su Google non deve mai bloccare né rallentare il
+    // salvataggio in Themis: parte dopo, e se fallisce l'impegno resta
+    // comunque salvato — è solo la copia su Google che manca.
+    if (creato) {
+      fetch('/api/google-calendar/sync', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventoId: creato.id, azione: 'crea' }),
+      }).catch(() => {});
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Eliminare questo evento?')) return;
+    const googleEventId = events.find((ev) => ev.id === id)?.google_event_id ?? null;
     await supabase.from('eventi').delete().eq('id', id);
     setDetail(null);
     load();
+    if (googleEventId) {
+      fetch('/api/google-calendar/sync', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ azione: 'elimina', googleEventId }),
+      }).catch(() => {});
+    }
   }
 
   async function handleUpdateAppointment(id: string, stato: string) {

@@ -41,6 +41,7 @@ si esegue.
 | `013_limiti_assistente.sql` | ❌ **no** — insieme alla 012 |
 | `026_dati_professionista_deposito.sql` | ❌ **no** |
 | `027_feedback_atto.sql` | ❌ **no** |
+| `028_google_calendar.sql` | ❌ **no** |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 

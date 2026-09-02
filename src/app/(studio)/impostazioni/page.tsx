@@ -92,13 +92,47 @@ export default function ImpostazioniPage() {
   const [refundLoading, setRefundLoading] = useState(false);
   const [adesso, setAdesso] = useState(() => Date.now());
 
+  const [googleAccount, setGoogleAccount] = useState<{ google_email: string; attivo: boolean } | null>(null);
+  const [googleMsg, setGoogleMsg] = useState('');
+  const [googleCambiandoStato, setGoogleCambiandoStato] = useState(false);
+  const [googleDisconnettendo, setGoogleDisconnettendo] = useState(false);
+  const [googleImportando, setGoogleImportando] = useState(false);
+  const [googleImportaDa, setGoogleImportaDa] = useState(() => {
+    const d = new Date(); d.setDate(d.getDate() - 30);
+    return d.toISOString().slice(0, 10);
+  });
+  const [googleImportaA, setGoogleImportaA] = useState(() => {
+    const d = new Date(); d.setDate(d.getDate() + 90);
+    return d.toISOString().slice(0, 10);
+  });
+  const [googleImportoMsg, setGoogleImportoMsg] = useState('');
+
+  useEffect(() => {
+    // L'esito torna nell'indirizzo dopo il rimbalzo su Google: si legge
+    // qui, non con useSearchParams, per non dover avvolgere l'intera
+    // pagina in una Suspense boundary solo per un messaggio di cortesia.
+    const esito = new URLSearchParams(window.location.search).get('google');
+    const messaggi: Record<string, string> = {
+      connesso: 'Google Calendar collegato.',
+      annullato: 'Collegamento annullato.',
+      solo_titolare: 'Solo il titolare può collegare Google Calendar.',
+      non_configurato: 'Google Calendar non è ancora attivo su questo sito.',
+      senza_refresh_token: 'Per ricollegare, prima scollega e poi ricollega di nuovo.',
+      errore: 'Collegamento non riuscito. Riprova.',
+    };
+    if (esito && messaggi[esito]) {
+      setGoogleMsg(messaggi[esito]);
+      window.history.replaceState({}, '', '/impostazioni');
+    }
+  }, []);
+
   useEffect(() => {
     const id = setInterval(() => setAdesso(Date.now()), 60000);
     return () => clearInterval(id);
   }, []);
 
   async function load() {
-    const [{ data: tpl }, { data: s }, letterheadRes, { data: rules }, { data: pec }, { data: studio }] = await Promise.all([
+    const [{ data: tpl }, { data: s }, letterheadRes, { data: rules }, { data: pec }, { data: studio }, { data: google }] = await Promise.all([
       supabase.from('templates').select('id, nome, categoria, descrizione, studio_id').eq('attivo', true).order('categoria'),
       supabase.from('studio_settings').select('*').eq('studio_id', studioId).single(),
       fetch('/api/settings/letterhead'),
@@ -113,9 +147,11 @@ export default function ImpostazioniPage() {
       supabase.from('studios')
         .select('stripe_customer_id, plan, subscription_status, subscription_expires_at, subscription_started_at, refund_requested_at')
         .eq('id', userId).maybeSingle(),
+      supabase.from('google_calendar_account').select('google_email, attivo').eq('studio_id', studioId).maybeSingle(),
     ]);
     setTemplates(tpl || []);
     setAbbonamento(studio || null);
+    setGoogleAccount(google || null);
     if (s) {
       setSettings({ font_family: s.font_family, font_size_pt: s.font_size_pt, line_spacing: s.line_spacing });
       setAvvocato({
@@ -233,6 +269,42 @@ export default function ImpostazioniPage() {
     };
     await supabase.from('studio_settings').upsert(payload, { onConflict: 'studio_id' });
     alert('Dati salvati');
+  }
+
+  async function handleGoogleAttivo(attivo: boolean) {
+    setGoogleCambiandoStato(true);
+    const res = await fetch('/api/google-calendar/attivo', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ attivo }),
+    });
+    setGoogleCambiandoStato(false);
+    if (!res.ok) { const b = await res.json(); alert(b.error || 'Operazione non riuscita'); return; }
+    setGoogleAccount((prev) => (prev ? { ...prev, attivo } : prev));
+  }
+
+  async function handleGoogleDisconnetti() {
+    if (!confirm('Scollegare Google Calendar? Gli impegni già copiati resteranno su Google, ma Themis smetterà di aggiornarli.')) return;
+    setGoogleDisconnettendo(true);
+    const res = await fetch('/api/google-calendar/disconnetti', { method: 'POST' });
+    setGoogleDisconnettendo(false);
+    if (!res.ok) { const b = await res.json(); alert(b.error || 'Operazione non riuscita'); return; }
+    setGoogleAccount(null);
+  }
+
+  async function handleGoogleImporta() {
+    setGoogleImportando(true);
+    setGoogleImportoMsg('');
+    const res = await fetch('/api/google-calendar/importa', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ da: googleImportaDa, a: googleImportaA }),
+    });
+    const body = await res.json();
+    setGoogleImportando(false);
+    if (!res.ok) { setGoogleImportoMsg(body.error || 'Importazione non riuscita'); return; }
+    setGoogleImportoMsg(
+      body.importati === 0
+        ? 'Nessun impegno nuovo da importare in questo intervallo.'
+        : `Importati ${body.importati} impegni nel calendario di Themis.`,
+    );
   }
 
   async function handleChangePassword(e: React.FormEvent<HTMLFormElement>) {
@@ -712,6 +784,86 @@ export default function ImpostazioniPage() {
             {savingHours ? 'Salvataggio...' : 'Salva orari'}
           </button>
         </div>
+      </div>
+
+      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+        <h2 className="mb-1 font-semibold text-neutral-900">Google Calendar</h2>
+        <p className="mb-3 text-xs text-neutral-500">
+          Themis resta il calendario vero — colori, collegamento alla pratica, proposte dalle PEC continuano
+          a funzionare solo qui. Se attivo, ogni impegno creato in Themis viene copiato anche sul tuo Google
+          Calendar, così lo vedi sul telefono.
+        </p>
+
+        {googleMsg && (
+          <p className="mb-3 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-700">{googleMsg}</p>
+        )}
+
+        {!googleAccount ? (
+          <a
+            href="/api/google-calendar/connetti"
+            className="premi inline-flex items-center gap-2 rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
+          >
+            Collega Google Calendar
+          </a>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white p-3">
+              <div>
+                <p className="text-sm font-medium text-neutral-900">Connesso come {googleAccount.google_email}</p>
+                <p className="text-xs text-neutral-500">
+                  {googleAccount.attivo ? 'Sincronizzazione attiva' : 'Sincronizzazione in pausa'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button" onClick={() => handleGoogleAttivo(!googleAccount.attivo)} disabled={googleCambiandoStato}
+                  className="premi rounded-full bg-neutral-100 px-3.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-200 disabled:opacity-50"
+                >
+                  {googleAccount.attivo ? 'Metti in pausa' : 'Riattiva'}
+                </button>
+                <button
+                  type="button" onClick={handleGoogleDisconnetti} disabled={googleDisconnettendo}
+                  className="premi rounded-full bg-red-50 px-3.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+                >
+                  Scollega
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-lg bg-white p-3">
+              <p className="mb-2 text-xs font-medium text-neutral-600">
+                Importa in Themis ciò che c&apos;era già in questo Google Calendar
+              </p>
+              <div className="flex flex-wrap items-end gap-2">
+                <div>
+                  <label className="mb-1 block text-[11px] text-neutral-400">Da</label>
+                  <input
+                    type="date" value={googleImportaDa} onChange={(e) => setGoogleImportaDa(e.target.value)}
+                    className="rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-none transition-colors focus:border-bordeaux-400"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-[11px] text-neutral-400">A</label>
+                  <input
+                    type="date" value={googleImportaA} onChange={(e) => setGoogleImportaA(e.target.value)}
+                    className="rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-none transition-colors focus:border-bordeaux-400"
+                  />
+                </div>
+                <button
+                  type="button" onClick={handleGoogleImporta} disabled={googleImportando}
+                  className="premi rounded-full bg-neutral-900 px-3.5 py-2 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+                >
+                  {googleImportando ? 'Importazione...' : 'Importa'}
+                </button>
+              </div>
+              {googleImportoMsg && <p className="mt-2 text-xs text-neutral-500">{googleImportoMsg}</p>}
+              <p className="mt-2 text-[11px] text-neutral-400">
+                Ogni impegno importato arriva come tipo &quot;Attività&quot;: Google non distingue un&apos;udienza
+                da un appuntamento, quella scelta resta tua.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mb-4 rounded-xl bg-neutral-50 p-6">
