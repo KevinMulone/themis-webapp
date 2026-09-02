@@ -16,7 +16,11 @@ import { createAdminClient } from '@/lib/supabase/admin';
 function urlBase(): string {
   const url = process.env.WHATSAPP_WORKER_URL;
   if (!url) throw new Error('WHATSAPP_WORKER_URL non configurata');
-  return url.replace(/\/$/, '');
+  // Un errore facile da fare quando si incolla il dominio da Railway: se
+  // manca lo schema, fetch() fallisce con un errore poco chiaro
+  // ("Failed to parse URL"). Meglio presumere https e proseguire.
+  const conSchema = /^https?:\/\//.test(url) ? url : `https://${url}`;
+  return conSchema.replace(/\/$/, '');
 }
 
 function segreto(): string {
