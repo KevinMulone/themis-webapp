@@ -54,6 +54,13 @@ const FUNZIONI: { icona: NomeIcona; tono: string; titolo: string; testo: string 
   { icona: 'scudo', tono: 'bg-gold-100 text-gold-700', titolo: 'Sicuro e affidabile', testo: 'I tuoi dati sono protetti e sempre al sicuro.' },
 ];
 
+/** Gli stessi tre piani, con lo stesso prezzo, di /attiva — nessuna cifra propria qui. */
+const PIANI = [
+  { key: 'monthly', nome: 'Mensile', prezzo: '100€', periodo: '/mese', dettaglio: 'Fatturazione mensile, disdici quando vuoi.', posti: 1 },
+  { key: 'semestrale', nome: 'Semestrale', prezzo: '500€', periodo: '/6 mesi', dettaglio: 'Un mese omaggio rispetto al mensile.', posti: 3 },
+  { key: 'annuale', nome: 'Annuale', prezzo: '1.100€', periodo: '/anno', dettaglio: 'Include le future funzionalità AI.', posti: 5 },
+] as const;
+
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -156,6 +163,7 @@ export default function Home() {
       <VetrinaThemis />
       <VetrinaPec />
       <VetrinaCalendario />
+      <VetrinaPiani />
 
       <section id="sicurezza" className="border-t border-neutral-200/70 bg-neutral-50 px-6 py-24 lg:px-12">
         <div className="mx-auto max-w-3xl text-center">
@@ -354,6 +362,86 @@ function VetrinaCalendario() {
           </div>
         </Reveal>
       </div>
+    </section>
+  );
+}
+
+/**
+ * I tre piani, con lo stesso avvio di pagamento già in /attiva: nessuna
+ * pagina intermedia, si sceglie qui e si arriva dritti al pagamento
+ * Stripe. Non serve essere già registrati — la chiave arriva via email
+ * subito dopo, da incollare al primo accesso.
+ */
+function VetrinaPiani() {
+  const [pianoInCorso, setPianoInCorso] = useState<string | null>(null);
+  const [errore, setErrore] = useState('');
+
+  async function scegliPiano(piano: string) {
+    setErrore('');
+    setPianoInCorso(piano);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: piano }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.url) {
+        setErrore(body.error || 'Impossibile avviare il pagamento. Riprova.');
+        setPianoInCorso(null);
+        return;
+      }
+      window.location.href = body.url;
+    } catch {
+      setErrore('Impossibile contattare il server. Riprova.');
+      setPianoInCorso(null);
+    }
+  }
+
+  return (
+    <section id="piani" className="border-t border-neutral-200/70 bg-neutral-50 px-6 py-24 lg:px-12">
+      <Reveal className="mx-auto max-w-2xl text-center">
+        <h2 className="text-[34px] font-semibold tracking-tight text-neutral-900 sm:text-[42px]">
+          Un piano per ogni studio.
+        </h2>
+        <p className="mx-auto mt-5 max-w-lg text-[16px] leading-relaxed text-neutral-500">
+          Più lungo è l&rsquo;impegno, più posti per i collaboratori sono inclusi, oltre al titolare.
+        </p>
+      </Reveal>
+
+      <div className="mx-auto mt-14 grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-3">
+        {PIANI.map((p, i) => (
+          <Reveal key={p.key} delay={i * 80}>
+            <div className={`rialzo flex h-full flex-col rounded-2xl p-7 ${p.key === 'annuale' ? 'bg-bordeaux-700 text-white' : 'bg-white'}`}>
+              <div className={`text-[13px] font-medium ${p.key === 'annuale' ? 'text-white/70' : 'text-neutral-500'}`}>{p.nome}</div>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="text-[32px] font-semibold tracking-tight">{p.prezzo}</span>
+                <span className={p.key === 'annuale' ? 'text-white/70' : 'text-neutral-400'}>{p.periodo}</span>
+              </div>
+              <p className={`mt-3 text-[13.5px] leading-relaxed ${p.key === 'annuale' ? 'text-white/80' : 'text-neutral-500'}`}>
+                {p.dettaglio}
+              </p>
+              <p className={`mt-4 text-[13px] ${p.key === 'annuale' ? 'text-white/80' : 'text-neutral-600'}`}>
+                {p.posti} {p.posti === 1 ? 'collaboratore' : 'collaboratori'} oltre al titolare
+              </p>
+              <button
+                type="button" onClick={() => scegliPiano(p.key)} disabled={pianoInCorso !== null}
+                className={`premi mt-6 rounded-full px-5 py-2.5 text-[14px] font-medium disabled:opacity-50 ${
+                  p.key === 'annuale' ? 'bg-white text-bordeaux-700 hover:bg-white/90' : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
+                }`}
+              >
+                {pianoInCorso === p.key ? 'Attendere...' : `Scegli ${p.nome.toLowerCase()}`}
+              </button>
+            </div>
+          </Reveal>
+        ))}
+      </div>
+
+      {errore && <p className="mt-6 text-center text-sm text-red-600">{errore}</p>}
+
+      <p className="mx-auto mt-8 max-w-md text-center text-[13px] text-neutral-400">
+        Hai già una chiave di attivazione?{' '}
+        <a href="/attiva" className="font-medium text-bordeaux-700 hover:underline">Attivala qui</a>.
+      </p>
     </section>
   );
 }
