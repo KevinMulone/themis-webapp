@@ -109,6 +109,42 @@ export default function ImpostazioniPage() {
   });
   const [googleImportoMsg, setGoogleImportoMsg] = useState('');
 
+  const [icsToken, setIcsToken] = useState<string | null>(null);
+  const [icsInCorso, setIcsInCorso] = useState(false);
+  const [icsCopiato, setIcsCopiato] = useState(false);
+
+  const linkIcs = icsToken
+    ? `${typeof window === 'undefined' ? '' : window.location.origin}/api/calendario/ics/${icsToken}`
+    : '';
+
+  async function handleIcsGenera(rigenera: boolean) {
+    if (rigenera && !confirm(
+      'Rigenerare il link?\n\nQuello attuale smetterà subito di funzionare: chi lo aveva già iscritto in Google Calendar non vedrà più gli aggiornamenti finché non gli dai il nuovo indirizzo.',
+    )) return;
+    setIcsInCorso(true);
+    const res = await fetch('/api/calendario/link', { method: 'POST' });
+    setIcsInCorso(false);
+    if (!res.ok) { const b = await res.json(); alert(b.error || 'Operazione non riuscita'); return; }
+    const b = await res.json();
+    setIcsToken(b.token);
+    setIcsCopiato(false);
+  }
+
+  async function handleIcsSpegni() {
+    if (!confirm('Smettere di pubblicare il calendario? Il link smetterà di funzionare per chiunque lo abbia.')) return;
+    setIcsInCorso(true);
+    const res = await fetch('/api/calendario/link', { method: 'DELETE' });
+    setIcsInCorso(false);
+    if (!res.ok) { const b = await res.json(); alert(b.error || 'Operazione non riuscita'); return; }
+    setIcsToken(null);
+  }
+
+  async function handleIcsCopia() {
+    await navigator.clipboard.writeText(linkIcs);
+    setIcsCopiato(true);
+    setTimeout(() => setIcsCopiato(false), 2000);
+  }
+
   useEffect(() => {
     // L'esito torna nell'indirizzo dopo il rimbalzo su Google: si legge
     // qui, non con useSearchParams, per non dover avvolgere l'intera
@@ -160,6 +196,7 @@ export default function ImpostazioniPage() {
       .catch(() => setGoogleConfigurato(false));
     if (s) {
       setSettings({ font_family: s.font_family, font_size_pt: s.font_size_pt, line_spacing: s.line_spacing });
+      setIcsToken(s.calendario_ics_token || null);
       setAvvocato({
         avvocato_cognome: s.avvocato_cognome || '', avvocato_nome: s.avvocato_nome || '',
         avvocato_codice_fiscale: s.avvocato_codice_fiscale || '', avvocato_indirizzo: s.avvocato_indirizzo || '',
@@ -803,6 +840,61 @@ export default function ImpostazioniPage() {
         {googleMsg && (
           <p className="mb-3 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-700">{googleMsg}</p>
         )}
+
+        <div className="mb-5 rounded-lg bg-white p-4">
+          <p className="text-sm font-medium text-neutral-900">Link al calendario — funziona subito</p>
+          <p className="mt-1 text-xs leading-relaxed text-neutral-500">
+            Il modo più rapido: si copia questo indirizzo e si incolla in Google Calendar, in
+            <em> Altri calendari → Iscriviti tramite URL</em>. Gli impegni di Themis compaiono nel tuo
+            Google Calendar e sul telefono, senza collegare l&rsquo;account. Google li ricontrolla ogni
+            poche ore, quindi una modifica non appare all&rsquo;istante.
+          </p>
+
+          {!icsToken ? (
+            <button
+              type="button" onClick={() => handleIcsGenera(false)} disabled={icsInCorso}
+              className="premi mt-3 rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+            >
+              {icsInCorso ? 'Creazione...' : 'Crea il link'}
+            </button>
+          ) : (
+            <>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <code className="min-w-0 flex-1 truncate rounded-lg bg-neutral-50 px-3 py-2 font-mono text-[11px] text-neutral-600">
+                  {linkIcs}
+                </code>
+                <button
+                  type="button" onClick={handleIcsCopia}
+                  className="premi shrink-0 rounded-full bg-neutral-100 px-3.5 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-200"
+                >
+                  {icsCopiato ? 'Copiato' : 'Copia'}
+                </button>
+              </div>
+              <p className="mt-2 text-[11px] leading-relaxed text-neutral-400">
+                Chi ha questo indirizzo legge il calendario dello studio senza dover accedere: trattalo
+                come una password. Se finisce dove non doveva, rigeneralo.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button" onClick={() => handleIcsGenera(true)} disabled={icsInCorso}
+                  className="premi rounded-full bg-neutral-100 px-3.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-200 disabled:opacity-50"
+                >
+                  Rigenera
+                </button>
+                <button
+                  type="button" onClick={handleIcsSpegni} disabled={icsInCorso}
+                  className="premi rounded-full bg-red-50 px-3.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+                >
+                  Smetti di pubblicare
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        <p className="mb-3 text-xs font-medium text-neutral-500">
+          Oppure collega l&rsquo;account, per la sincronizzazione immediata e l&rsquo;importazione
+        </p>
 
         {!googleAccount && googleConfigurato === false ? (
           <div className="rounded-lg bg-white p-4">
