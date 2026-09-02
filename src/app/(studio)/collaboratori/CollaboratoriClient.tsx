@@ -277,13 +277,13 @@ export default function CollaboratoriClient() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={handleCopia}
-                className="rounded-lg bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
+                className="premi rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
               >
                 {copiato ? 'Copiato!' : 'Copia link'}
               </button>
               <button
                 onClick={() => setLinkGenerato(null)}
-                className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50"
+                className="premi rounded-full bg-neutral-100 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-200"
               >
                 Invita un altro
               </button>
@@ -316,7 +316,7 @@ export default function CollaboratoriClient() {
               <button
                 type="submit" disabled={invitando || postiEsauriti}
                 title={postiEsauriti ? 'Non ci sono posti liberi nel tuo piano' : undefined}
-                className="flex items-center gap-2 rounded-lg bg-bordeaux-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                className="flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
               >
                 <Icon nome="invio" className="h-[18px] w-[18px]" />
                 {invitando ? 'Creazione invito...' : 'Genera link di invito'}

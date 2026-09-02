@@ -122,7 +122,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
                   <p className="mb-1 text-xs font-medium text-neutral-500">Da dove viene la risposta</p>
                   <ul className="space-y-1.5 text-xs text-neutral-500">
                     {m.citazioni.map((c, j) => (
-                      <li key={j} className="border-l-2 border-neutral-300 pl-2">
+                      <li key={j} className="border-l-2 border-neutral-200 pl-2">
                         <span className="font-medium text-neutral-600">
                           {c.documento || 'documento'}{c.pagina ? `, p. ${c.pagina}` : ''}
                         </span>

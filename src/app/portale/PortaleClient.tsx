@@ -308,8 +308,8 @@ function PortalePageInner() {
                     <button
                       key={iso}
                       onClick={() => setSelectedDay(iso)}
-                      className={`flex-shrink-0 rounded-md border px-3 py-1.5 text-xs font-medium ${
-                        selectedDay === iso ? 'border-bordeaux-700 bg-bordeaux-700 text-white' : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50'
+                      className={`premi flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium ${
+                        selectedDay === iso ? 'bg-bordeaux-700 text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                       }`}
                     >
                       {formattaData(iso)}
@@ -327,8 +327,8 @@ function PortalePageInner() {
                         title={s.occupato ? 'Orario già occupato' : undefined}
                         className={
                           s.occupato
-                            ? 'cursor-not-allowed rounded-md border border-red-200 bg-red-50 px-3 py-1.5 text-sm text-red-400 line-through'
-                            : 'rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 hover:border-bordeaux-700 hover:bg-bordeaux-700 hover:text-white'
+                            ? 'cursor-not-allowed rounded-full bg-red-50 px-3 py-1.5 text-sm text-red-400 line-through'
+                            : 'premi rounded-full bg-neutral-100 px-3 py-1.5 text-sm text-neutral-700 hover:bg-bordeaux-700 hover:text-white'
                         }
                       >
                         {s.ora}

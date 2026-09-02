@@ -266,7 +266,7 @@ export default function PecPage() {
         </div>
         <Link
           href="/impostazioni"
-          className="flex items-center gap-2 rounded-lg border border-neutral-300 px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:border-bordeaux-300 hover:text-bordeaux-700"
+          className="premi flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 hover:text-bordeaux-700"
         >
           <Icon nome="impostazioni" className="h-4 w-4" />
           Impostazioni PEC
@@ -279,7 +279,7 @@ export default function PecPage() {
           <p className="mt-3 text-sm text-neutral-500">Nessuna casella PEC configurata.</p>
           <Link
             href="/impostazioni"
-            className="mt-3 inline-flex items-center gap-2 rounded-lg bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
+            className="mt-3 inline-flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
           >
             <Icon nome="piu" className="h-4 w-4" />
             Aggiungi una casella
@@ -290,7 +290,7 @@ export default function PecPage() {
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <button
               type="button" onClick={() => setScrivendo(true)}
-              className="flex items-center gap-2 rounded-lg bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
+              className="flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
             >
               <Icon nome="matita" className="h-4 w-4" />
               Nuova PEC
@@ -304,10 +304,10 @@ export default function PecPage() {
               <button
                 key={chiave}
                 onClick={() => setScheda(chiave)}
-                className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+                className={`premi flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium transition-colors ${
                   scheda === chiave
-                    ? 'border-bordeaux-700 bg-bordeaux-700 text-white'
-                    : 'border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-50'
+                    ? 'bg-bordeaux-700 text-white'
+                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                 }`}
               >
                 <Icon nome={icona} className="h-4 w-4" />
@@ -350,10 +350,10 @@ export default function PecPage() {
               <button
                 type="button"
                 onClick={() => setMostraFiltri(!mostraFiltri)}
-                className={`flex shrink-0 items-center gap-2 rounded-lg border px-3.5 py-2.5 text-sm font-medium transition-colors ${
+                className={`premi flex shrink-0 items-center gap-2 rounded-full px-3.5 py-2.5 text-sm font-medium transition-colors ${
                   soloNonLette || accountFiltro
-                    ? 'border-bordeaux-700 text-bordeaux-700'
-                    : 'border-neutral-300 text-neutral-600 hover:bg-neutral-50'
+                    ? 'bg-bordeaux-700/[0.08] text-bordeaux-700'
+                    : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                 }`}
               >
                 <Icon nome="attivita" className="h-4 w-4" />

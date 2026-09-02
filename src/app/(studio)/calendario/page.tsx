@@ -302,7 +302,7 @@ export default function CalendarioPage() {
         </div>
         <button
           onClick={() => apriNuovoEvento(toIso(cursore), '')}
-          className="flex items-center gap-2 rounded-lg bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
+          className="flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
         >
           <Icon nome="piu" className="h-4 w-4" />
           Nuovo evento
@@ -316,31 +316,31 @@ export default function CalendarioPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => vai(-1)} aria-label="Periodo precedente"
-                  className="rounded-lg border border-neutral-300 px-2.5 py-2 text-neutral-600 hover:bg-neutral-50"
+                  className="premi rounded-full bg-neutral-100 px-2.5 py-2 text-neutral-600 hover:bg-neutral-200"
                 >
                   <Icon nome="freccia" className="h-4 w-4 rotate-180" />
                 </button>
                 <button
                   onClick={() => vai(1)} aria-label="Periodo successivo"
-                  className="rounded-lg border border-neutral-300 px-2.5 py-2 text-neutral-600 hover:bg-neutral-50"
+                  className="premi rounded-full bg-neutral-100 px-2.5 py-2 text-neutral-600 hover:bg-neutral-200"
                 >
                   <Icon nome="freccia" className="h-4 w-4" />
                 </button>
                 <button
                   onClick={vaiOggi}
-                  className="rounded-lg border border-neutral-300 px-3.5 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                  className="premi rounded-full bg-neutral-100 px-3.5 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200"
                 >
                   Oggi
                 </button>
                 <h2 className="ml-2 text-base font-semibold text-neutral-900">{etichettaPeriodo()}</h2>
               </div>
 
-              <div className="flex gap-1 rounded-lg border border-neutral-300 p-1">
+              <div className="flex gap-1 rounded-full bg-neutral-100 p-1">
                 {(['giorno', 'settimana', 'mese'] as Vista[]).map((v) => (
                   <button
                     key={v} onClick={() => setVista(v)}
-                    className={`rounded-md px-3.5 py-1.5 text-sm font-medium transition-colors ${
-                      vista === v ? 'bg-bordeaux-700 text-white' : 'text-neutral-600 hover:bg-neutral-50'
+                    className={`premi rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+                      vista === v ? 'bg-bordeaux-700 text-white' : 'text-neutral-600 hover:bg-neutral-200'
                     }`}
                   >
                     {v === 'giorno' ? 'Giorno' : v === 'settimana' ? 'Settimana' : 'Mese'}
@@ -362,10 +362,10 @@ export default function CalendarioPage() {
                     onClick={() => alternaFamiglia(f.tipi)}
                     aria-pressed={!spenta}
                     title={spenta ? 'Mostra' : 'Nascondi'}
-                    className={`flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`premi flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                       spenta
-                        ? 'border-neutral-200 text-neutral-400'
-                        : 'border-neutral-300 text-neutral-700 hover:bg-neutral-50'
+                        ? 'bg-neutral-100 text-neutral-400'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                     }`}
                   >
                     <span className={`h-2 w-2 rounded-full ${spenta ? 'bg-neutral-300' : colore(f.chiave).punto}`} />
@@ -465,7 +465,7 @@ export default function CalendarioPage() {
                     </p>
                     <Link
                       href="/impostazioni"
-                      className="mt-3 inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:border-bordeaux-300 hover:text-bordeaux-700"
+                      className="mt-3 inline-flex items-center gap-2 premi rounded-full bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200 hover:text-bordeaux-700"
                     >
                       <Icon nome="impostazioni" className="h-4 w-4" />
                       Imposta gli orari dello studio
@@ -718,8 +718,8 @@ export default function CalendarioPage() {
                 <textarea name="note" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
               </div>
               <div className="mt-2 flex justify-end gap-2 border-t border-neutral-200 pt-4">
-                <button type="button" onClick={() => { setFormDate(null); setFormTime(''); }} className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50">Annulla</button>
-                <button type="submit" className="rounded-lg bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800">Salva</button>
+                <button type="button" onClick={() => { setFormDate(null); setFormTime(''); }} className="premi rounded-full bg-neutral-100 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-200">Annulla</button>
+                <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800">Salva</button>
               </div>
             </form>
           </div>
@@ -758,14 +758,14 @@ export default function CalendarioPage() {
               {detail.matter_id ? (
                 <Link
                   href={`/pratiche/${detail.matter_id}`}
-                  className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:border-bordeaux-300 hover:text-bordeaux-700"
+                  className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200 hover:text-bordeaux-700"
                 >
                   Apri la pratica
                 </Link>
               ) : <span />}
               <span className="flex gap-2">
                 <button onClick={() => handleDelete(detail.id)} className="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Elimina</button>
-                <button onClick={() => setDetail(null)} className="rounded-lg border border-neutral-300 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Chiudi</button>
+                <button onClick={() => setDetail(null)} className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-200">Chiudi</button>
               </span>
             </div>
           </div>
@@ -797,7 +797,7 @@ export default function CalendarioPage() {
               ) : (
                 <button onClick={() => handleUpdateAppointment(appointmentDetail.id, 'cancellato')} className="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">Annulla appuntamento</button>
               )}
-              <button onClick={() => setAppointmentDetail(null)} className="rounded-lg border border-neutral-300 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50">Chiudi</button>
+              <button onClick={() => setAppointmentDetail(null)} className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-200">Chiudi</button>
             </div>
           </div>
         </div>

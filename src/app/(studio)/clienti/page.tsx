@@ -324,7 +324,7 @@ export default function ClientiPage() {
         </div>
         <button
           onClick={() => setEditing({ ...EMPTY })}
-          className="flex items-center gap-2 rounded-lg bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
+          className="flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
         >
           <Icon nome="piu" className="h-4 w-4" />
           Nuovo cliente
@@ -346,10 +346,10 @@ export default function ClientiPage() {
           <button
             type="button"
             onClick={() => setMostraFiltri(!mostraFiltri)}
-            className={`flex shrink-0 items-center gap-2 rounded-lg border px-3.5 py-2.5 text-sm font-medium transition-colors ${
+            className={`premi flex shrink-0 items-center gap-2 rounded-full px-3.5 py-2.5 text-sm font-medium transition-colors ${
               filtroTipo
-                ? 'border-bordeaux-700 text-bordeaux-700'
-                : 'border-neutral-300 text-neutral-600 hover:bg-neutral-50'
+                ? 'bg-bordeaux-700/[0.08] text-bordeaux-700'
+                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
             }`}
           >
             <Icon nome="attivita" className="h-4 w-4" />
@@ -363,10 +363,10 @@ export default function ClientiPage() {
           <button
             type="button"
             onClick={() => setMostraArchiviati(!mostraArchiviati)}
-            className={`flex shrink-0 items-center gap-2 rounded-lg border px-3.5 py-2.5 text-sm font-medium transition-colors ${
+            className={`premi flex shrink-0 items-center gap-2 rounded-full px-3.5 py-2.5 text-sm font-medium transition-colors ${
               mostraArchiviati
-                ? 'border-bordeaux-700 bg-bordeaux-700 text-white'
-                : 'border-neutral-300 text-neutral-600 hover:bg-neutral-50'
+                ? 'bg-bordeaux-700 text-white'
+                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
             }`}
           >
             <Icon nome="documento" className="h-4 w-4" />
@@ -378,7 +378,7 @@ export default function ClientiPage() {
             onClick={esportaCsv}
             disabled={filtered.length === 0}
             title="Esporta in CSV i clienti attualmente elencati"
-            className="ml-auto flex shrink-0 items-center gap-2 rounded-lg border border-neutral-300 px-3.5 py-2.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-50 disabled:opacity-50"
+            className="ml-auto premi flex shrink-0 items-center gap-2 rounded-full bg-neutral-100 px-3.5 py-2.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-200 disabled:opacity-50"
           >
             <Icon nome="genera" className="h-4 w-4" />
             Esporta

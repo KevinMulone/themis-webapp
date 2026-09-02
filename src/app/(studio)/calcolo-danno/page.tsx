@@ -81,7 +81,7 @@ export default function CalcoloDannoPage() {
         ] as [Modalita, string][]).map(([v, label]) => (
           <button
             key={v} onClick={() => setModalita(v)}
-            className={`rounded-md border px-3 py-1.5 text-sm ${modalita === v ? 'border-bordeaux-700 bg-bordeaux-700 text-white' : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-50'}`}
+            className={`premi rounded-full px-3 py-1.5 text-sm ${modalita === v ? 'bg-bordeaux-700 text-white' : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'}`}
           >
             {label}
           </button>

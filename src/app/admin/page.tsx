@@ -613,7 +613,7 @@ export default function AdminPage() {
                         <button
                           onClick={() => handleElimina(s)}
                           title="Elimina definitivamente questo studio"
-                          className="flex h-4 w-4 items-center justify-center rounded-full border border-neutral-300 text-[10px] leading-none text-neutral-400 hover:border-red-400 hover:text-red-600"
+                          className="premi flex h-4 w-4 items-center justify-center rounded-full bg-neutral-100 text-[10px] leading-none text-neutral-400 hover:bg-red-100 hover:text-red-600"
                         >
                           ×
                         </button>
@@ -656,7 +656,7 @@ export default function AdminPage() {
                             <button
                               key={g}
                               onClick={() => handleExtend(s, g)}
-                              className="rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-50"
+                              className="premi rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-200"
                             >
                               {g > 0 ? `+${g}` : g}gg
                             </button>
@@ -669,10 +669,10 @@ export default function AdminPage() {
                           <button onClick={() => handleSetStatus(s, 'active')} className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-700 hover:bg-green-200">
                             Riattiva
                           </button>
-                          <button onClick={() => handleSendResetPassword(s)} className="rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-50">
+                          <button onClick={() => handleSendResetPassword(s)} className="premi rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-200">
                             Invia reset password
                           </button>
-                          <button onClick={() => handleGenerateOtp(s)} className="rounded border border-neutral-300 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-50">
+                          <button onClick={() => handleGenerateOtp(s)} className="premi rounded-full bg-neutral-100 px-2 py-0.5 text-xs text-neutral-700 hover:bg-neutral-200">
                             Genera codice di riserva
                           </button>
                         </div>

@@ -260,7 +260,7 @@ export default function PraticheePage() {
         </div>
         <button
           onClick={() => setCreating(true)}
-          className="flex items-center gap-2 rounded-lg bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
+          className="flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
         >
           <Icon nome="piu" className="h-4 w-4" />
           Nuova pratica
@@ -282,8 +282,8 @@ export default function PraticheePage() {
           <button
             type="button"
             onClick={() => setMostraFiltri(!mostraFiltri)}
-            className={`flex shrink-0 items-center gap-2 rounded-lg border px-3.5 py-2.5 text-sm font-medium transition-colors ${
-              filtriAttivi ? 'border-bordeaux-700 text-bordeaux-700' : 'border-neutral-300 text-neutral-600 hover:bg-neutral-50'
+            className={`premi flex shrink-0 items-center gap-2 rounded-full px-3.5 py-2.5 text-sm font-medium transition-colors ${
+              filtriAttivi ? 'bg-bordeaux-700/[0.08] text-bordeaux-700' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
             }`}
           >
             <Icon nome="attivita" className="h-4 w-4" />
@@ -298,7 +298,7 @@ export default function PraticheePage() {
             onClick={esportaCsv}
             disabled={filtrate.length === 0}
             title="Esporta in CSV le pratiche attualmente elencate"
-            className="flex shrink-0 items-center gap-2 rounded-lg border border-neutral-300 px-3.5 py-2.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-50 disabled:opacity-50"
+            className="premi flex shrink-0 items-center gap-2 rounded-full bg-neutral-100 px-3.5 py-2.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-200 disabled:opacity-50"
           >
             <Icon nome="genera" className="h-4 w-4" />
             Esporta
@@ -521,13 +521,13 @@ export default function PraticheePage() {
                 <button
                   type="button"
                   onClick={() => setCreating(false)}
-                  className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50"
+                  className="premi rounded-full bg-neutral-100 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-200"
                 >
                   Annulla
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
+                  className="premi rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
                 >
                   Crea
                 </button>

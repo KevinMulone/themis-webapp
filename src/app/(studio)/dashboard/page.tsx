@@ -87,7 +87,7 @@ function TestataSezione({ icona, titolo, href, azione }: {
       </h2>
       <Link
         href={href}
-        className="rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:border-bordeaux-300 hover:text-bordeaux-700"
+        className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-200 hover:text-bordeaux-700"
       >
         {azione}
       </Link>
@@ -180,7 +180,7 @@ export default async function DashboardPage() {
           </span>
           <Link
             href="/pratiche"
-            className="flex items-center gap-2 rounded-lg bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
+            className="flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
           >
             <Icon nome="piu" className="h-4 w-4" />
             Nuova pratica

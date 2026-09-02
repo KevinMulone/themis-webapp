@@ -114,10 +114,10 @@ export default function IncarichiPage() {
           ] as const).map(([chiave, etichetta, quanti]) => (
             <button
               key={chiave} onClick={() => setScheda(chiave)}
-              className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+              className={`premi flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                 scheda === chiave
                   ? 'bg-bordeaux-700 text-white'
-                  : 'border border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-50'
+                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
               }`}
             >
               {etichetta}
@@ -135,10 +135,10 @@ export default function IncarichiPage() {
             type="button"
             onClick={() => setTuttiLoStudio(!tuttiLoStudio)}
             aria-pressed={tuttiLoStudio}
-            className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+            className={`premi flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
               tuttiLoStudio
-                ? 'border-bordeaux-700 bg-bordeaux-700 text-white'
-                : 'border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-50'
+                ? 'bg-bordeaux-700 text-white'
+                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
             }`}
           >
             <Icon nome="occhio" className="h-4 w-4" />
@@ -169,7 +169,7 @@ export default function IncarichiPage() {
               {scheda === 'aperti' && (
                 <Link
                   href="/pratiche"
-                  className="mt-4 inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:border-bordeaux-300 hover:text-bordeaux-700"
+                  className="premi mt-4 inline-flex items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 hover:text-bordeaux-700"
                 >
                   <Icon nome="piu" className="h-4 w-4" />
                   {/* Gli incarichi nascono dentro una pratica: è lì che si
@@ -236,7 +236,7 @@ export default function IncarichiPage() {
                       {i.stato === 'da_fare' && (
                         <button
                           onClick={() => aggiorna(i, { assegnato_a: userId, stato: 'in_corso' })}
-                          className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                          className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-200"
                         >
                           Prendi in carico
                         </button>
@@ -264,7 +264,7 @@ export default function IncarichiPage() {
                       {i.stato === 'completato' && (
                         <button
                           onClick={() => aggiorna(i, { stato: 'in_corso', completato_at: null, completato_da: null })}
-                          className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                          className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-200"
                         >
                           Riapri
                         </button>
