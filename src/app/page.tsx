@@ -56,9 +56,9 @@ const FUNZIONI: { icona: NomeIcona; tono: string; titolo: string; testo: string 
 
 /** Gli stessi tre piani, con lo stesso prezzo, di /attiva — nessuna cifra propria qui. */
 const PIANI = [
-  { key: 'monthly', nome: 'Mensile', prezzo: '100€', periodo: '/mese', dettaglio: 'Fatturazione mensile, disdici quando vuoi.', posti: 1 },
-  { key: 'semestrale', nome: 'Semestrale', prezzo: '500€', periodo: '/6 mesi', dettaglio: 'Un mese omaggio rispetto al mensile.', posti: 3 },
-  { key: 'annuale', nome: 'Annuale', prezzo: '1.100€', periodo: '/anno', dettaglio: 'Include le future funzionalità AI.', posti: 5 },
+  { key: 'monthly', nome: 'Mensile', pubblico: 'Per piccoli studi', prezzo: '100€', periodo: '/mese', dettaglio: 'Fatturazione mensile, disdici quando vuoi.', posti: 1 },
+  { key: 'semestrale', nome: 'Semestrale', pubblico: 'Per studi in crescita', prezzo: '500€', periodo: '/6 mesi', dettaglio: 'Un mese omaggio rispetto al mensile.', posti: 3 },
+  { key: 'annuale', nome: 'Annuale', pubblico: 'Per studi strutturati', prezzo: '1.100€', periodo: '/anno', dettaglio: 'Include le future funzionalità AI.', posti: 5 },
 ] as const;
 
 export default function Home() {
@@ -412,7 +412,12 @@ function VetrinaPiani() {
         {PIANI.map((p, i) => (
           <Reveal key={p.key} delay={i * 80}>
             <div className={`rialzo flex h-full flex-col rounded-2xl p-7 ${p.key === 'annuale' ? 'bg-bordeaux-700 text-white' : 'bg-white'}`}>
-              <div className={`text-[13px] font-medium ${p.key === 'annuale' ? 'text-white/70' : 'text-neutral-500'}`}>{p.nome}</div>
+              <span className={`inline-flex w-fit items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${
+                p.key === 'annuale' ? 'bg-white/15 text-white' : 'bg-neutral-100 text-neutral-600'
+              }`}>
+                {p.pubblico}
+              </span>
+              <div className={`mt-3 text-[13px] font-medium ${p.key === 'annuale' ? 'text-white/70' : 'text-neutral-500'}`}>{p.nome}</div>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className="text-[32px] font-semibold tracking-tight">{p.prezzo}</span>
                 <span className={p.key === 'annuale' ? 'text-white/70' : 'text-neutral-400'}>{p.periodo}</span>
