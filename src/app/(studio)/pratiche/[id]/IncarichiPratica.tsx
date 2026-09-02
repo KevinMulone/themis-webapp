@@ -142,7 +142,7 @@ export default function IncarichiPratica({ matterId, studioId }: { matterId: str
                       <select
                         value=""
                         onChange={(e) => e.target.value && aggiorna(i, { assegnato_a: e.target.value, stato: 'da_fare' })}
-                        className="rounded-md border border-neutral-300 px-2 py-1 text-xs"
+                        className="rounded-lg border border-transparent bg-neutral-50 px-2 py-1 text-xs outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                       >
                         <option value="">Passa a…</option>
                         {attivi.filter((m) => m.user_id !== i.assegnato_a).map((m) => (
@@ -178,16 +178,16 @@ export default function IncarichiPratica({ matterId, studioId }: { matterId: str
             </span>
           </label>
           <input name="titolo" placeholder="Es. Preparare la memoria di replica"
-            className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+            className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         </div>
-        <select name="assegnato_a" defaultValue="" className="rounded-md border border-neutral-300 px-3 py-2 text-sm">
+        <select name="assegnato_a" defaultValue="" className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
           <option value="">Non assegnato</option>
           {attivi.map((m) => <option key={m.user_id} value={m.user_id}>{m.nome || m.email}</option>)}
         </select>
-        <select name="priorita" defaultValue="normale" className="rounded-md border border-neutral-300 px-3 py-2 text-sm">
+        <select name="priorita" defaultValue="normale" className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
           {PRIORITA_INCARICO.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
         </select>
-        <input name="scadenza" type="date" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+        <input name="scadenza" type="date" className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         <div className="flex justify-end">
           <button type="submit" disabled={creando}
             className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">

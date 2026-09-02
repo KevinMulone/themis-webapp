@@ -267,7 +267,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Stato</label>
-            <select name="stato" defaultValue={matter.stato} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
+            <select name="stato" defaultValue={matter.stato} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
               {STATI_PRATICA.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </div>
@@ -275,7 +275,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             <label className="mb-1 block text-xs text-neutral-500">Assegnata a</label>
             <select
               name="assegnato_a" defaultValue={matter.assegnato_a ?? ''}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             >
               <option value="">Non assegnata</option>
               {membriStudio.map((m) => (
@@ -300,14 +300,14 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           <Field label="Data chiusura" name="data_chiusura" type="date" defaultValue={matter.data_chiusura} />
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Metodo pagamento</label>
-            <select name="metodo_pagamento" defaultValue={matter.metodo_pagamento ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
+            <select name="metodo_pagamento" defaultValue={matter.metodo_pagamento ?? ''} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
               <option value="">Non specificato</option>
               {METODI_PAGAMENTO.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </div>
           <div className="col-span-2">
             <label className="mb-1 block text-xs text-neutral-500">Descrizione</label>
-            <textarea name="descrizione" defaultValue={matter.descrizione ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+            <textarea name="descrizione" defaultValue={matter.descrizione ?? ''} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
         </div>
         <div className="mt-4 flex justify-between border-t border-neutral-200 pt-4">
@@ -379,8 +379,8 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           </ul>
         )}
         <form onSubmit={handleCreaRichiesta} className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
-          <input name="titolo" required placeholder="Es. Copia carta d'identità" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
-          <input name="note" placeholder="Nota per il cliente (opzionale)" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+          <input name="titolo" required placeholder="Es. Copia carta d'identità" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          <input name="note" placeholder="Nota per il cliente (opzionale)" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           <div className="col-span-2 flex justify-end">
             <button type="submit" disabled={creandoRichiesta} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
               {creandoRichiesta ? 'Invio...' : 'Richiedi documento'}
@@ -400,7 +400,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             <Field label="Data istanza di ammissione" name="data_istanza" type="date" defaultValue={patrocinio?.data_istanza} />
             <div>
               <label className="mb-1 block text-xs text-neutral-500">Stato istanza</label>
-              <select name="stato_istanza" defaultValue={patrocinio?.stato_istanza ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
+              <select name="stato_istanza" defaultValue={patrocinio?.stato_istanza ?? ''} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
                 <option value="">Non specificato</option>
                 <option value="depositata">Depositata</option>
                 <option value="ammessa">Ammessa</option>
@@ -433,7 +433,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             <Field label="Data incasso" name="data_incasso" type="date" defaultValue={patrocinio?.data_incasso} />
             <div className="col-span-2">
               <label className="mb-1 block text-xs text-neutral-500">Note</label>
-              <textarea name="note" defaultValue={patrocinio?.note ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+              <textarea name="note" defaultValue={patrocinio?.note ?? ''} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
             </div>
           </div>
           <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
@@ -462,7 +462,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             <label className="mb-1 block text-xs text-neutral-500">Tipo di termine</label>
             <select
               value={regolaId} onChange={(e) => setRegolaId(e.target.value)}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             >
               <option value="">Seleziona...</option>
               {(tutteLeScadenze
@@ -479,7 +479,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             <label className="mb-1 block text-xs text-neutral-500">Data di riferimento</label>
             <input
               type="date" value={dataRiferimento} onChange={(e) => setDataRiferimento(e.target.value)}
-              className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             />
           </div>
         </div>
@@ -516,7 +516,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
               <Field label="Luogo sinistro" name="luogo_sinistro" defaultValue={sinistro.luogo_sinistro} />
               <div>
                 <label className="mb-1 block text-xs text-neutral-500">Tipo sinistro</label>
-                <select name="tipo_sinistro" defaultValue={sinistro.tipo_sinistro ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
+                <select name="tipo_sinistro" defaultValue={sinistro.tipo_sinistro ?? ''} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
                   <option value="">Non specificato</option>
                   {TIPI_SINISTRO.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>
@@ -528,18 +528,18 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
               <Field label="ITT giorni" name="itt_giorni" type="number" defaultValue={sinistro.itt_giorni?.toString()} />
               <div>
                 <label className="mb-1 block text-xs text-neutral-500">Stato negoziazione</label>
-                <select name="stato_negoziazione" defaultValue={sinistro.stato_negoziazione} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
+                <select name="stato_negoziazione" defaultValue={sinistro.stato_negoziazione} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
                   {STATI_NEGOZIAZIONE.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>
               </div>
               <Field label="Data invio negoziazione" name="data_invio_negoziazione" type="date" defaultValue={sinistro.data_invio_negoziazione} />
               <div className="col-span-2">
                 <label className="mb-1 block text-xs text-neutral-500">Dinamica</label>
-                <textarea name="dinamica" defaultValue={sinistro.dinamica ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+                <textarea name="dinamica" defaultValue={sinistro.dinamica ?? ''} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
               </div>
               <div className="col-span-2">
                 <label className="mb-1 block text-xs text-neutral-500">Note</label>
-                <textarea name="note" defaultValue={sinistro.note ?? ''} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+                <textarea name="note" defaultValue={sinistro.note ?? ''} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
               </div>
             </div>
             <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
@@ -577,7 +577,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
                 <Field label="Contatti" name="contatti" />
                 <div className="col-span-2">
                   <label className="mb-1 block text-xs text-neutral-500">Dichiarazione</label>
-                  <textarea name="dichiarazione" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+                  <textarea name="dichiarazione" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
                 </div>
                 <div className="col-span-2 flex justify-end gap-2">
                   <button type="button" onClick={() => setAddingTestimone(false)} className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50">
@@ -611,7 +611,7 @@ function Field({ label, name, defaultValue, type = 'text', step, opzioni }: {
       <input
         type={type} name={name} step={step} defaultValue={defaultValue ?? ''}
         list={idElenco}
-        className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+        className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
       />
       {opzioni && (
         <datalist id={idElenco}>

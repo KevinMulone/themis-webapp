@@ -396,7 +396,7 @@ export default function AdminPage() {
                       value={valore}
                       onChange={(e) => setLimiti({ ...limiti, [k]: Number(e.target.value) })}
                       onBlur={(e) => salvaLimite(k, Number(e.target.value))}
-                      className="w-20 rounded-md border border-neutral-300 px-2 py-1 text-right text-xs"
+                      className="w-20 rounded-lg border border-transparent bg-neutral-50 px-2 py-1 text-right text-xs outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                     />
                     <span className="text-xs text-neutral-500">cent</span>
                     <span className="w-16 text-right text-xs text-neutral-500">
@@ -545,7 +545,7 @@ export default function AdminPage() {
               <p className="mb-2 text-xs text-neutral-500">Consegnala al cliente: si attiva una volta sola.</p>
               <textarea
                 readOnly value={chiaveGenerata} onFocus={(e) => e.currentTarget.select()}
-                className="mb-2 min-h-20 w-full rounded-md border border-neutral-300 px-3 py-2 font-mono text-xs"
+                className="mb-2 min-h-20 w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 font-mono text-xs outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               />
               <Button variant="secondary" size="sm" onClick={handleCopiaChiave}>
                 {chiaveCopiata ? 'Copiata!' : 'Copia chiave'}
@@ -626,7 +626,7 @@ export default function AdminPage() {
                       <select
                         value={(Object.keys(PLANS) as string[]).includes(s.plan || '') ? (s.plan as string) : ''}
                         onChange={(e) => handleCambiaPiano(s, e.target.value)}
-                        className="rounded border border-neutral-300 px-1.5 py-0.5 text-xs"
+                        className="rounded border border-transparent bg-neutral-50 px-1.5 py-0.5 text-xs outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                       >
                         {/* Piani storici o personalizzati: mostrati ma non selezionabili,
                             perché non danno diritto a posti collaboratore. */}

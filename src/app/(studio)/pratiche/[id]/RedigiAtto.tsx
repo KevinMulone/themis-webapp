@@ -110,7 +110,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
               <label className="mb-1 block text-xs font-medium text-neutral-600">Tipo di atto</label>
               <select
                 value={tipo} onChange={(e) => { setTipo(e.target.value); setEsito(null); }}
-                className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               >
                 {TIPI_ATTO.map((t) => <option key={t.chiave} value={t.chiave}>{t.label}</option>)}
               </select>
@@ -151,7 +151,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
                 value={istruzioni}
                 onChange={(e) => setIstruzioni(e.target.value)}
                 placeholder="Es. Insistere sulla responsabilità del custode ex art. 2051 c.c. e chiedere il risarcimento anche delle spese mediche già documentate. Termine di 15 giorni."
-                className="min-h-24 w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                className="min-h-24 w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               />
               <p className="mt-1 text-xs text-neutral-400">
                 Più sei preciso qui, meno dovrai riscrivere dopo: taglio della difesa, termini,

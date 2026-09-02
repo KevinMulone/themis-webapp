@@ -153,7 +153,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
           placeholder={messaggi.length
             ? 'Fai un’altra domanda...'
             : 'Es. Che cosa dice la CTU sulla percentuale di invalidità?'}
-          className="min-h-16 rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          className="min-h-16 rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
         />
         {errore && <p className="text-sm text-red-600">{errore}</p>}
         <div className="flex items-center justify-between gap-3">

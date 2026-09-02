@@ -272,7 +272,7 @@ export default function PraticheePage() {
           <div className="relative min-w-60 flex-1">
             <Icon nome="pratiche" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
             <input
-              className="w-full rounded-lg border border-neutral-300 py-2.5 pl-10 pr-3 text-sm"
+              className="w-full rounded-lg border border-transparent bg-neutral-50 py-2.5 pl-10 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               placeholder="Cerca per cliente, riferimento, controparte, tribunale..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -458,7 +458,7 @@ export default function PraticheePage() {
               <select
                 value={perPagina}
                 onChange={(e) => setPerPagina(Number(e.target.value))}
-                className="rounded-md border border-neutral-300 px-2 py-1 text-sm"
+                className="rounded-lg border border-transparent bg-neutral-50 px-2 py-1 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               >
                 {[10, 25, 50, 100].map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
@@ -501,7 +501,7 @@ export default function PraticheePage() {
                 <select
                   value={newClientId}
                   onChange={(e) => setNewClientId(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm"
+                  className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 >
                   <option value="">Seleziona...</option>
                   {clients.map((c) => <option key={c.id} value={c.id}>{clientLabel(c)}</option>)}
@@ -512,7 +512,7 @@ export default function PraticheePage() {
                 <select
                   value={newTipo}
                   onChange={(e) => setNewTipo(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm"
+                  className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 >
                   {TIPI_PRATICA.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>

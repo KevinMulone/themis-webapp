@@ -212,7 +212,7 @@ function PortalePageInner() {
             <h2 className="mb-1 font-semibold">Crea una password</h2>
             <p className="mb-4 text-sm text-neutral-500">Per accedere con <strong>{invite.email}</strong></p>
             <form onSubmit={handleRegister} className="flex flex-col gap-3">
-              <input name="password" type="password" placeholder="Almeno 8 caratteri" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+              <input name="password" type="password" placeholder="Almeno 8 caratteri" className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
               {error && <p className="text-sm text-red-600">{error}</p>}
               <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Crea account</button>
             </form>
@@ -229,8 +229,8 @@ function PortalePageInner() {
           <div className="rounded-xl bg-neutral-50 p-6">
             <h2 className="mb-4 font-semibold">Accedi</h2>
             <form onSubmit={handleLogin} className="flex flex-col gap-3">
-              <input name="email" type="email" placeholder="Email" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
-              <input name="password" type="password" placeholder="Password" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
+              <input name="email" type="email" placeholder="Email" className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+              <input name="password" type="password" placeholder="Password" className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
               {error && <p className="text-sm text-red-600">{error}</p>}
               <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Entra</button>
             </form>

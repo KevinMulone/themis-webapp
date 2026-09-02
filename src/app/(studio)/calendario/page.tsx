@@ -679,22 +679,22 @@ export default function CalendarioPage() {
                     accorgevi solo dopo aver salvato. Ora si vede e si corregge. */}
                 <input
                   type="date" name="data" required defaultValue={formDate}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm"
+                  className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-neutral-600">Titolo</label>
-                <input name="titolo" required className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm" />
+                <input name="titolo" required className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-neutral-600">Tipo</label>
-                <select name="tipo" className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm">
+                <select name="tipo" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
                   {TIPI_EVENTO.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-neutral-600">Pratica collegata (facoltativa)</label>
-                <select name="matter_id" className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm">
+                <select name="matter_id" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
                   <option value="">Nessuna</option>
                   {matters.map((m) => <option key={m.id} value={m.id}>{clientLabel(m.clients)} - {m.tipo_pratica}</option>)}
                 </select>
@@ -702,20 +702,20 @@ export default function CalendarioPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="mb-1 block text-xs font-medium text-neutral-600">Ora inizio</label>
-                  <input type="time" name="ora_inizio" step={1800} defaultValue={formTime} className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm" />
+                  <input type="time" name="ora_inizio" step={1800} defaultValue={formTime} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-medium text-neutral-600">Ora fine</label>
-                  <input type="time" name="ora_fine" step={1800} className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm" />
+                  <input type="time" name="ora_fine" step={1800} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
                 </div>
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-neutral-600">Luogo</label>
-                <input name="luogo" className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm" />
+                <input name="luogo" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
               </div>
               <div>
                 <label className="mb-1 block text-xs font-medium text-neutral-600">Note</label>
-                <textarea name="note" className="w-full rounded-lg border border-neutral-300 px-3 py-2.5 text-sm" />
+                <textarea name="note" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
               </div>
               <div className="mt-2 flex justify-end gap-2 border-t border-neutral-200 pt-4">
                 <button type="button" onClick={() => { setFormDate(null); setFormTime(''); }} className="rounded-lg border border-neutral-300 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50">Annulla</button>

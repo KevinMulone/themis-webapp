@@ -79,12 +79,12 @@ export default function UniscitiClient() {
             <form onSubmit={handleAccetta} className="flex flex-col gap-3">
               <input
                 name="nome" defaultValue={invito.nome || ''} placeholder="Il tuo nome e cognome"
-                className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               />
               <input
                 name="password" type="password" autoComplete="new-password"
                 placeholder="Password (almeno 8 caratteri)"
-                className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+                className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               />
               {errore && <p className="text-sm text-red-600">{errore}</p>}
               <button

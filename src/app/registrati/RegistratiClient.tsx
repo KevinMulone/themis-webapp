@@ -55,13 +55,13 @@ export default function RegistratiClient() {
         <p className="mb-6 text-center text-sm text-neutral-500">Crea l&apos;account del tuo studio</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             placeholder="Nome dello studio"
             value={nomeStudio}
             onChange={(e) => setNomeStudio(e.target.value)}
           />
           <input
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             type="email"
             placeholder="Email"
             autoComplete="username"
@@ -69,7 +69,7 @@ export default function RegistratiClient() {
             onChange={(e) => setEmail(e.target.value)}
           />
           <input
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm"
+            className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             type="password"
             placeholder="Password (almeno 8 caratteri)"
             autoComplete="new-password"

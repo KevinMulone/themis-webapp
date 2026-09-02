@@ -110,7 +110,7 @@ function AttivaPageInner() {
             </p>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <textarea
-                className="min-h-24 rounded-md border border-neutral-300 px-3 py-2 font-mono text-xs"
+                className="min-h-24 rounded-lg border border-transparent bg-neutral-50 px-3 py-2 font-mono text-xs outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 placeholder="THM-....."
                 value={key}
                 onChange={(e) => setKey(e.target.value)}

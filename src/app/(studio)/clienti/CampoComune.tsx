@@ -68,7 +68,7 @@ export default function CampoComune({ citta, provincia, cap }: {
           value={valCitta}
           onChange={(e) => scegli(e.target.value)}
           placeholder="Scrivi le prime lettere e scegli dall'elenco"
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
         />
         <datalist id="elenco-comuni">
           {suggerimenti.map((c) => <option key={`${c[0]}-${c[1]}`} value={c[0]} />)}
@@ -86,7 +86,7 @@ export default function CampoComune({ citta, provincia, cap }: {
           name="provincia" value={valProv} maxLength={2}
           onChange={(e) => setValProv(e.target.value.toUpperCase().slice(0, 2))}
           placeholder="CL"
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm uppercase"
+          className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm uppercase outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
         />
         <p className="mt-1 text-[11px] text-neutral-400">Sigla di due lettere</p>
       </div>
@@ -96,7 +96,7 @@ export default function CampoComune({ citta, provincia, cap }: {
         <input
           name="cap" value={valCap} inputMode="numeric" maxLength={5}
           onChange={(e) => setValCap(e.target.value.replace(/\D/g, '').slice(0, 5))}
-          className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
         />
       </div>
     </>
