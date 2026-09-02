@@ -93,6 +93,8 @@ export default function ImpostazioniPage() {
   const [adesso, setAdesso] = useState(() => Date.now());
 
   const [googleAccount, setGoogleAccount] = useState<{ google_email: string; attivo: boolean } | null>(null);
+  // null = non ancora saputo; false = mancano le credenziali Google su questo sito.
+  const [googleConfigurato, setGoogleConfigurato] = useState<boolean | null>(null);
   const [googleMsg, setGoogleMsg] = useState('');
   const [googleCambiandoStato, setGoogleCambiandoStato] = useState(false);
   const [googleDisconnettendo, setGoogleDisconnettendo] = useState(false);
@@ -152,6 +154,10 @@ export default function ImpostazioniPage() {
     setTemplates(tpl || []);
     setAbbonamento(studio || null);
     setGoogleAccount(google || null);
+    fetch('/api/google-calendar/stato')
+      .then((r) => (r.ok ? r.json() : { configurato: false }))
+      .then((b) => setGoogleConfigurato(!!b.configurato))
+      .catch(() => setGoogleConfigurato(false));
     if (s) {
       setSettings({ font_family: s.font_family, font_size_pt: s.font_size_pt, line_spacing: s.line_spacing });
       setAvvocato({
@@ -798,12 +804,25 @@ export default function ImpostazioniPage() {
           <p className="mb-3 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-700">{googleMsg}</p>
         )}
 
-        {!googleAccount ? (
+        {!googleAccount && googleConfigurato === false ? (
+          <div className="rounded-lg bg-white p-4">
+            <p className="text-sm font-medium text-neutral-900">Non ancora configurato su questo sito</p>
+            <p className="mt-1 text-xs leading-relaxed text-neutral-500">
+              Il collegamento a Google richiede due credenziali che vanno create una sola volta sulla
+              Google Cloud Console (un ID client OAuth) e inserite fra le variabili d&rsquo;ambiente del sito
+              come <span className="font-medium text-neutral-700">GOOGLE_CLIENT_ID</span> e{' '}
+              <span className="font-medium text-neutral-700">GOOGLE_CLIENT_SECRET</span>. Finché mancano,
+              il collegamento non può partire.
+            </p>
+          </div>
+        ) : !googleAccount ? (
           <a
             href="/api/google-calendar/connetti"
-            className="premi inline-flex items-center gap-2 rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
+            className={`premi inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white ${
+              googleConfigurato === null ? 'pointer-events-none bg-neutral-300' : 'bg-bordeaux-700 hover:bg-bordeaux-800'
+            }`}
           >
-            Collega Google Calendar
+            {googleConfigurato === null ? 'Verifica in corso...' : 'Collega Google Calendar'}
           </a>
         ) : (
           <div className="space-y-4">
