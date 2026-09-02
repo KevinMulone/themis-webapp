@@ -48,6 +48,14 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
   const [errore, setErrore] = useState('');
   const [copiato, setCopiato] = useState(false);
 
+  // Il riscontro su questa bozza: iniziale finché non si risponde, poi
+  // "grazie" (sì, o no con la nota già inviata) oppure la richiesta della
+  // nota (dopo un no). Si azzera a ogni nuova bozza generata.
+  const [feedback, setFeedback] = useState<'iniziale' | 'chiedi_nota' | 'grazie_si' | 'grazie_no'>('iniziale');
+  const [notaFeedback, setNotaFeedback] = useState('');
+  const [inviandoFeedback, setInviandoFeedback] = useState(false);
+  const [erroreFeedback, setErroreFeedback] = useState('');
+
   const allegabili = documenti.filter((d) => leggibile(d.nome_file));
   const scelto = tipoAtto(tipo);
 
@@ -55,6 +63,9 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
     e.preventDefault();
     setErrore('');
     setEsito(null);
+    setFeedback('iniziale');
+    setNotaFeedback('');
+    setErroreFeedback('');
     setInCorso(true);
     const res = await fetch('/api/themis/bozza', {
       method: 'POST',
@@ -74,6 +85,23 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
     await navigator.clipboard.writeText(esito.testo);
     setCopiato(true);
     setTimeout(() => setCopiato(false), 2000);
+  }
+
+  async function inviaFeedback(buono: boolean, nota?: string) {
+    setInviandoFeedback(true);
+    setErroreFeedback('');
+    const res = await fetch('/api/themis/atto-feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ matterId, tipo, buono, nota }),
+    });
+    setInviandoFeedback(false);
+    if (!res.ok) {
+      const b = await res.json().catch(() => ({ error: 'Invio non riuscito' }));
+      setErroreFeedback(b.error || 'Invio non riuscito');
+      return;
+    }
+    setFeedback(buono ? 'grazie_si' : 'grazie_no');
   }
 
   return (
@@ -215,6 +243,69 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
                 un segnaposto da riempire tu. Gli articoli di legge citati vanno riscontrati.
                 La responsabilità di ciò che depositi resta tua.
               </p>
+
+              <div className="mt-3 rounded-xl bg-neutral-50 p-4">
+                {feedback === 'iniziale' && (
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs font-medium text-neutral-600">È stato generato bene?</p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button" onClick={() => inviaFeedback(true)} disabled={inviandoFeedback}
+                        className="premi rounded-full bg-green-50 px-3.5 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100 disabled:opacity-50"
+                      >
+                        Sì
+                      </button>
+                      <button
+                        type="button" onClick={() => setFeedback('chiedi_nota')} disabled={inviandoFeedback}
+                        className="premi rounded-full bg-neutral-100 px-3.5 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200 disabled:opacity-50"
+                      >
+                        No
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {feedback === 'chiedi_nota' && (
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-neutral-600">
+                      Cosa non andava? Cosa cambieresti?
+                    </label>
+                    <textarea
+                      value={notaFeedback} onChange={(e) => setNotaFeedback(e.target.value)}
+                      placeholder="Es. Manca la data di notifica nelle premesse. La richiesta di CTU va spostata dopo le conclusioni."
+                      className="min-h-16 w-full rounded-lg border border-transparent bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400"
+                    />
+                    <div className="mt-2 flex items-center justify-between gap-2">
+                      {erroreFeedback && <p className="text-xs text-red-600">{erroreFeedback}</p>}
+                      <div className="ml-auto flex gap-2">
+                        <button
+                          type="button" onClick={() => { setFeedback('iniziale'); setNotaFeedback(''); }}
+                          className="premi rounded-full bg-neutral-100 px-3.5 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-200"
+                        >
+                          Annulla
+                        </button>
+                        <button
+                          type="button" onClick={() => inviaFeedback(false, notaFeedback)}
+                          disabled={inviandoFeedback || !notaFeedback.trim()}
+                          className="premi rounded-full bg-bordeaux-700 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                        >
+                          Invia
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {feedback === 'grazie_si' && (
+                  <p className="text-xs text-neutral-500">Segnato come riuscito, grazie.</p>
+                )}
+
+                {feedback === 'grazie_no' && (
+                  <p className="text-xs text-neutral-500">
+                    Notato. Themis ne terrà conto nella prossima bozza di questo tipo di atto.
+                  </p>
+                )}
+              </div>
             </div>
           )}
         </>

@@ -144,6 +144,20 @@ export async function POST(request: Request) {
     ? ordinati.map((st, i) => `SCHELETRO ${i + 1} — ${st.nome}\n${st.scheletro}`).join('\n\n')
     : `STRUTTURA DI RIFERIMENTO (nessuno scheletro disponibile per questo tipo)\n${atto.struttura}`;
 
+  // Le correzioni che l'avvocato ha segnalato su bozze precedenti dello
+  // stesso tipo, per questo studio. Sono parole sue su stile e struttura,
+  // mai fatti di un fascicolo: un "sì" non produce nulla da riproporre qui,
+  // solo un "no" con una nota lascia traccia.
+  const { data: correzioni } = await supabase
+    .from('atto_feedback')
+    .select('nota')
+    .eq('studio_id', studioId).eq('tipo_atto', atto.chiave).eq('buono', false)
+    .order('created_at', { ascending: false }).limit(5);
+  const bloccoCorrezioni = (correzioni ?? []).length
+    ? `CORREZIONI SEGNALATE DALL'AVVOCATO SU BOZZE PRECEDENTI DI QUESTO TIPO — tienine conto:\n`
+      + correzioni!.map((c, i) => `${i + 1}. ${c.nota}`).join('\n')
+    : '';
+
   const cliente = Array.isArray(pratica.clients) ? pratica.clients[0] : pratica.clients;
   const nomeCliente = cliente
     ? [cliente.cognome, cliente.nome].filter(Boolean).join(' ') || cliente.ragione_sociale || ''
@@ -188,6 +202,7 @@ export async function POST(request: Request) {
           ...blocchi,
           { type: 'text', text: `DATI DELLA PRATICA\n${scheda}\n\nOggi è il ${oggi}. Studio: ${contesto.nomeStudio ?? ''}.` },
           { type: 'text', text: `ATTO DA PREDISPORRE: ${atto.label}\n\n${bloccoStruttura}` },
+          ...(bloccoCorrezioni ? [{ type: 'text' as const, text: bloccoCorrezioni }] : []),
           {
             type: 'text',
             text: typeof istruzioni === 'string' && istruzioni.trim()
