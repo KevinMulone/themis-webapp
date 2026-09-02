@@ -816,14 +816,23 @@ export default function ImpostazioniPage() {
             </p>
           </div>
         ) : !googleAccount ? (
-          <a
+          <>
+            <p className="mb-3 text-xs leading-relaxed text-neutral-500">
+              Nella schermata di Google potresti vedere l&rsquo;avviso <em>&quot;Google non ha verificato
+              questa app&quot;</em>: compare finché la verifica è in corso e non indica un problema.
+              Per proseguire apri <span className="font-medium text-neutral-700">Avanzate</span> e scegli
+              di continuare. Themis chiede il permesso sui soli eventi del calendario, non sul resto
+              dell&rsquo;account.
+            </p>
+            <a
             href="/api/google-calendar/connetti"
             className={`premi inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-white ${
               googleConfigurato === null ? 'pointer-events-none bg-neutral-300' : 'bg-bordeaux-700 hover:bg-bordeaux-800'
             }`}
           >
             {googleConfigurato === null ? 'Verifica in corso...' : 'Collega Google Calendar'}
-          </a>
+            </a>
+          </>
         ) : (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-white p-3">

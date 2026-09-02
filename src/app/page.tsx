@@ -207,7 +207,10 @@ export default function Home() {
       <footer className="border-t border-neutral-200/70 px-6 py-8 lg:px-12">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-3 text-[12.5px] text-neutral-400 sm:flex-row">
           <span>© {new Date().getFullYear()} Themis</span>
-          <Link href="/politica-rimborsi" className="hover:text-neutral-600">Politica di rimborso</Link>
+          <span className="flex gap-5">
+            <Link href="/privacy" className="hover:text-neutral-600">Informativa privacy</Link>
+            <Link href="/politica-rimborsi" className="hover:text-neutral-600">Politica di rimborso</Link>
+          </span>
         </div>
       </footer>
     </div>

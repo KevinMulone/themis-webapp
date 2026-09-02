@@ -9,7 +9,16 @@
  * qui non viene mai salvato.
  */
 
-const SCOPE = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email';
+/**
+ * Il minimo che serve, non di più.
+ *
+ * `calendar.events` consente di leggere, creare ed eliminare eventi — tutto
+ * ciò che Themis fa. Lo scope pieno `calendar` darebbe in aggiunta il potere
+ * di cancellare interi calendari e di cambiarne le condivisioni: roba che
+ * questo codice non usa e che, chiesta senza usarla, allunga la verifica di
+ * Google e allarma giustamente chi legge la schermata di consenso.
+ */
+const SCOPE = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email';
 
 export const GOOGLE_KEY_SCOPE_PREFIX = 'google-calendar:';
 
