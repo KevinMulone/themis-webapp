@@ -206,7 +206,13 @@ export default function Home() {
   );
 }
 
-/** La chat con l'assistente: una domanda, una risposta con la fonte sotto. */
+const CAPACITA_THEMIS: { icona: NomeIcona; titolo: string; testo: string }[] = [
+  { icona: 'documento', titolo: 'Analisi del fascicolo', testo: 'Legge i documenti della pratica che scegli tu: PDF, Word e testo.' },
+  { icona: 'matita', titolo: 'Risposte con citazione', testo: 'Risponde solo su ciò che trova negli atti, indicando documento e pagina.' },
+  { icona: 'genera', titolo: 'Bozze di atti', testo: 'Prima stesura di diffide, ricorsi e memorie, nello stile dello studio.' },
+];
+
+/** La chat con l'assistente, e le tre cose che sa fare davvero — le stesse tre della pagina Themis in app. */
 function VetrinaThemis() {
   return (
     <section className="border-t border-neutral-200/70 px-6 py-24 lg:px-12">
@@ -220,7 +226,8 @@ function VetrinaThemis() {
             Chiedi al fascicolo, non a un motore di ricerca.
           </h2>
           <p className="mt-5 text-[16px] leading-relaxed text-neutral-500">
-            Themis legge i documenti che scegli tu e risponde citando pagina e riga.
+            Themis legge i documenti che scegli tu, risponde citando pagina e riga, e prepara
+            una prima bozza di atti — diffide, ricorsi, memorie — nello stile dello studio.
             Dove servirebbe un precedente giurisprudenziale lascia un segnaposto, non
             se lo inventa: la responsabilità di ciò che si firma resta dell&rsquo;avvocato.
           </p>
@@ -240,6 +247,20 @@ function VetrinaThemis() {
             </div>
           </div>
         </Reveal>
+      </div>
+
+      <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
+        {CAPACITA_THEMIS.map((c, i) => (
+          <Reveal key={c.titolo} delay={i * 80}>
+            <div className="rialzo h-full rounded-2xl bg-neutral-50 p-6">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-bordeaux-700/[0.08] text-bordeaux-700">
+                <Icon nome={c.icona} className="h-5 w-5" />
+              </span>
+              <h3 className="mt-4 text-[14.5px] font-semibold tracking-tight text-neutral-900">{c.titolo}</h3>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-neutral-500">{c.testo}</p>
+            </div>
+          </Reveal>
+        ))}
       </div>
     </section>
   );
