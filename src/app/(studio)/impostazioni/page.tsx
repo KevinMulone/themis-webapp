@@ -109,6 +109,44 @@ export default function ImpostazioniPage() {
   });
   const [googleImportoMsg, setGoogleImportoMsg] = useState('');
 
+  type AnteprimaIcs = {
+    totaleNelFile: number; daImportare: number; giaPresenti: number; ricorrenti: number;
+    primaData: string | null; ultimaData: string | null;
+    esempi: { titolo: string; data: string; ora: string | null }[];
+  };
+  const [migrFile, setMigrFile] = useState<File | null>(null);
+  const [migrDa, setMigrDa] = useState(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1);
+    return d.toISOString().slice(0, 10);
+  });
+  const [migrAnteprima, setMigrAnteprima] = useState<AnteprimaIcs | null>(null);
+  const [migrInCorso, setMigrInCorso] = useState(false);
+  const [migrMsg, setMigrMsg] = useState('');
+  const migrRef = useRef<HTMLInputElement>(null);
+
+  async function chiamaImportIcs(anteprima: boolean) {
+    if (!migrFile) return;
+    setMigrInCorso(true);
+    setMigrMsg('');
+    const form = new FormData();
+    form.append('file', migrFile);
+    form.append('da', migrDa);
+    if (anteprima) form.append('anteprima', 'sì');
+    const res = await fetch('/api/calendario/importa-ics', { method: 'POST', body: form });
+    const b = await res.json().catch(() => ({ error: 'Risposta non leggibile' }));
+    setMigrInCorso(false);
+    if (!res.ok) { setMigrAnteprima(null); setMigrMsg(b.error || 'Importazione non riuscita'); return; }
+    if (anteprima) { setMigrAnteprima(b); return; }
+    setMigrAnteprima(null);
+    setMigrFile(null);
+    if (migrRef.current) migrRef.current.value = '';
+    setMigrMsg(
+      `Importati ${b.importati} impegni nel calendario di Themis.`
+      + (b.giaPresenti ? ` ${b.giaPresenti} erano già presenti e sono stati saltati.` : '')
+      + (b.ricorrenti ? ` ${b.ricorrenti} erano ricorrenti: ne è stata importata solo la prima data.` : ''),
+    );
+  }
+
   const [icsToken, setIcsToken] = useState<string | null>(null);
   const [icsInCorso, setIcsInCorso] = useState(false);
   const [icsCopiato, setIcsCopiato] = useState(false);
@@ -840,6 +878,80 @@ export default function ImpostazioniPage() {
         {googleMsg && (
           <p className="mb-3 rounded-lg bg-neutral-100 px-3 py-2 text-xs text-neutral-700">{googleMsg}</p>
         )}
+
+        <div className="mb-5 rounded-lg bg-white p-4">
+          <p className="text-sm font-medium text-neutral-900">Porta dentro Themis il calendario che avevi prima</p>
+          <p className="mt-1 text-xs leading-relaxed text-neutral-500">
+            Per chi arriva da Google Calendar. Su{' '}
+            <a href="https://calendar.google.com/calendar/r/settings/export" target="_blank" rel="noreferrer">calendar.google.com</a>
+            {' '}apri <em>Impostazioni → Importa ed esporta → Esporta</em>: scarichi un file, e lo carichi qui.
+            Non serve collegare l&rsquo;account: è un&rsquo;operazione che si fa una volta sola.
+          </p>
+
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <div>
+              <label className="mb-1 block text-[11px] text-neutral-400">File esportato (.ics o .zip)</label>
+              <input
+                ref={migrRef} type="file" accept=".ics,.zip"
+                onChange={(e) => { setMigrFile(e.target.files?.[0] ?? null); setMigrAnteprima(null); setMigrMsg(''); }}
+                className="text-xs text-neutral-600 file:mr-3 file:rounded-full file:border-0 file:bg-neutral-100 file:px-3.5 file:py-1.5 file:text-xs file:font-medium file:text-neutral-700"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-[11px] text-neutral-400">Solo impegni dal</label>
+              <input
+                type="date" value={migrDa}
+                onChange={(e) => { setMigrDa(e.target.value); setMigrAnteprima(null); }}
+                className="rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-none transition-colors focus:border-bordeaux-400"
+              />
+            </div>
+            <button
+              type="button" onClick={() => chiamaImportIcs(true)} disabled={!migrFile || migrInCorso}
+              className="premi rounded-full bg-neutral-100 px-3.5 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-200 disabled:opacity-50"
+            >
+              {migrInCorso ? 'Lettura...' : 'Guarda cosa contiene'}
+            </button>
+          </div>
+
+          {migrAnteprima && (
+            <div className="mt-3 rounded-lg bg-neutral-50 p-3">
+              {migrAnteprima.daImportare === 0 ? (
+                <p className="text-xs text-neutral-600">
+                  Nessun impegno nuovo da importare in questo intervallo
+                  {migrAnteprima.giaPresenti > 0 && ` (${migrAnteprima.giaPresenti} risultano già importati)`}.
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm font-medium text-neutral-900">
+                    {migrAnteprima.daImportare} impegni da importare
+                    <span className="font-normal text-neutral-500">
+                      {' '}— dal {migrAnteprima.primaData} al {migrAnteprima.ultimaData}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-[11px] text-neutral-500">
+                    Il file ne contiene {migrAnteprima.totaleNelFile} in tutto
+                    {migrAnteprima.giaPresenti > 0 && `, ${migrAnteprima.giaPresenti} già importati in precedenza`}
+                    {migrAnteprima.ricorrenti > 0 && `, ${migrAnteprima.ricorrenti} ricorrenti (entra solo la prima data)`}.
+                    Entrano tutti come tipo &quot;Attività&quot;: il tipo giusto si mette dopo, sui pochi che contano.
+                  </p>
+                  <ul className="mt-2 space-y-0.5 text-[11px] text-neutral-500">
+                    {migrAnteprima.esempi.map((e, i) => (
+                      <li key={i} className="truncate">· {e.data}{e.ora ? ` ${e.ora}` : ''} — {e.titolo}</li>
+                    ))}
+                  </ul>
+                  <button
+                    type="button" onClick={() => chiamaImportIcs(false)} disabled={migrInCorso}
+                    className="premi mt-3 rounded-full bg-bordeaux-700 px-4 py-2 text-xs font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                  >
+                    {migrInCorso ? 'Importazione...' : `Importa ${migrAnteprima.daImportare} impegni`}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {migrMsg && <p className="mt-2 text-xs text-neutral-600">{migrMsg}</p>}
+        </div>
 
         <div className="mb-5 rounded-lg bg-white p-4">
           <p className="text-sm font-medium text-neutral-900">Link al calendario — funziona subito</p>
