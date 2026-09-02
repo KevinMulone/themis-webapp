@@ -127,7 +127,15 @@ export function leggiIcs(contenuto: string): ImpegnoImportato[] {
       const titolo = corrente['SUMMARY'] ? testoLibero(corrente['SUMMARY'].valore) : '';
 
       impegni.push({
-        uid: corrente['UID']?.valore?.trim() || `${inizio.data}-${titolo}`,
+        // Un evento ricorrente con occorrenze modificate viene esportato da
+        // Google come più VEVENT che CONDIVIDONO lo stesso UID, distinti
+        // solo dal RECURRENCE-ID. Prendendo il solo UID finirebbero tutti a
+        // sovrapporsi: uno stesso identificativo per impegni diversi, quindi
+        // duplicati all'importazione e, alla riprova, tutti saltati insieme.
+        uid: [
+          corrente['UID']?.valore?.trim() || `${inizio.data}-${titolo}`,
+          corrente['RECURRENCE-ID']?.valore?.trim(),
+        ].filter(Boolean).join('#'),
         titolo: titolo || '(senza titolo)',
         data: inizio.data,
         ora_inizio: inizio.all_day ? null : inizio.ora,

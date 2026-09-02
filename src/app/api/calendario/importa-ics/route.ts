@@ -77,10 +77,14 @@ export async function POST(request: Request) {
   const giaDentro = new Set((presenti ?? []).map((r) => r.google_event_id));
 
   const righe = [];
+  // Non basta confrontare con ciò che è già nel database: lo stesso
+  // identificativo può comparire due volte dentro la stessa richiesta, e
+  // finirebbe inserito due volte. Quelli visti qui si aggiungono man mano.
   for (const i of inArrivo) {
     const data = dataValida(i.data);
     const identificativo = testoBreve(i.uid, 300);
     if (!data || !identificativo || giaDentro.has(identificativo)) continue;
+    giaDentro.add(identificativo);
 
     const note = testoBreve(i.note, 4000);
     const tuttoIlGiorno = i.all_day === true;
