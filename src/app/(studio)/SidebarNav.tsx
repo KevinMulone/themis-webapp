@@ -47,18 +47,16 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
 
   const navContent = (
     <>
-      <div className="flex items-center gap-3 px-5 py-5">
-        <Image src="/icon.svg" alt="" width={36} height={36} className="rounded-lg" />
+      <div className="flex items-center gap-2.5 px-3 pb-6 pt-1">
+        <Image src="/icon.svg" alt="" width={22} height={22} className="rounded-md" />
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-lg font-semibold tracking-wide text-bordeaux-800">
-            THEMIS
-          </h1>
+          <h1 className="text-[15px] font-semibold tracking-tight text-neutral-900">Themis</h1>
           <p className="truncate text-[11px] text-neutral-500">{nomeStudio}</p>
         </div>
         <NotificheCampanella />
       </div>
 
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 pb-3">
+      <nav className="flex flex-1 flex-col gap-px overflow-y-auto px-2 pb-3">
         {navItems.map((item) => {
           const attiva = eVoceAttiva(item.href);
           return (
@@ -67,23 +65,23 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
               href={item.href}
               onClick={() => setOpen(false)}
               aria-current={attiva ? 'page' : undefined}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+              className={`premi flex items-center gap-2.5 rounded-lg px-2.5 py-[7px] text-[13px] tracking-tight ${
                 attiva
-                  ? 'bg-bordeaux-700 font-semibold text-white'
-                  : 'text-neutral-600 hover:bg-neutral-100 hover:text-bordeaux-800'
+                  ? 'bg-bordeaux-700/[0.08] font-medium text-bordeaux-700'
+                  : 'text-neutral-600 hover:bg-neutral-50'
               }`}
             >
               {ICONE[item.href] && (
                 <Icon
                   nome={ICONE[item.href]}
-                  className={`h-[18px] w-[18px] shrink-0 ${attiva ? '' : 'text-neutral-400'}`}
+                  className={`h-4 w-4 shrink-0 ${attiva ? 'text-bordeaux-700' : 'text-neutral-400'}`}
                 />
               )}
               <span className="flex-1 truncate">{item.label}</span>
               {item.badge ? (
                 <span
-                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                    attiva ? 'bg-white/20 text-white' : 'bg-bordeaux-700 text-white'
+                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
+                    attiva ? 'bg-bordeaux-700 text-white' : 'bg-neutral-200 text-neutral-600'
                   }`}
                 >
                   {item.badge}
@@ -94,23 +92,24 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
         })}
       </nav>
 
-      <div className="px-3 pb-4">
+      <div className="px-2 pb-1">
         {abbonamentoLabel && (
           <Link
             href="/impostazioni"
             onClick={() => setOpen(false)}
-            className="mb-3 block rounded-lg border border-gold-300 bg-gold-50 p-3 transition-colors hover:bg-gold-100"
+            className="rialzo mb-1 block rounded-xl bg-neutral-50 p-3"
           >
-            <div className="flex items-center gap-2 text-xs font-semibold text-neutral-800">
-              <Icon nome="abbonamento" className="h-4 w-4 text-gold-600" />
+            <div className="flex items-center gap-2 text-[12px] font-medium text-neutral-800">
+              <Icon nome="abbonamento" className="h-3.5 w-3.5 text-gold-600" />
               Abbonamento
             </div>
             <p className="mt-0.5 text-[11px] text-neutral-500">{abbonamentoLabel}</p>
-            <p className="mt-1.5 text-[11px] font-medium text-bordeaux-700">Gestisci abbonamento</p>
           </Link>
         )}
-        <LogoutButton />
-        <p className="mt-3 text-center text-[10px] text-neutral-300">Creato da Kevin M. D.</p>
+        <div className="border-t border-neutral-200/70 pt-1">
+          <LogoutButton />
+        </div>
+        <p className="pb-2 pt-2 text-center text-[10px] text-neutral-300">Creato da Kevin M. D.</p>
       </div>
     </>
   );
@@ -118,10 +117,10 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
   return (
     <>
       {/* Barra superiore, solo sotto lg */}
-      <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-4 py-3 lg:hidden">
+      <div className="vetro flex items-center justify-between border-b border-neutral-200/70 px-4 py-3 lg:hidden">
         <div className="flex items-center gap-2">
-          <Image src="/icon.svg" alt="" width={28} height={28} className="rounded-md" />
-          <span className="font-display text-base font-semibold text-bordeaux-800">Themis</span>
+          <Image src="/icon.svg" alt="" width={24} height={24} className="rounded-md" />
+          <span className="text-[15px] font-semibold tracking-tight text-neutral-900">Themis</span>
         </div>
         <div className="flex items-center gap-1">
           <NotificheCampanella />
@@ -129,7 +128,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
             type="button"
             onClick={() => setOpen(true)}
             aria-label="Apri il menu"
-            className="rounded-md border border-neutral-300 p-2 text-neutral-700"
+            className="premi rounded-full p-2 text-neutral-700 hover:bg-neutral-100"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <line x1="2" y1="5" x2="18" y2="5" />
@@ -143,21 +142,18 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
       {/* Drawer, solo sotto lg */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} aria-hidden="true" />
-          <aside className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-white shadow-lg">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} aria-hidden="true" />
+          <aside className="vetro absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col border-r border-neutral-200/70">
             {navContent}
           </aside>
         </div>
       )}
 
-      {/* Sidebar fissa, da lg in su. È una scheda staccata dal bordo, non
-          una colonna attaccata: lo stesso linguaggio delle schede del
-          contenuto, così la pagina si legge come un insieme di riquadri
-          invece che come due zone diverse incollate. */}
-      <aside className="hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:p-4 lg:pr-0">
-        <div className="flex w-full flex-col rounded-2xl border border-neutral-200 bg-white shadow-sm">
-          {navContent}
-        </div>
+      {/* Sidebar fissa, da lg in su: galleggia sulla pagina bianca, senza
+          bordo né ombra propria — solo un filo sottile a destra la separa
+          dal contenuto, come nelle app di sistema di Apple. */}
+      <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-60 lg:flex-shrink-0 lg:flex-col lg:border-r lg:border-neutral-200/70 lg:py-2">
+        {navContent}
       </aside>
     </>
   );

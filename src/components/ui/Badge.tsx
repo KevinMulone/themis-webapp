@@ -10,10 +10,10 @@ type Tono = 'neutral' | 'success' | 'warning' | 'danger' | 'brand';
 
 const TONI: Record<Tono, string> = {
   neutral: 'bg-neutral-100 text-neutral-600',
-  success: 'bg-green-100 text-green-700',
+  success: 'bg-green-50 text-green-700',
   warning: 'bg-gold-100 text-gold-700',
-  danger: 'bg-red-100 text-red-700',
-  brand: 'bg-bordeaux-50 text-bordeaux-700',
+  danger: 'bg-red-50 text-red-700',
+  brand: 'bg-bordeaux-700/[0.08] text-bordeaux-700',
 };
 
 export function Badge({ tono = 'neutral', className = '', children, ...props }: {

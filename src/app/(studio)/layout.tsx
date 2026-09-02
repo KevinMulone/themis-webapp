@@ -88,14 +88,14 @@ export default async function StudioLayout({ children }: { children: React.React
     <StudioProvider
       valore={{ userId: ctx.userId, studioId: ctx.studioId, ruolo: ctx.ruolo, nomeStudio: ctx.nomeStudio }}
     >
-      <div className="flex min-h-screen flex-col bg-neutral-50 lg:flex-row">
+      <div className="flex min-h-screen flex-col bg-white lg:flex-row">
         <UsageTracker />
         <SidebarNav
           navItems={voci}
           nomeStudio={ctx.nomeStudio ?? ''}
           abbonamentoLabel={giorniRimanenti(ctx.subscriptionExpiresAt)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6"><SincronizzazionePec />
+        <main className="flex-1 overflow-y-auto p-4 lg:p-8"><SincronizzazionePec />
       {children}</main>
       </div>
     </StudioProvider>
