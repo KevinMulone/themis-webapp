@@ -70,7 +70,7 @@ export default function ScadenzeProposte() {
   }
 
   return (
-    <div className="mb-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+    <div className="mb-4 rounded-2xl bg-neutral-50 p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-60 flex-1 gap-4">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-50 text-gold-600">
@@ -148,7 +148,7 @@ export default function ScadenzeProposte() {
                   <button
                     type="button" disabled={inCorso === p.id}
                     onClick={() => decidi(p.id, 'accetta')}
-                    className="rounded-md bg-bordeaux-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                    className="premi rounded-full bg-bordeaux-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
                   >
                     Aggiungi al calendario
                   </button>

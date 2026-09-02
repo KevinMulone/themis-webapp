@@ -208,43 +208,43 @@ function PortalePageInner() {
         <p className="mb-6 text-sm text-neutral-500">Gestisci e prenota i tuoi appuntamenti con lo studio.</p>
 
         {!session && invite && !invite.used && (
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl bg-neutral-50 p-6">
             <h2 className="mb-1 font-semibold">Crea una password</h2>
             <p className="mb-4 text-sm text-neutral-500">Per accedere con <strong>{invite.email}</strong></p>
             <form onSubmit={handleRegister} className="flex flex-col gap-3">
               <input name="password" type="password" placeholder="Almeno 8 caratteri" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
               {error && <p className="text-sm text-red-600">{error}</p>}
-              <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Crea account</button>
+              <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Crea account</button>
             </form>
           </div>
         )}
 
         {!session && invite && invite.used && (
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl bg-neutral-50 p-6">
             <p className="text-sm text-neutral-600">Questo invito è già stato usato. Accedi con le tue credenziali qui sotto.</p>
           </div>
         )}
 
         {!session && !invite && (
-          <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="rounded-xl bg-neutral-50 p-6">
             <h2 className="mb-4 font-semibold">Accedi</h2>
             <form onSubmit={handleLogin} className="flex flex-col gap-3">
               <input name="email" type="email" placeholder="Email" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
               <input name="password" type="password" placeholder="Password" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
               {error && <p className="text-sm text-red-600">{error}</p>}
-              <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Entra</button>
+              <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Entra</button>
             </form>
           </div>
         )}
 
         {session && portalClient && (
           <>
-            <div className="mb-4 flex items-center justify-between rounded-xl border border-neutral-200 bg-white p-4 shadow-sm">
+            <div className="mb-4 flex items-center justify-between rounded-xl bg-neutral-50 p-4">
               <span className="text-sm">Ciao, <strong>{portalClient.nome_cliente}</strong></span>
               <button onClick={handleLogout} className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50">Esci</button>
             </div>
 
-            <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 rounded-xl bg-neutral-50 p-6">
               <h2 className="mb-3 font-semibold">I tuoi appuntamenti</h2>
               {appointments.length === 0 ? (
                 <p className="text-sm text-neutral-500">Nessun appuntamento prenotato.</p>
@@ -267,13 +267,13 @@ function PortalePageInner() {
                   ))}
                 </ul>
               )}
-              <button onClick={handleShowSlots} disabled={booking} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
+              <button onClick={handleShowSlots} disabled={booking} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
                 Prenota un appuntamento
               </button>
             </div>
 
             {richieste.length > 0 && (
-              <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+              <div className="mb-4 rounded-xl bg-neutral-50 p-6">
                 <h2 className="mb-3 font-semibold">Documenti richiesti dallo studio</h2>
                 <ul className="divide-y divide-neutral-100 text-sm">
                   {richieste.map((r) => (
@@ -300,7 +300,7 @@ function PortalePageInner() {
             )}
 
             {Object.keys(slotsByDay).length > 0 && !chosenSlot && (
-              <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+              <div className="mb-4 rounded-xl bg-neutral-50 p-6">
                 <h2 className="mb-3 font-semibold">Scegli un orario</h2>
 
                 <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
@@ -341,7 +341,7 @@ function PortalePageInner() {
             )}
 
             {chosenSlot && (
-              <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+              <div className="mb-4 rounded-xl bg-neutral-50 p-6">
                 <h2 className="mb-1 font-semibold">Conferma appuntamento</h2>
                 <p className="mb-4 text-sm text-neutral-600">{chosenSlot.data.split('-').reverse().join('/')} alle {chosenSlot.ora}</p>
                 <p className="mb-2 text-xs text-neutral-500">Quando vuoi ricevere il promemoria via email? (puoi sceglierne più di uno)</p>
@@ -361,7 +361,7 @@ function PortalePageInner() {
                 </p>
                 {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
                 <div className="flex gap-2">
-                  <button onClick={handleConfirmBooking} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Invia richiesta</button>
+                  <button onClick={handleConfirmBooking} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Invia richiesta</button>
                   <button onClick={() => setChosenSlot(null)} className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50">Annulla</button>
                 </div>
               </div>

@@ -162,7 +162,7 @@ export default function AttivitaClient() {
         )}
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl bg-neutral-50 p-6">
         {caricando ? (
           <p className="text-sm text-neutral-500">Caricamento...</p>
         ) : gruppi.length === 0 ? (

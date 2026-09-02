@@ -58,7 +58,7 @@ function Tessera({ href, icona, tinta, valore, titolo, sottotitolo, allerta = fa
   return (
     <Link
       href={href}
-      className="group flex flex-col rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm transition-colors hover:border-bordeaux-300"
+      className="rialzo group flex flex-col rounded-2xl bg-neutral-50 p-5"
     >
       <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${TINTE[tinta]}`}>
         <Icon nome={icona} className="h-5 w-5" />
@@ -100,7 +100,7 @@ function AzioneRapida({ href, icona, testo }: { href: string; icona: NomeIcona; 
   return (
     <Link
       href={href}
-      className="flex items-center gap-2.5 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:border-bordeaux-300 hover:text-bordeaux-700"
+      className="premi flex items-center gap-2.5 rounded-xl bg-neutral-50 px-4 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-bordeaux-700"
     >
       <Icon nome={icona} className="h-[18px] w-[18px] text-bordeaux-600" />
       {testo}
@@ -174,7 +174,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-600">
+          <span className="flex items-center gap-2 rounded-lg bg-neutral-50 px-3 py-2 text-sm text-neutral-600">
             <Icon nome="calendario" className="h-4 w-4 text-neutral-400" />
             {oggiEsteso}
           </span>
@@ -219,7 +219,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-neutral-50 p-6">
           <TestataSezione icona="orologio" titolo="Prossime scadenze" href="/calendario" azione="Vedi calendario" />
           {scadenze.length === 0 ? (
             <div className="py-10 text-center">
@@ -247,7 +247,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl bg-neutral-50 p-6">
           <TestataSezione icona="pratiche" titolo="Pratiche recenti" href="/pratiche" azione="Vedi tutte" />
           {pratiche.length === 0 ? (
             <div className="py-10 text-center">
@@ -285,7 +285,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mt-6 rounded-2xl bg-neutral-50 p-6">
         <h2 className="mb-4 font-semibold text-neutral-900">Azioni rapide</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <AzioneRapida href="/clienti" icona="clienti" testo="Nuovo cliente" />

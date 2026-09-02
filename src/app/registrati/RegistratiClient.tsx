@@ -50,7 +50,7 @@ export default function RegistratiClient() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
+      <div className="w-full max-w-sm rounded-xl bg-neutral-50 p-8">
         <BrandHero />
         <p className="mb-6 text-center text-sm text-neutral-500">Crea l&apos;account del tuo studio</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -80,7 +80,7 @@ export default function RegistratiClient() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+            className="mt-2 premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
           >
             {loading ? 'Registrazione...' : 'Registrati'}
           </button>

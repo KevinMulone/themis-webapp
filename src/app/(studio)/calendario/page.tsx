@@ -311,7 +311,7 @@ export default function CalendarioPage() {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_18rem]">
         <div className="min-w-0">
-          <div className="mb-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className="mb-4 rounded-2xl bg-neutral-50 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <button
@@ -385,7 +385,7 @@ export default function CalendarioPage() {
           </div>
 
           {vista === 'mese' && (
-            <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+            <div className="overflow-x-auto rounded-2xl bg-neutral-50">
               <div className="grid min-w-[640px] grid-cols-7 gap-px overflow-hidden bg-neutral-200">
                 {GIORNI.map((g) => (
                   <div key={g} className="bg-neutral-50 px-2 py-2 text-center text-xs font-semibold text-neutral-500">{g}</div>
@@ -434,7 +434,7 @@ export default function CalendarioPage() {
           )}
 
           {(vista === 'settimana' || vista === 'giorno') && (
-            <div className="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow-sm">
+            <div className="overflow-x-auto rounded-2xl bg-neutral-50">
               <div style={{ minWidth: vista === 'giorno' ? '320px' : '700px' }}>
                 <div className="grid border-b border-neutral-200" style={{ gridTemplateColumns: `56px repeat(${giorniVista.length}, 1fr)` }}>
                   <div />
@@ -527,7 +527,7 @@ export default function CalendarioPage() {
           )}
 
           {inScadenza.length > 0 && (
-            <div className="mt-4 rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+            <div className="mt-4 rounded-2xl bg-neutral-50 p-5">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
                   Scadenze imminenti
@@ -573,7 +573,7 @@ export default function CalendarioPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className="rounded-2xl bg-neutral-50 p-4">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-neutral-900">{MESI[miniMese - 1]} {miniAnno}</h3>
               <div className="flex gap-1">
@@ -621,7 +621,7 @@ export default function CalendarioPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className="rounded-2xl bg-neutral-50 p-4">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-neutral-900">Prossimi eventi</h3>
               <button
@@ -670,7 +670,7 @@ export default function CalendarioPage() {
 
       {formDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 p-4">
-          <div className="my-8 w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-lg">
+          <div className="my-8 w-full max-w-md rounded-2xl bg-neutral-50 p-6 shadow-lg">
             <h2 className="mb-4 text-lg font-bold text-neutral-900">Nuovo evento</h2>
             <form onSubmit={handleCreate} className="flex flex-col gap-3">
               <div>
@@ -728,7 +728,7 @@ export default function CalendarioPage() {
 
       {detail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-lg">
+          <div className="w-full max-w-md rounded-2xl bg-neutral-50 p-6 shadow-lg">
             <div className="mb-4 flex items-start gap-3">
               <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colore(detail.tipo).tessera}`}>
                 <Icon nome="calendario" className="h-5 w-5" />
@@ -774,7 +774,7 @@ export default function CalendarioPage() {
 
       {appointmentDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-md rounded-2xl border border-neutral-200 bg-white p-6 shadow-lg">
+          <div className="w-full max-w-md rounded-2xl bg-neutral-50 p-6 shadow-lg">
             <h2 className="mb-4 text-lg font-bold text-neutral-900">Prenotazione online</h2>
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
               <dt className="text-neutral-400">Cliente</dt>

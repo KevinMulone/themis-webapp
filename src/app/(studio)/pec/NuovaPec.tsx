@@ -150,7 +150,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
             <p className="mb-3 rounded-md bg-gold-100 px-3 py-2 text-xs text-gold-700">{esito.avviso}</p>
           )}
           <div className="flex justify-end">
-            <button onClick={onChiudi} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white">
+            <button onClick={onChiudi} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white">
               Chiudi
             </button>
           </div>
@@ -214,7 +214,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
                 <button
                   type="button" onClick={scriviConThemis}
                   disabled={scrivendoThemis || !argomento.trim()}
-                  className="rounded-md bg-bordeaux-700 px-3 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                  className="premi rounded-full bg-bordeaux-700 px-3 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
                 >
                   {scrivendoThemis ? 'Sto scrivendo...' : 'Scrivi'}
                 </button>
@@ -272,7 +272,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
 
             <div className="flex justify-end">
               <button disabled={!pronto} onClick={() => setFase('conferma')}
-                className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+                className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
                 Continua
               </button>
             </div>
@@ -309,7 +309,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
                 Torna a modificare
               </button>
               <button disabled={inCorso} onClick={invia}
-                className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+                className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
                 {inCorso ? 'Invio in corso...' : 'Invia la PEC'}
               </button>
             </div>

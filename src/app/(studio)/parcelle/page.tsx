@@ -45,7 +45,7 @@ export default function ParcellePage() {
       </p>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl bg-neutral-50 p-6">
           <h2 className="mb-4 font-semibold text-neutral-900">Dati della prestazione</h2>
 
           <div className="mb-4">
@@ -127,7 +127,7 @@ export default function ParcellePage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <div className="rounded-xl bg-neutral-50 p-6">
           <h2 className="mb-4 font-semibold text-neutral-900">Prospetto</h2>
           <div className="space-y-2 text-sm">
             {risultato.righe.length === 0 ? (

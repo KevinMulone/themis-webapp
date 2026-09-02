@@ -461,7 +461,7 @@ export default function ImpostazioniPage() {
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-6 text-2xl font-display font-semibold text-neutral-900">Impostazioni</h1>
 
-      <form onSubmit={handleChangePassword} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <form onSubmit={handleChangePassword} className="mb-4 rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Cambia password</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -477,14 +477,14 @@ export default function ImpostazioniPage() {
           <p className={`mt-3 text-sm ${passwordMsg.type === 'ok' ? 'text-green-700' : 'text-red-600'}`}>{passwordMsg.text}</p>
         )}
         <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
-          <button type="submit" disabled={changingPassword} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
+          <button type="submit" disabled={changingPassword} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
             {changingPassword ? 'Salvataggio...' : 'Aggiorna password'}
           </button>
         </div>
       </form>
 
       {ruolo === 'titolare' && (
-      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Abbonamento</h2>
         {abbonamento?.stripe_customer_id ? (
           <>
@@ -540,7 +540,7 @@ export default function ImpostazioniPage() {
       </div>
       )}
 
-      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Intestazione documenti</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Immagine (logo e dati dello studio) usata automaticamente nell&apos;intestazione di ogni documento generato.
@@ -563,7 +563,7 @@ export default function ImpostazioniPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSaveTypography} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <form onSubmit={handleSaveTypography} className="mb-4 rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Formattazione documenti</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
@@ -584,13 +584,13 @@ export default function ImpostazioniPage() {
           </div>
         </div>
         <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
-          <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
+          <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
             Salva
           </button>
         </div>
       </form>
 
-      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Orari di disponibilità per il portale clienti</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Gli assistiti potranno prenotare un appuntamento online solo in questi orari.
@@ -625,13 +625,13 @@ export default function ImpostazioniPage() {
           />
         </div>
         <div className="flex justify-end border-t border-neutral-200 pt-4">
-          <button onClick={handleSaveHours} disabled={savingHours} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
+          <button onClick={handleSaveHours} disabled={savingHours} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
             {savingHours ? 'Salvataggio...' : 'Salva orari'}
           </button>
         </div>
       </div>
 
-      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold text-neutral-900">Caselle PEC</h2>
           {pecAccounts.length > 0 && (
@@ -699,7 +699,7 @@ export default function ImpostazioniPage() {
         {pecAccounts.length > 0 && !pecArretrato && !pecSincronizzando && (
           <button
             type="button" onClick={handleRecuperaArretrato}
-            className="mb-3 rounded-md border border-bordeaux-700 px-4 py-2 text-sm font-semibold text-bordeaux-700 hover:bg-bordeaux-50"
+            className="premi mb-3 rounded-full bg-bordeaux-700/[0.08] px-4 py-2 text-sm font-semibold text-bordeaux-700 hover:bg-bordeaux-700/[0.14]"
           >
             Completa l&apos;archivio
           </button>
@@ -750,7 +750,7 @@ export default function ImpostazioniPage() {
                       <button
                         type="button" onClick={() => handleCambiaPassword(a)}
                         disabled={!pecNuovaPassword.trim()}
-                        className="rounded-md bg-bordeaux-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                        className="premi rounded-full bg-bordeaux-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
                       >
                         Salva password
                       </button>
@@ -836,14 +836,14 @@ export default function ImpostazioniPage() {
           </div>
           {pecFormError && <p className="col-span-2 text-sm text-red-600">{pecFormError}</p>}
           <div className="col-span-2 flex justify-end">
-            <button type="submit" disabled={pecSalvando} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
+            <button type="submit" disabled={pecSalvando} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
               {pecSalvando ? 'Salvataggio...' : 'Aggiungi casella'}
             </button>
           </div>
         </form>
       </div>
 
-      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Modelli disponibili ({templates.length})</h2>
         <p className="mb-3 text-xs text-neutral-500">
           I modelli &quot;di sistema&quot; sono forniti da Themis e uguali per tutti gli studi. Puoi caricarne di tuoi:
@@ -882,7 +882,7 @@ export default function ImpostazioniPage() {
             <input name="descrizione" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2 flex justify-end">
-            <button type="submit" disabled={uploadingTemplate} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
+            <button type="submit" disabled={uploadingTemplate} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
               {uploadingTemplate ? 'Caricamento...' : 'Carica modello'}
             </button>
           </div>

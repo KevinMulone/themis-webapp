@@ -67,7 +67,7 @@ function TesseraConteggio({ icona, tinta, valore, etichetta }: {
   icona: NomeIcona; tinta: string; valore: number; etichetta: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4">
+    <div className="flex items-center gap-3 rounded-xl bg-neutral-50 p-4">
       <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${tinta}`}>
         <Icon nome={icona} className="h-5 w-5" />
       </span>
@@ -267,7 +267,7 @@ export default function PraticheePage() {
         </button>
       </div>
 
-      <div className="mb-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="mb-4 rounded-2xl bg-neutral-50 p-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative min-w-60 flex-1">
             <Icon nome="pratiche" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
@@ -353,11 +353,11 @@ export default function PraticheePage() {
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-neutral-200 bg-white p-6 text-sm text-neutral-500 shadow-sm">
+        <div className="rounded-2xl bg-neutral-50 p-6 text-sm text-neutral-500">
           Caricamento...
         </div>
       ) : filtrate.length === 0 ? (
-        <div className="rounded-2xl border border-neutral-200 bg-white py-16 text-center shadow-sm">
+        <div className="rounded-2xl bg-neutral-50 py-16 text-center">
           <Icon nome="pratiche" className="mx-auto h-10 w-10 text-neutral-200" />
           <p className="mt-3 text-sm text-neutral-500">
             {search || filtriAttivi ? 'Nessuna pratica corrisponde alla ricerca.' : 'Nessuna pratica ancora.'}
@@ -369,7 +369,7 @@ export default function PraticheePage() {
           )}
         </div>
       ) : (
-        <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <div className="rounded-2xl bg-neutral-50">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] text-sm">
               <thead className="border-b border-neutral-100 text-left">
@@ -477,7 +477,7 @@ export default function PraticheePage() {
               >
                 ‹
               </button>
-              <span className="rounded-md bg-bordeaux-700 px-3 py-1 text-white">{paginaCorrente}</span>
+              <span className="premi rounded-full bg-bordeaux-700 px-3 py-1 text-white">{paginaCorrente}</span>
               <span className="text-neutral-400">di {pagine}</span>
               <button
                 type="button" onClick={() => setPagina(paginaCorrente + 1)} disabled={paginaCorrente >= pagine}

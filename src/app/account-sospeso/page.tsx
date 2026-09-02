@@ -12,7 +12,7 @@ export default async function AccountSospesoPage({
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 text-center shadow-sm">
+      <div className="w-full max-w-sm rounded-xl bg-neutral-50 p-8 text-center">
         <BrandHero />
         <p className="mb-1 font-semibold text-red-700">
           {rimosso ? 'Accesso revocato' : scaduto ? 'Abbonamento scaduto' : 'Account sospeso'}

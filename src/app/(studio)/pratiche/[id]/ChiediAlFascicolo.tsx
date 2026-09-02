@@ -64,7 +64,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
   }
 
   return (
-    <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+    <div className="mb-4 rounded-xl bg-neutral-50 p-6">
       <div className="mb-1 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="font-semibold text-neutral-900">Chiedi a Themis</h2>
@@ -168,7 +168,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
           ) : <span />}
           <button
             type="submit" disabled={inCorso || !domanda.trim()}
-            className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+            className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
           >
             {inCorso ? 'Sto leggendo...' : 'Chiedi a Themis'}
           </button>

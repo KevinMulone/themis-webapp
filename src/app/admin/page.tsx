@@ -93,7 +93,7 @@ function Kpi({ valore, etichetta, tono = 'neutro' }: {
   valore: React.ReactNode; etichetta: string; tono?: keyof typeof TONO_KPI;
 }) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-4">
+    <div className="rounded-xl bg-neutral-50 p-4">
       <div className={`text-2xl font-bold ${TONO_KPI[tono]}`}>{valore}</div>
       <div className="text-xs text-neutral-500">{etichetta}</div>
     </div>

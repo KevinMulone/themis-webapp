@@ -30,7 +30,7 @@ function CapacitaCard({ icona, titolo, testo, onClick, azione }: {
     <button
       type="button"
       onClick={onClick}
-      className="group rounded-xl border border-neutral-200 bg-white p-5 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+      className="group rounded-xl bg-neutral-50 p-5 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
     >
       <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
         <Icon nome={icona} className="h-5 w-5" />
@@ -133,7 +133,7 @@ export default function ThemisPage() {
         </p>
       </div>
 
-      <div className="mb-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 rounded-2xl bg-neutral-50 p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">1. Seleziona una pratica</h2>
         <div className="relative">
           <Icon nome="pratiche" className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
@@ -210,7 +210,7 @@ export default function ThemisPage() {
             <button
               type="button"
               onClick={() => vaiA(zonaDomande)}
-              className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+              className="group flex items-center gap-3 rounded-xl bg-neutral-50 p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
                 <Icon nome="matita" className="h-5 w-5" />
@@ -224,7 +224,7 @@ export default function ThemisPage() {
             <button
               type="button"
               onClick={() => { setAttoAperto(true); vaiA(zonaAtti); }}
-              className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+              className="group flex items-center gap-3 rounded-xl bg-neutral-50 p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
                 <Icon nome="genera" className="h-5 w-5" />
@@ -237,7 +237,7 @@ export default function ThemisPage() {
 
             <Link
               href={`/pratiche/${matterId}`}
-              className="group flex items-center gap-3 rounded-xl border border-neutral-200 bg-white p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+              className="group flex items-center gap-3 rounded-xl bg-neutral-50 p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
                 <Icon nome="documento" className="h-5 w-5" />
@@ -264,7 +264,7 @@ export default function ThemisPage() {
         </>
       )}
 
-      <div className="rounded-2xl border border-neutral-200 bg-white p-5 shadow-sm">
+      <div className="rounded-2xl bg-neutral-50 p-5">
         <div className="flex gap-4">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-50 text-gold-600">
             <Icon nome="lucchetto" className="h-5 w-5" />

@@ -115,7 +115,7 @@ function CalcolatoreMilano() {
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-1 font-semibold text-neutral-900">Dati del danneggiato</h2>
         <p className="mb-4 text-xs text-neutral-500">Tabelle di Milano, edizione 2024.</p>
 
@@ -154,7 +154,7 @@ function CalcolatoreMilano() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-4 font-semibold text-neutral-900">Prospetto di liquidazione</h2>
         {!risultato ? (
           <p className="text-sm text-red-600">Inserisci un valore di invalidità tra 1 e 100.</p>
@@ -212,7 +212,7 @@ function CalcolatoreMicropermanente() {
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-1 font-semibold text-neutral-900">Dati del danneggiato</h2>
         <p className="mb-4 text-xs text-neutral-500">
           Art. 139 Cod. Ass. — solo per invalidità permanente da 1 a 9 punti da circolazione di veicoli.
@@ -258,7 +258,7 @@ function CalcolatoreMicropermanente() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-4 font-semibold text-neutral-900">Prospetto di liquidazione</h2>
         {!risultato ? (
           <p className="text-sm text-red-600">L&apos;art. 139 si applica da 1 a 9 punti di invalidità: oltre, usa la Tabella Unica Nazionale.</p>
@@ -316,7 +316,7 @@ function CalcolatoreMacropermanente() {
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-1 font-semibold text-neutral-900">Dati del danneggiato</h2>
         <p className="mb-4 text-xs text-neutral-500">
           Tabella Unica Nazionale, D.P.R. 12/2025 — invalidità permanente da 10 a 100 punti, sinistri dal 5.3.2025.
@@ -377,7 +377,7 @@ function CalcolatoreMacropermanente() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-4 font-semibold text-neutral-900">Prospetto di liquidazione</h2>
         {!risultato ? (
           <p className="text-sm text-red-600">La TUN si applica da 10 a 100 punti di invalidità: sotto, usa l&apos;art. 139.</p>

@@ -274,7 +274,7 @@ export default function PecPage() {
       </div>
 
       {accounts.length === 0 ? (
-        <div className="rounded-2xl border border-neutral-200 bg-white py-16 text-center shadow-sm">
+        <div className="rounded-2xl bg-neutral-50 py-16 text-center">
           <Icon nome="pec" className="mx-auto h-10 w-10 text-neutral-200" />
           <p className="mt-3 text-sm text-neutral-500">Nessuna casella PEC configurata.</p>
           <Link
@@ -336,7 +336,7 @@ export default function PecPage() {
 
           <ScadenzeProposte />
 
-          <div className="mb-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+          <div className="mb-4 rounded-2xl bg-neutral-50 p-4">
             <div className="flex flex-wrap items-center gap-3">
               <div className="relative min-w-60 flex-1">
                 <Icon nome="pec" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
@@ -412,7 +412,7 @@ export default function PecPage() {
             )}
           </div>
 
-          <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
+          <div className="rounded-2xl bg-neutral-50">
             {loading ? (
               <p className="p-6 text-sm text-neutral-500">Caricamento...</p>
             ) : filtrati.length === 0 ? (
@@ -568,7 +568,7 @@ export default function PecPage() {
                     >
                       ‹
                     </button>
-                    <span className="rounded-md bg-bordeaux-700 px-3 py-1 text-white">{paginaCorrente}</span>
+                    <span className="premi rounded-full bg-bordeaux-700 px-3 py-1 text-white">{paginaCorrente}</span>
                     <span className="text-neutral-400">di {pagine}</span>
                     <button
                       type="button" onClick={() => setPagina(paginaCorrente + 1)} disabled={paginaCorrente >= pagine}
@@ -583,7 +583,7 @@ export default function PecPage() {
             )}
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-6 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm md:grid-cols-3 md:divide-x md:divide-neutral-100">
+          <div className="mt-4 grid grid-cols-1 gap-6 rounded-2xl bg-neutral-50 p-6 md:grid-cols-3 md:divide-x md:divide-neutral-100">
             <NotaFondo
               icona="pec" tinta="bg-violet-50 text-violet-500" titolo="Caselle configurate"
               testo={`${accounts.length} ${accounts.length === 1 ? 'casella PEC attiva' : 'caselle PEC attive'}`}

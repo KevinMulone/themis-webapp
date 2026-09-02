@@ -92,7 +92,7 @@ export default function ReimpostaPasswordClient() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
+      <div className="w-full max-w-sm rounded-xl bg-neutral-50 p-8">
         <BrandHero />
         <p className="mb-6 text-center text-sm text-neutral-500">Imposta una nuova password</p>
 
@@ -115,7 +115,7 @@ export default function ReimpostaPasswordClient() {
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button
               type="submit" disabled={loading}
-              className="mt-2 rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+              className="mt-2 premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
             >
               {loading ? 'Salvataggio...' : 'Imposta password'}
             </button>
@@ -141,7 +141,7 @@ export default function ReimpostaPasswordClient() {
               {otpError && <p className="text-sm text-red-600">{otpError}</p>}
               <button
                 type="submit" disabled={verifyingOtp}
-                className="mt-2 rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                className="mt-2 premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
               >
                 {verifyingOtp ? 'Verifica...' : 'Verifica codice'}
               </button>

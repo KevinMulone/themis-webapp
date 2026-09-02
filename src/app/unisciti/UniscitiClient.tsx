@@ -50,7 +50,7 @@ export default function UniscitiClient() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
-      <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
+      <div className="w-full max-w-sm rounded-xl bg-neutral-50 p-8">
         <BrandHero />
 
         {caricando && <p className="text-center text-sm text-neutral-500">Caricamento...</p>}
@@ -89,7 +89,7 @@ export default function UniscitiClient() {
               {errore && <p className="text-sm text-red-600">{errore}</p>}
               <button
                 type="submit" disabled={salvando}
-                className="mt-2 rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                className="mt-2 premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
               >
                 {salvando ? 'Creazione account...' : 'Entra nello studio'}
               </button>

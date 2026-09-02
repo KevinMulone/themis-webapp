@@ -8,7 +8,7 @@ export default function PoliticaRimborsiPage() {
         Politica di rimborso
       </h1>
 
-      <div className="space-y-4 rounded-xl border border-neutral-200 bg-white p-8 text-sm leading-relaxed text-neutral-700 shadow-sm">
+      <div className="space-y-4 rounded-xl bg-neutral-50 p-8 text-sm leading-relaxed text-neutral-700">
         <p>
           Themis è un servizio destinato a professionisti (studi legali e avvocati) che lo utilizzano per
           l&apos;esercizio della propria attività. I clienti di Themis non sono quindi &quot;consumatori&quot; ai sensi

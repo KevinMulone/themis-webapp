@@ -77,11 +77,11 @@ export default function PatrocinioPage() {
       {loading ? (
         <p className="text-sm text-neutral-500">Caricamento...</p>
       ) : righe.length === 0 ? (
-        <div className="rounded-xl border border-neutral-200 bg-white p-6 text-sm text-neutral-500 shadow-sm">
+        <div className="rounded-xl bg-neutral-50 p-6 text-sm text-neutral-500">
           Nessuna pratica con metodo di pagamento "Gratuito patrocinio".
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-xl bg-neutral-50">
           <table className="w-full min-w-[720px] text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
               <tr>

@@ -77,7 +77,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
   }
 
   return (
-    <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+    <div className="mb-4 rounded-xl bg-neutral-50 p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-semibold text-neutral-900">Fai preparare un atto a Themis</h2>
         <div className="flex items-center gap-4">
@@ -164,7 +164,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
             <div className="flex justify-end">
               <button
                 type="submit" disabled={inCorso}
-                className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
               >
                 {inCorso ? 'Themis sta preparando l’atto...' : 'Prepara la bozza'}
               </button>

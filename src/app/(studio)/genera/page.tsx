@@ -77,7 +77,7 @@ export default function GeneraPage() {
     <div className="mx-auto max-w-2xl">
       <h1 className="mb-6 text-2xl font-display font-semibold text-neutral-900">Genera Atto</h1>
 
-      <div className="rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl bg-neutral-50 p-6">
         <div className="mb-4">
           <label className="mb-1 block text-xs text-neutral-500">Pratica</label>
           <select value={matterId} onChange={(e) => setMatterId(e.target.value)} className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm">
@@ -158,7 +158,7 @@ export default function GeneraPage() {
         <button
           onClick={handleGenerate}
           disabled={generating}
-          className="w-full rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+          className="w-full premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
         >
           {generating ? 'Generazione...' : 'Genera'}
         </button>

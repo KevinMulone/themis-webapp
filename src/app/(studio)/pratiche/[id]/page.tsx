@@ -262,7 +262,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         {saved && <span className="text-sm text-green-700">Salvato</span>}
       </div>
 
-      <form onSubmit={handleSaveMatter} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <form onSubmit={handleSaveMatter} className="mb-4 rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Dati pratica</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -314,13 +314,13 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           <button type="button" onClick={handleArchive} className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">
             Archivia pratica
           </button>
-          <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
+          <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
             Salva
           </button>
         </div>
       </form>
 
-      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold text-neutral-900">Documenti</h2>
           <label className="cursor-pointer rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50">
@@ -350,7 +350,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
       <IncarichiPratica matterId={id} studioId={studioId} />
 
-      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Documenti richiesti al cliente</h2>
         {richieste.length === 0 ? (
           <p className="mb-3 text-sm text-neutral-500">Nessuna richiesta inviata.</p>
@@ -382,7 +382,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           <input name="titolo" required placeholder="Es. Copia carta d'identità" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
           <input name="note" placeholder="Nota per il cliente (opzionale)" className="w-full rounded-md border border-neutral-300 px-3 py-2 text-sm" />
           <div className="col-span-2 flex justify-end">
-            <button type="submit" disabled={creandoRichiesta} className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
+            <button type="submit" disabled={creandoRichiesta} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
               {creandoRichiesta ? 'Invio...' : 'Richiedi documento'}
             </button>
           </div>
@@ -390,7 +390,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
       </div>
 
       {matter.metodo_pagamento === 'gratuito_patrocinio' && (
-        <form onSubmit={handleSavePatrocinio} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+        <form onSubmit={handleSavePatrocinio} className="mb-4 rounded-xl bg-neutral-50 p-6">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-semibold text-neutral-900">Patrocinio a spese dello Stato</h2>
             {savedPatrocinio && <span className="text-sm text-green-700">Salvato</span>}
@@ -437,14 +437,14 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             </div>
           </div>
           <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
-            <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
+            <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
               Salva
             </button>
           </div>
         </form>
       )}
 
-      <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Scadenze legali suggerite</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Suggerimenti con riferimento normativo, da verificare sempre sul caso concreto: la sospensione
@@ -501,7 +501,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         <button
           onClick={handleAddScadenza}
           disabled={!dataCalcolata}
-          className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+          className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
         >
           Aggiungi al calendario
         </button>
@@ -509,7 +509,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
       {matter.tipo_pratica === 'sinistro' && sinistro && (
         <>
-          <form onSubmit={handleSaveSinistro} className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <form onSubmit={handleSaveSinistro} className="mb-4 rounded-xl bg-neutral-50 p-6">
             <h2 className="mb-3 font-semibold text-neutral-900">Dati sinistro</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Field label="Data sinistro" name="data_sinistro" type="date" defaultValue={sinistro.data_sinistro} />
@@ -543,13 +543,13 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
               </div>
             </div>
             <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
-              <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
+              <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
                 Salva
               </button>
             </div>
           </form>
 
-          <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+          <div className="mb-4 rounded-xl bg-neutral-50 p-6">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-semibold text-neutral-900">Testimoni</h2>
               <button onClick={() => setAddingTestimone(true)} className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50">
@@ -583,7 +583,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
                   <button type="button" onClick={() => setAddingTestimone(false)} className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50">
                     Annulla
                   </button>
-                  <button type="submit" className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
+                  <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
                     Salva
                   </button>
                 </div>

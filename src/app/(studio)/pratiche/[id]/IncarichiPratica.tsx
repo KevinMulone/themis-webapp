@@ -97,7 +97,7 @@ export default function IncarichiPratica({ matterId, studioId }: { matterId: str
   const attivi = membri.filter((m) => m.stato === 'attivo' && m.user_id);
 
   return (
-    <div className="mb-4 rounded-xl border border-neutral-200 bg-white p-6 shadow-sm">
+    <div className="mb-4 rounded-xl bg-neutral-50 p-6">
       <h2 className="mb-3 font-semibold text-neutral-900">Incarichi</h2>
 
       {incarichi.length === 0 ? (
@@ -190,7 +190,7 @@ export default function IncarichiPratica({ matterId, studioId }: { matterId: str
         <input name="scadenza" type="date" className="rounded-md border border-neutral-300 px-3 py-2 text-sm" />
         <div className="flex justify-end">
           <button type="submit" disabled={creando}
-            className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
+            className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
             {creando ? 'Creazione...' : 'Assegna incarico'}
           </button>
         </div>

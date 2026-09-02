@@ -331,7 +331,7 @@ export default function ClientiPage() {
         </button>
       </div>
 
-      <div className="mb-4 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm">
+      <div className="mb-4 rounded-2xl bg-neutral-50 p-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative min-w-60 flex-1">
             <Icon nome="clienti" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
@@ -440,11 +440,11 @@ export default function ClientiPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-neutral-200 bg-white p-6 text-sm text-neutral-500 shadow-sm">
+        <div className="rounded-2xl bg-neutral-50 p-6 text-sm text-neutral-500">
           Caricamento...
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-2xl border border-neutral-200 bg-white py-16 text-center shadow-sm">
+        <div className="rounded-2xl bg-neutral-50 py-16 text-center">
           <Icon nome="clienti" className="mx-auto h-10 w-10 text-neutral-200" />
           <p className="mt-3 text-sm text-neutral-500">
             {search || filtroTipo ? 'Nessun cliente corrisponde alla ricerca.' : 'Nessun cliente ancora.'}
@@ -459,7 +459,7 @@ export default function ClientiPage() {
           )}
         </div>
       ) : (
-        <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
+        <div className="rounded-2xl bg-neutral-50">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[880px] text-sm">
               <thead className="border-b border-neutral-100 text-left">
@@ -551,7 +551,7 @@ export default function ClientiPage() {
               >
                 ‹
               </button>
-              <span className="rounded-md bg-bordeaux-700 px-3 py-1 text-white">{paginaCorrente}</span>
+              <span className="premi rounded-full bg-bordeaux-700 px-3 py-1 text-white">{paginaCorrente}</span>
               <span className="text-neutral-400">di {pagine}</span>
               <button
                 type="button" onClick={() => setPagina(paginaCorrente + 1)} disabled={paginaCorrente >= pagine}
@@ -680,7 +680,7 @@ export default function ClientiPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
+                  className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
                 >
                   Salva
                 </button>
@@ -720,7 +720,7 @@ export default function ClientiPage() {
                   <button
                     type="button"
                     onClick={handleGenerateInviteLink}
-                    className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
+                    className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
                   >
                     Genera link
                   </button>
@@ -747,7 +747,7 @@ export default function ClientiPage() {
                   <button
                     type="button"
                     onClick={handleCopyInviteLink}
-                    className="rounded-md bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
+                    className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
                   >
                     {inviteModal.copied ? 'Copiato!' : 'Copia link'}
                   </button>

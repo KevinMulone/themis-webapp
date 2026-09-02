@@ -147,7 +147,7 @@ export default function IncarichiPage() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
+      <div className="rounded-2xl bg-neutral-50">
         {caricando ? (
           <p className="p-6 text-sm text-neutral-500">Caricamento...</p>
         ) : visibili.length === 0 ? (
