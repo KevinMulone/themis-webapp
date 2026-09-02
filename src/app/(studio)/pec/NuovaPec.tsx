@@ -175,7 +175,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
               <div>
                 <label className="mb-1 block text-xs text-neutral-500">Casella mittente</label>
                 <select value={accountId} onChange={(e) => setAccountId(e.target.value)}
-                  className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
                   <option value="">— scegli —</option>
                   {accounts.map((a) => <option key={a.id} value={a.id}>{a.indirizzo_pec}</option>)}
                 </select>
@@ -186,7 +186,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
               <label className="mb-1 block text-xs text-neutral-500">Destinatari</label>
               <textarea value={destinatari} onChange={(e) => setDestinatari(e.target.value)}
                 placeholder="indirizzo@pec.it — più indirizzi separati da virgola o a capo"
-                className="min-h-16 w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+                className="min-h-16 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
               <p className="mt-1 text-[11px] text-neutral-400">
                 Solo indirizzi PEC: una PEC inviata a una casella ordinaria non ha valore legale.
               </p>
@@ -195,7 +195,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
             <div>
               <label className="mb-1 block text-xs text-neutral-500">Conoscenza (facoltativo)</label>
               <input value={cc} onChange={(e) => setCc(e.target.value)}
-                className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+                className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
             </div>
 
             <div className="rounded-xl bg-neutral-50 p-3">
@@ -209,7 +209,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
                 <input
                   value={argomento} onChange={(e) => setArgomento(e.target.value)}
                   placeholder="Es. sollecito riscontro alla richiesta danni, termine 15 giorni"
-                  className="min-w-60 flex-1 rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                  className="min-w-60 flex-1 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 />
                 <button
                   type="button" onClick={scriviConThemis}
@@ -232,19 +232,19 @@ export default function NuovaPec({ onChiudi, onInviata }: {
             <div>
               <label className="mb-1 block text-xs text-neutral-500">Oggetto</label>
               <input value={oggetto} onChange={(e) => setOggetto(e.target.value)}
-                className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+                className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
             </div>
 
             <div>
               <label className="mb-1 block text-xs text-neutral-500">Testo</label>
               <textarea value={testo} onChange={(e) => setTesto(e.target.value)}
-                className="min-h-40 w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+                className="min-h-40 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
             </div>
 
             <div>
               <label className="mb-1 block text-xs text-neutral-500">Pratica (per allegare e archiviare)</label>
               <select value={matterId} onChange={(e) => setMatterId(e.target.value)}
-                className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
+                className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
                 <option value="">Nessuna pratica</option>
                 {pratiche.map((p) => <option key={p.id} value={p.id}>{p.etichetta}</option>)}
               </select>

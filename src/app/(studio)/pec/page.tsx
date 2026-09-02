@@ -324,7 +324,7 @@ export default function PecPage() {
               <Icon nome="calendario" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
               <select
                 value={periodo} onChange={(e) => setPeriodo(e.target.value)}
-                className="rounded-lg border border-transparent bg-neutral-50 py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="rounded-lg border border-neutral-200 bg-white py-2.5 pl-9 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               >
                 <option value="tutti">Tutti i periodi ({messaggi.length})</option>
                 {periodi.map(([chiave, quante]) => (
@@ -343,7 +343,7 @@ export default function PecPage() {
                 <input
                   value={cerca} onChange={(e) => setCerca(e.target.value)}
                   placeholder="Cerca per mittente, destinatario o oggetto..."
-                  className="w-full rounded-lg border border-transparent bg-neutral-50 py-2.5 pl-10 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                  className="w-full rounded-lg border border-neutral-200 bg-white py-2.5 pl-10 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 />
               </div>
 
@@ -369,7 +369,7 @@ export default function PecPage() {
                 Ordina per
                 <select
                   value={ordine} onChange={(e) => setOrdine(e.target.value as typeof ordine)}
-                  className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm text-neutral-700 outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                  className="rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm text-neutral-700 outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 >
                   <option value="recenti">Data (più recenti)</option>
                   <option value="vecchie">Data (più vecchie)</option>
@@ -393,7 +393,7 @@ export default function PecPage() {
                 {accounts.length > 1 && (
                   <select
                     value={accountFiltro} onChange={(e) => setAccountFiltro(e.target.value)}
-                    className="rounded-lg border border-transparent bg-neutral-50 px-3 py-1.5 text-xs outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                    className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                   >
                     <option value="">Tutte le caselle</option>
                     {accounts.map((a) => <option key={a.id} value={a.id}>{a.etichetta}</option>)}
@@ -549,7 +549,7 @@ export default function PecPage() {
                     <select
                       value={perPagina}
                       onChange={(e) => setPerPagina(Number(e.target.value))}
-                      className="rounded-lg border border-transparent bg-neutral-50 px-2 py-1 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                      className="rounded-lg border border-neutral-200 bg-white px-2 py-1 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                     >
                       {[10, 25, 50, 100].map((n) => <option key={n} value={n}>{n}</option>)}
                     </select>

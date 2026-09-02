@@ -336,7 +336,7 @@ export default function ClientiPage() {
           <div className="relative min-w-60 flex-1">
             <Icon nome="clienti" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
             <input
-              className="w-full rounded-lg border border-transparent bg-neutral-50 py-2.5 pl-10 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              className="w-full rounded-lg border border-neutral-200 bg-white py-2.5 pl-10 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               placeholder="Cerca per nome, cognome, ragione sociale, CF, P.IVA..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -530,7 +530,7 @@ export default function ClientiPage() {
               <select
                 value={perPagina}
                 onChange={(e) => setPerPagina(Number(e.target.value))}
-                className="rounded-lg border border-transparent bg-neutral-50 px-2 py-1 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="rounded-lg border border-neutral-200 bg-white px-2 py-1 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               >
                 {[10, 25, 50, 100].map((n) => <option key={n} value={n}>{n}</option>)}
               </select>
@@ -578,7 +578,7 @@ export default function ClientiPage() {
                   name="tipo_soggetto"
                   defaultValue={editing.tipo_soggetto ?? 'persona_fisica'}
                   onChange={(e) => setEditing({ ...editing, tipo_soggetto: e.target.value })}
-                  className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 >
                   {TIPI_SOGGETTO.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                 </select>
@@ -610,7 +610,7 @@ export default function ClientiPage() {
                 <textarea
                   name="note"
                   defaultValue={editing.note ?? ''}
-                  className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 />
               </div>
               {editing.id && (
@@ -705,7 +705,7 @@ export default function ClientiPage() {
                   autoFocus
                   value={inviteModal.email}
                   onChange={(e) => setInviteModal({ ...inviteModal, email: e.target.value, error: null })}
-                  className="mb-3 w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                  className="mb-3 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                   placeholder="cliente@esempio.it"
                 />
                 {inviteModal.error && <p className="mb-3 text-sm text-red-600">{inviteModal.error}</p>}
@@ -733,7 +733,7 @@ export default function ClientiPage() {
                   readOnly
                   value={inviteModal.link}
                   onFocus={(e) => e.currentTarget.select()}
-                  className="mb-3 w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                  className="mb-3 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 />
                 {inviteModal.error && <p className="mb-3 text-sm text-red-600">{inviteModal.error}</p>}
                 <div className="flex justify-end gap-2">
@@ -771,7 +771,7 @@ function Field({ label, name, defaultValue, type = 'text', full = false }: {
         type={type}
         name={name}
         defaultValue={defaultValue ?? ''}
-        className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+        className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
       />
     </div>
   );

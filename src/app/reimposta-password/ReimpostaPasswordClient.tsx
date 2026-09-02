@@ -105,12 +105,12 @@ export default function ReimpostaPasswordClient() {
             <input
               type="password" placeholder="Nuova password" autoComplete="new-password"
               value={password} onChange={(e) => setPassword(e.target.value)}
-              className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             />
             <input
               type="password" placeholder="Conferma password" autoComplete="new-password"
               value={confirm} onChange={(e) => setConfirm(e.target.value)}
-              className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             />
             {error && <p className="text-sm text-red-600">{error}</p>}
             <button
@@ -131,12 +131,12 @@ export default function ReimpostaPasswordClient() {
               <input
                 type="email" placeholder="La tua email" autoComplete="username"
                 value={otpEmail} onChange={(e) => setOtpEmail(e.target.value)}
-                className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               />
               <input
                 type="text" inputMode="numeric" placeholder="Codice numerico dall'email"
                 value={otpCode} onChange={(e) => setOtpCode(e.target.value.trim())}
-                className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               />
               {otpError && <p className="text-sm text-red-600">{otpError}</p>}
               <button

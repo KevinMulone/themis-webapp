@@ -252,7 +252,7 @@ export default function IncarichiPage() {
                           <select
                             value=""
                             onChange={(e) => e.target.value && aggiorna(i, { assegnato_a: e.target.value, stato: 'da_fare' })}
-                            className="rounded-lg border border-transparent bg-neutral-50 px-2 py-1.5 text-xs outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                            className="rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-xs outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                           >
                             <option value="">Passa a…</option>
                             {membri.filter((m) => m.user_id !== i.assegnato_a).map((m) => (

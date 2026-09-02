@@ -52,7 +52,7 @@ export default function ParcellePage() {
             <label className="mb-1 block text-xs text-neutral-500">Tipo di procedimento</label>
             <select
               value={tabellaId} onChange={(e) => selezionaTabella(e.target.value)}
-              className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             >
               {TABELLE.map((t) => <option key={t.id} value={t.id}>{t.nome}</option>)}
             </select>
@@ -64,7 +64,7 @@ export default function ParcellePage() {
             <input
               type="number" min={0} step="any" value={valore}
               onChange={(e) => setValore(Number(e.target.value))}
-              className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             />
             <p className="mt-1 text-[11px] text-neutral-400">
               Se il valore è indeterminabile, si considera di regola non inferiore a {euro(26_000)} e non
@@ -104,7 +104,7 @@ export default function ParcellePage() {
             <input
               type="number" min={-50} max={50} value={variazionePct}
               onChange={(e) => setVariazionePct(Number(e.target.value))}
-              className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             />
             <p className="mt-1 text-[11px] text-neutral-400">
               Art. 4, comma 1 (giudiziale) / art. 19 (stragiudiziale), D.M. 55/2014.

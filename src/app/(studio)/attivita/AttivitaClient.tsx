@@ -143,7 +143,7 @@ export default function AttivitaClient() {
         <select
           value={filtroCategoria}
           onChange={(e) => setFiltroCategoria(e.target.value as Categoria | '')}
-          className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+          className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
         >
           <option value="">Tutte le attività</option>
           {(Object.keys(LABEL_CATEGORIA) as Categoria[]).map((c) => (
@@ -154,7 +154,7 @@ export default function AttivitaClient() {
           <select
             value={filtroPersona}
             onChange={(e) => setFiltroPersona(e.target.value)}
-            className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
           >
             <option value="">Chiunque</option>
             {persone.map((p) => <option key={p} value={p}>{p}</option>)}

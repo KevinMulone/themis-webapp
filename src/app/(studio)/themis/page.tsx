@@ -140,7 +140,7 @@ export default function ThemisPage() {
           <select
             ref={sceltaPratica}
             value={matterId} onChange={(e) => setMatterId(e.target.value)}
-            className="w-full appearance-none rounded-lg border border-transparent bg-neutral-50 py-3 pl-11 pr-10 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="w-full appearance-none rounded-lg border border-neutral-200 bg-white py-3 pl-11 pr-10 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             disabled={caricando}
           >
             <option value="">

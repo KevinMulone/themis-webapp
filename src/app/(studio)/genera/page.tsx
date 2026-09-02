@@ -80,7 +80,7 @@ export default function GeneraPage() {
       <div className="rounded-xl bg-neutral-50 p-6">
         <div className="mb-4">
           <label className="mb-1 block text-xs text-neutral-500">Pratica</label>
-          <select value={matterId} onChange={(e) => setMatterId(e.target.value)} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
+          <select value={matterId} onChange={(e) => setMatterId(e.target.value)} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
             <option value="">Seleziona...</option>
             {matters.map((m) => <option key={m.id} value={m.id}>{clientLabel(m.clients)} - {labelFromOptions(TIPI_PRATICA, m.tipo_pratica)}</option>)}
           </select>
@@ -92,9 +92,9 @@ export default function GeneraPage() {
             placeholder="Cerca un modello per nome o categoria..."
             value={templateSearch}
             onChange={(e) => setTemplateSearch(e.target.value)}
-            className="mb-2 w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="mb-2 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
           />
-          <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} size={8} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
+          <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} size={8} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
             {templates
               .filter((t) => {
                 const q = templateSearch.trim().toLowerCase();
@@ -134,7 +134,7 @@ export default function GeneraPage() {
                     list={proposte.length ? idElenco : undefined}
                     autoComplete={proposte.length ? 'off' : undefined}
                     onChange={(e) => setManualValues({ ...manualValues, [p.placeholder_key]: e.target.value })}
-                    className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                    className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                   />
                   {proposte.length > 0 && (
                     <datalist id={idElenco}>
@@ -150,7 +150,7 @@ export default function GeneraPage() {
 
         <div className="mb-4 border-t border-neutral-200 pt-4">
           <label className="mb-1 block text-xs text-neutral-500">Nome file</label>
-          <input value={outputFilename} onChange={(e) => setOutputFilename(e.target.value)} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          <input value={outputFilename} onChange={(e) => setOutputFilename(e.target.value)} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         </div>
 
         {error && <p className="mb-3 text-sm text-red-600">{error}</p>}

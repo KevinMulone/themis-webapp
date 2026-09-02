@@ -271,7 +271,7 @@ export default function CollaboratoriClient() {
             </p>
             <input
               readOnly value={linkGenerato} onFocus={(e) => e.currentTarget.select()}
-              className="mb-2 w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              className="mb-2 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             />
             <p className="mb-3 text-xs text-neutral-400">Il link vale 7 giorni.</p>
             <div className="flex flex-wrap gap-2">
@@ -300,14 +300,14 @@ export default function CollaboratoriClient() {
                 <Icon nome="utente" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
                 <input
                   name="nome" placeholder="Nome e cognome (facoltativo)"
-                  className="w-full rounded-lg border border-transparent bg-neutral-50 py-2.5 pl-10 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                  className="w-full rounded-lg border border-neutral-200 bg-white py-2.5 pl-10 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 />
               </div>
               <div className="relative">
                 <Icon nome="pec" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
                 <input
                   name="email" type="email" required placeholder="Email"
-                  className="w-full rounded-lg border border-transparent bg-neutral-50 py-2.5 pl-10 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                  className="w-full rounded-lg border border-neutral-200 bg-white py-2.5 pl-10 pr-3 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 />
               </div>
             </div>

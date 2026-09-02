@@ -104,7 +104,7 @@ export default function AccediClient() {
           ) : (
             <form onSubmit={handleRecupero} className="flex flex-col gap-3">
               <input
-                className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 type="email"
                 placeholder="La tua email"
                 autoComplete="username"
@@ -137,7 +137,7 @@ export default function AccediClient() {
         <p className="mb-6 text-center text-sm text-neutral-500">Accedi con le credenziali del tuo studio</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
-            className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             type="email"
             placeholder="Email"
             autoComplete="username"
@@ -145,7 +145,7 @@ export default function AccediClient() {
             onChange={(e) => setEmail(e.target.value)}
           />
           <input
-            className="rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             type="password"
             placeholder="Password"
             autoComplete="current-password"

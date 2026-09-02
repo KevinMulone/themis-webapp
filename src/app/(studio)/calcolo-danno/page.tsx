@@ -41,13 +41,13 @@ function CampoItp({ righe, aggiungi, aggiorna, rimuovi }: ReturnType<typeof useI
               <input
                 type="number" min={1} max={99} value={r.percentuale}
                 onChange={(e) => aggiorna(r.id, { percentuale: Number(e.target.value) })}
-                className="w-20 rounded-lg border border-transparent bg-neutral-50 px-2 py-1.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="w-20 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               />
               <span className="text-xs text-neutral-500">% per</span>
               <input
                 type="number" min={0} value={r.giorni}
                 onChange={(e) => aggiorna(r.id, { giorni: Number(e.target.value) })}
-                className="w-24 rounded-lg border border-transparent bg-neutral-50 px-2 py-1.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="w-24 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               />
               <span className="text-xs text-neutral-500">giorni</span>
               <button type="button" onClick={() => rimuovi(r.id)} className="ml-auto text-xs text-red-600 hover:underline">
@@ -122,11 +122,11 @@ function CalcolatoreMilano() {
         <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Età al momento del fatto</label>
-            <input type="number" min={1} max={100} value={eta} onChange={(e) => setEta(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input type="number" min={1} max={100} value={eta} onChange={(e) => setEta(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Invalidità permanente (punti %)</label>
-            <input type="number" min={1} max={100} value={punti} onChange={(e) => setPunti(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input type="number" min={1} max={100} value={punti} onChange={(e) => setPunti(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
         </div>
 
@@ -134,19 +134,19 @@ function CalcolatoreMilano() {
           <label className="mb-1 block text-xs text-neutral-500">
             Giorni di invalidità temporanea totale (100%) — {euro(ITT_GIORNALIERO)}/giorno
           </label>
-          <input type="number" min={0} value={ittGiorni} onChange={(e) => setIttGiorni(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          <input type="number" min={0} value={ittGiorni} onChange={(e) => setIttGiorni(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         </div>
 
         <CampoItp {...itp} />
 
         <div className="mb-4">
           <label className="mb-1 block text-xs text-neutral-500">Spese mediche documentate (danno emergente)</label>
-          <input type="number" min={0} step={0.01} value={speseMediche} onChange={(e) => setSpeseMediche(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          <input type="number" min={0} step={0.01} value={speseMediche} onChange={(e) => setSpeseMediche(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         </div>
 
         <div>
           <label className="mb-1 block text-xs text-neutral-500">Personalizzazione (%) — scelta discrezionale entro il tetto di legge</label>
-          <input type="number" min={0} max={50} value={personalizzazione} onChange={(e) => setPersonalizzazione(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          <input type="number" min={0} max={50} value={personalizzazione} onChange={(e) => setPersonalizzazione(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           <p className="mt-1 text-[11px] text-neutral-400">
             Il tetto massimo consentito dalle Tabelle di Milano varia dal 25% (invalidità più gravi) al 50% (invalidità più
             lievi). Verifica sempre il tetto applicabile al caso concreto.
@@ -221,11 +221,11 @@ function CalcolatoreMicropermanente() {
         <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Età al momento del fatto</label>
-            <input type="number" min={0} max={100} value={eta} onChange={(e) => setEta(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input type="number" min={0} max={100} value={eta} onChange={(e) => setEta(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Invalidità permanente (punti %, 1-9)</label>
-            <input type="number" min={1} max={9} step={0.1} value={punti} onChange={(e) => setPunti(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input type="number" min={1} max={9} step={0.1} value={punti} onChange={(e) => setPunti(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
         </div>
 
@@ -233,14 +233,14 @@ function CalcolatoreMicropermanente() {
           <label className="mb-1 block text-xs text-neutral-500">
             Giorni di invalidità temporanea totale (100%) — {euro(ITT_GIORNALIERO_CIRCOLAZIONE)}/giorno
           </label>
-          <input type="number" min={0} value={ittGiorni} onChange={(e) => setIttGiorni(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          <input type="number" min={0} value={ittGiorni} onChange={(e) => setIttGiorni(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         </div>
 
         <CampoItp {...itp} />
 
         <div className="mb-4">
           <label className="mb-1 block text-xs text-neutral-500">Spese mediche documentate (danno emergente)</label>
-          <input type="number" min={0} step={0.01} value={speseMediche} onChange={(e) => setSpeseMediche(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          <input type="number" min={0} step={0.01} value={speseMediche} onChange={(e) => setSpeseMediche(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         </div>
 
         <div>
@@ -249,7 +249,7 @@ function CalcolatoreMicropermanente() {
           </label>
           <input
             type="number" min={0} max={PERSONALIZZAZIONE_MAX_MICROPERMANENTE * 100} value={personalizzazione}
-            onChange={(e) => setPersonalizzazione(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            onChange={(e) => setPersonalizzazione(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
           />
           <p className="mt-1 text-[11px] text-neutral-400">
             Solo se la menomazione incide in modo rilevante su specifici aspetti dinamico-relazionali documentati, o ha
@@ -325,17 +325,17 @@ function CalcolatoreMacropermanente() {
         <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Età al momento del fatto</label>
-            <input type="number" min={1} max={100} value={eta} onChange={(e) => setEta(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input type="number" min={1} max={100} value={eta} onChange={(e) => setEta(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Invalidità permanente (punti %, 10-100)</label>
-            <input type="number" min={10} max={100} step={0.1} value={punti} onChange={(e) => setPunti(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input type="number" min={10} max={100} step={0.1} value={punti} onChange={(e) => setPunti(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
         </div>
 
         <div className="mb-4">
           <label className="mb-1 block text-xs text-neutral-500">Danno morale (Tavola 2)</label>
-          <select value={tipoMorale} onChange={(e) => setTipoMorale(e.target.value as TipoMorale)} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
+          <select value={tipoMorale} onChange={(e) => setTipoMorale(e.target.value as TipoMorale)} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
             <option value="nessuno">Non includere (solo danno biologico)</option>
             <option value="minimo">Aumento minimo</option>
             <option value="medio">Aumento medio</option>
@@ -347,19 +347,19 @@ function CalcolatoreMacropermanente() {
           <label className="mb-1 block text-xs text-neutral-500">
             Giorni di invalidità temporanea totale (100%) — {euro(ITT_GIORNALIERO_CIRCOLAZIONE)}/giorno
           </label>
-          <input type="number" min={0} value={ittGiorni} onChange={(e) => setIttGiorni(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          <input type="number" min={0} value={ittGiorni} onChange={(e) => setIttGiorni(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         </div>
 
         <CampoItp {...itp} />
 
         <div className="mb-4">
           <label className="mb-1 block text-xs text-neutral-500">Incremento per danno morale su temporanea (30-60%, art. 3 c.2 D.P.R. 12/2025)</label>
-          <input type="number" min={30} max={60} value={incrementoMorale} onChange={(e) => setIncrementoMorale(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          <input type="number" min={30} max={60} value={incrementoMorale} onChange={(e) => setIncrementoMorale(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         </div>
 
         <div className="mb-4">
           <label className="mb-1 block text-xs text-neutral-500">Spese mediche documentate (danno emergente)</label>
-          <input type="number" min={0} step={0.01} value={speseMediche} onChange={(e) => setSpeseMediche(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+          <input type="number" min={0} step={0.01} value={speseMediche} onChange={(e) => setSpeseMediche(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         </div>
 
         <div>
@@ -368,7 +368,7 @@ function CalcolatoreMacropermanente() {
           </label>
           <input
             type="number" min={0} max={PERSONALIZZAZIONE_MAX_MACROPERMANENTE * 100} value={personalizzazione}
-            onChange={(e) => setPersonalizzazione(Number(e.target.value))} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            onChange={(e) => setPersonalizzazione(Number(e.target.value))} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
           />
           <p className="mt-1 text-[11px] text-neutral-400">
             Solo se la menomazione incide in modo rilevante su specifici aspetti dinamico-relazionali documentati e

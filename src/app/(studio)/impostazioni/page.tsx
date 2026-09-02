@@ -506,11 +506,11 @@ export default function ImpostazioniPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Nuova password</label>
-            <input name="new_password" type="password" autoComplete="new-password" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="new_password" type="password" autoComplete="new-password" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Conferma password</label>
-            <input name="confirm_password" type="password" autoComplete="new-password" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="confirm_password" type="password" autoComplete="new-password" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
         </div>
         {passwordMsg && (
@@ -608,17 +608,17 @@ export default function ImpostazioniPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Carattere</label>
-            <select name="font_family" defaultValue={settings.font_family} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
+            <select name="font_family" defaultValue={settings.font_family} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
               {FONT_CHOICES.map((f) => <option key={f} value={f}>{f}</option>)}
             </select>
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Dimensione (pt)</label>
-            <input type="number" name="font_size_pt" min={6} max={32} step={0.5} defaultValue={settings.font_size_pt} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input type="number" name="font_size_pt" min={6} max={32} step={0.5} defaultValue={settings.font_size_pt} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Interlinea</label>
-            <select name="line_spacing" defaultValue={settings.line_spacing} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
+            <select name="line_spacing" defaultValue={settings.line_spacing} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
               {LINE_SPACING_CHOICES.map((v) => <option key={v} value={v}>{v}</option>)}
             </select>
           </div>
@@ -639,31 +639,31 @@ export default function ImpostazioniPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Cognome</label>
-            <input name="avvocato_cognome" defaultValue={avvocato.avvocato_cognome} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="avvocato_cognome" defaultValue={avvocato.avvocato_cognome} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Nome</label>
-            <input name="avvocato_nome" defaultValue={avvocato.avvocato_nome} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="avvocato_nome" defaultValue={avvocato.avvocato_nome} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Codice fiscale</label>
-            <input name="avvocato_codice_fiscale" defaultValue={avvocato.avvocato_codice_fiscale} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm uppercase outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="avvocato_codice_fiscale" defaultValue={avvocato.avvocato_codice_fiscale} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm uppercase outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Indirizzo dello studio</label>
-            <input name="avvocato_indirizzo" defaultValue={avvocato.avvocato_indirizzo} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="avvocato_indirizzo" defaultValue={avvocato.avvocato_indirizzo} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">CAP</label>
-            <input name="avvocato_cap" defaultValue={avvocato.avvocato_cap} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="avvocato_cap" defaultValue={avvocato.avvocato_cap} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Città</label>
-            <input name="avvocato_citta" defaultValue={avvocato.avvocato_citta} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="avvocato_citta" defaultValue={avvocato.avvocato_citta} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Provincia</label>
-            <input name="avvocato_provincia" maxLength={2} defaultValue={avvocato.avvocato_provincia} className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm uppercase outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="avvocato_provincia" maxLength={2} defaultValue={avvocato.avvocato_provincia} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm uppercase outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
         </div>
         <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
@@ -688,13 +688,13 @@ export default function ImpostazioniPage() {
               <input
                 type="time" value={days[i].start_time} disabled={!days[i].open}
                 onChange={(e) => updateDay(i, { start_time: e.target.value })}
-                className="rounded-lg border border-transparent bg-neutral-50 px-2 py-1 text-sm disabled:bg-neutral-100 outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="rounded-lg border border-neutral-200 bg-white px-2 py-1 text-sm disabled:bg-neutral-100 outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               />
               <span className="text-neutral-400">–</span>
               <input
                 type="time" value={days[i].end_time} disabled={!days[i].open}
                 onChange={(e) => updateDay(i, { end_time: e.target.value })}
-                className="rounded-lg border border-transparent bg-neutral-50 px-2 py-1 text-sm disabled:bg-neutral-100 outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="rounded-lg border border-neutral-200 bg-white px-2 py-1 text-sm disabled:bg-neutral-100 outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
               />
             </div>
           ))}
@@ -704,7 +704,7 @@ export default function ImpostazioniPage() {
           <input
             type="number" min={10} max={120} step={5} value={slotMinutes}
             onChange={(e) => setSlotMinutes(Number(e.target.value))}
-            className="w-20 rounded-lg border border-transparent bg-neutral-50 px-2 py-1 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="w-20 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
           />
         </div>
         <div className="flex justify-end border-t border-neutral-200 pt-4">
@@ -828,7 +828,7 @@ export default function ImpostazioniPage() {
                         value={pecNuovaPassword}
                         onChange={(e) => setPecNuovaPassword(e.target.value)}
                         placeholder="Password per programmi di posta"
-                        className="w-64 rounded-lg border border-transparent bg-neutral-50 px-3 py-1.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                        className="w-64 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                       />
                       <button
                         type="button" onClick={() => handleCambiaPassword(a)}
@@ -875,11 +875,11 @@ export default function ImpostazioniPage() {
         <form ref={pecFormRef} onSubmit={handleAddPecAccount} className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
           <div className="col-span-2">
             <label className="mb-1 block text-xs text-neutral-500">Etichetta (per riconoscerla in elenco)</label>
-            <input name="etichetta" required placeholder="Es. PEC studio" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="etichetta" required placeholder="Es. PEC studio" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div className="col-span-2">
             <label className="mb-1 block text-xs text-neutral-500">Indirizzo PEC</label>
-            <input name="indirizzo_pec" type="email" required placeholder="nome@pec.it" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="indirizzo_pec" type="email" required placeholder="nome@pec.it" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div className="col-span-2">
             <label className="mb-1 block text-xs text-neutral-500">Gestore (precompila host e porta)</label>
@@ -889,7 +889,7 @@ export default function ImpostazioniPage() {
                 const g = GESTORI_PEC.find((x) => x.nome === e.target.value);
                 if (g) { setPecHost(g.host); setPecPort(g.porta); } else { setPecHost(''); setPecPort(993); }
               }}
-              className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             >
               <option value="">Altro (inserisci host manualmente)</option>
               {GESTORI_PEC.map((g) => <option key={g.nome} value={g.nome}>{g.nome}</option>)}
@@ -899,23 +899,23 @@ export default function ImpostazioniPage() {
             <label className="mb-1 block text-xs text-neutral-500">Host IMAP</label>
             <input
               name="imap_host" required value={pecHost} onChange={(e) => setPecHost(e.target.value)}
-              placeholder="imaps.pec.esempio.it" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              placeholder="imaps.pec.esempio.it" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Porta</label>
             <input
               name="imap_port" type="number" required value={pecPort} onChange={(e) => setPecPort(Number(e.target.value))}
-              className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
             />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Nome utente IMAP</label>
-            <input name="imap_user" required placeholder="di solito l'indirizzo PEC stesso" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="imap_user" required placeholder="di solito l'indirizzo PEC stesso" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Password per programmi di posta</label>
-            <input name="password" type="password" required autoComplete="new-password" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="password" type="password" required autoComplete="new-password" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           {pecFormError && <p className="col-span-2 text-sm text-red-600">{pecFormError}</p>}
           <div className="col-span-2 flex justify-end">
@@ -948,11 +948,11 @@ export default function ImpostazioniPage() {
         <form onSubmit={handleTemplateUpload} className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
           <div className="col-span-2">
             <label className="mb-1 block text-xs text-neutral-500">Nome modello</label>
-            <input name="nome" required className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="nome" required className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div>
             <label className="mb-1 block text-xs text-neutral-500">Categoria</label>
-            <select name="categoria" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
+            <select name="categoria" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
               {TIPI_PRATICA.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
           </div>
@@ -962,7 +962,7 @@ export default function ImpostazioniPage() {
           </div>
           <div className="col-span-2">
             <label className="mb-1 block text-xs text-neutral-500">Descrizione</label>
-            <input name="descrizione" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
+            <input name="descrizione" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
           <div className="col-span-2 flex justify-end">
             <button type="submit" disabled={uploadingTemplate} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
@@ -982,7 +982,7 @@ export default function ImpostazioniPage() {
             onChange={(e) => handlePinAdmin(e.target.value)}
             onBlur={() => { if (!pinAdmin) setMostraPinAdmin(false); }}
             aria-label="Password amministratore"
-            className="w-40 rounded-lg border border-transparent bg-neutral-50 px-3 py-1.5 text-center text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="w-40 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-center text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
           />
         ) : (
           <button
