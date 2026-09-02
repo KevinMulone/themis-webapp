@@ -54,12 +54,15 @@ function sessione(studioId: string): Sessione {
 /** Manda un messaggio ricevuto a Themis, con qualche tentativo: Vercel
  *  potrebbe essere a freddo proprio nel momento in cui arriva. */
 async function inviaAlWebhook(payload: Record<string, unknown>): Promise<void> {
-  const url = process.env.VERCEL_WEBHOOK_URL;
+  const configurato = process.env.VERCEL_WEBHOOK_URL;
   const segreto = process.env.WHATSAPP_WORKER_SECRET;
-  if (!url || !segreto) {
+  if (!configurato || !segreto) {
     console.error('VERCEL_WEBHOOK_URL o WHATSAPP_WORKER_SECRET non configurati: messaggio perso.');
     return;
   }
+  // Un errore facile da fare incollando l'indirizzo: se manca lo schema,
+  // fetch() fallisce con un messaggio poco chiaro. Meglio presumere https.
+  const url = /^https?:\/\//.test(configurato) ? configurato : `https://${configurato}`;
   for (let tentativo = 1; tentativo <= 3; tentativo++) {
     try {
       const res = await fetch(url, {
