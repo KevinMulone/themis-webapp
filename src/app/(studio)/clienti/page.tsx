@@ -547,7 +547,7 @@ export default function ClientiPage() {
               <button
                 type="button" onClick={() => setPagina(paginaCorrente - 1)} disabled={paginaCorrente <= 1}
                 aria-label="Pagina precedente"
-                className="rounded-md border border-neutral-300 px-2 py-1 text-neutral-600 disabled:opacity-40"
+                className="premi rounded-full bg-neutral-100 px-2 py-1 text-neutral-600 hover:bg-neutral-200 disabled:opacity-40 disabled:hover:bg-neutral-100"
               >
                 ‹
               </button>
@@ -556,7 +556,7 @@ export default function ClientiPage() {
               <button
                 type="button" onClick={() => setPagina(paginaCorrente + 1)} disabled={paginaCorrente >= pagine}
                 aria-label="Pagina successiva"
-                className="rounded-md border border-neutral-300 px-2 py-1 text-neutral-600 disabled:opacity-40"
+                className="premi rounded-full bg-neutral-100 px-2 py-1 text-neutral-600 hover:bg-neutral-200 disabled:opacity-40 disabled:hover:bg-neutral-100"
               >
                 ›
               </button>
@@ -634,7 +634,7 @@ export default function ClientiPage() {
                           </div>
                           <a
                             href={`/api/documenti/${d.id}/download`}
-                            className="rounded-md border border-neutral-300 px-2 py-1 text-xs hover:bg-neutral-50"
+                            className="premi rounded-full bg-neutral-100 px-2 py-1 text-xs hover:bg-neutral-200"
                           >
                             Scarica
                           </a>
@@ -651,14 +651,14 @@ export default function ClientiPage() {
                     <button
                       type="button"
                       onClick={() => handleInvitePortal(editing)}
-                      className="mr-auto rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
+                      className="mr-auto premi rounded-full bg-neutral-100 px-4 py-2 text-sm hover:bg-neutral-200"
                     >
                       Invita al portale
                     </button>
                     <button
                       type="button"
                       onClick={() => handleArchive(editing.id!)}
-                      className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                      className="premi rounded-full bg-red-50 px-4 py-2 text-sm text-red-700 hover:bg-red-100"
                     >
                       Archivia
                     </button>
@@ -674,7 +674,7 @@ export default function ClientiPage() {
                 <button
                   type="button"
                   onClick={() => setEditing(null)}
-                  className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
+                  className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm hover:bg-neutral-200"
                 >
                   Annulla
                 </button>
@@ -713,7 +713,7 @@ export default function ClientiPage() {
                   <button
                     type="button"
                     onClick={() => setInviteModal(null)}
-                    className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
+                    className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm hover:bg-neutral-200"
                   >
                     Annulla
                   </button>
@@ -740,7 +740,7 @@ export default function ClientiPage() {
                   <button
                     type="button"
                     onClick={() => setInviteModal(null)}
-                    className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50"
+                    className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm hover:bg-neutral-200"
                   >
                     Chiudi
                   </button>

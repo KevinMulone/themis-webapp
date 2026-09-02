@@ -122,7 +122,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
                 <label className="mb-1 block text-xs font-medium text-neutral-600">
                   Documenti da tenere presenti {scelti.length > 0 && `(${scelti.length} selezionati)`}
                 </label>
-                <div className="max-h-32 space-y-1 overflow-y-auto rounded-md border border-neutral-200 p-2">
+                <div className="max-h-32 space-y-1 overflow-y-auto rounded-xl bg-neutral-50 p-2">
                   {allegabili.map((d) => (
                     <label key={d.id} className="flex items-center gap-2 text-sm text-neutral-700">
                       <input
@@ -182,7 +182,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
                 <div className="flex gap-2">
                   <button
                     type="button" onClick={copia}
-                    className="rounded-md border border-neutral-300 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                    className="premi rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-700 hover:bg-neutral-200"
                   >
                     {copiato ? 'Copiato' : 'Copia il testo'}
                   </button>
@@ -197,14 +197,14 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
                 </div>
               </div>
 
-              <div className="max-h-150 overflow-y-auto rounded-md border border-neutral-200 bg-neutral-50 p-4">
+              <div className="max-h-150 overflow-y-auto rounded-xl bg-neutral-50 p-4">
                 <p className="whitespace-pre-wrap font-serif text-sm leading-relaxed text-neutral-800">
                   {esito.testo}
                 </p>
               </div>
 
               {esito.note && (
-                <div className="mt-3 rounded-md border border-gold-300 bg-gold-50 p-3">
+                <div className="mt-3 rounded-xl bg-gold-50 p-3">
                   <p className="mb-1 text-xs font-semibold text-gold-800">Da controllare prima di firmare</p>
                   <p className="whitespace-pre-wrap text-xs text-gold-700">{esito.note}</p>
                 </div>

@@ -198,7 +198,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
                 className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
             </div>
 
-            <div className="rounded-md border border-neutral-200 bg-neutral-50 p-3">
+            <div className="rounded-xl bg-neutral-50 p-3">
               <div className="mb-1 flex flex-wrap items-start justify-between gap-3">
                 <label className="text-xs font-medium text-neutral-600">
                   Fai scrivere la PEC a Themis
@@ -255,7 +255,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
                 <label className="mb-1 block text-xs text-neutral-500">
                   Allegati dal fascicolo {scelti.length > 0 && `(${scelti.length})`}
                 </label>
-                <div className="max-h-40 space-y-1 overflow-y-auto rounded-md border border-neutral-200 p-2">
+                <div className="max-h-40 space-y-1 overflow-y-auto rounded-xl bg-neutral-50 p-2">
                   {documenti.map((d) => (
                     <label key={d.id} className="flex items-center gap-2 text-sm text-neutral-700">
                       <input type="checkbox" checked={scelti.includes(d.id)}
@@ -279,7 +279,7 @@ export default function NuovaPec({ onChiudi, onInviata }: {
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4 text-sm">
+            <div className="rounded-xl bg-neutral-50 p-4 text-sm">
               <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
                 <dt className="text-neutral-400">Da</dt><dd className="text-neutral-800">{mittente}</dd>
                 <dt className="text-neutral-400">A</dt>

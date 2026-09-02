@@ -88,7 +88,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
               : `${scelti.length} document${scelti.length === 1 ? 'o allegato' : 'i allegati'} — modifica`}
           </button>
           {mostraDocumenti && (
-            <div className="mt-2 max-h-32 space-y-1 overflow-y-auto rounded-md border border-neutral-200 p-2">
+            <div className="mt-2 max-h-32 space-y-1 overflow-y-auto rounded-xl bg-neutral-50 p-2">
               {allegabili.map((d) => (
                 <label key={d.id} className="flex items-center gap-2 text-sm text-neutral-700">
                   <input
@@ -107,7 +107,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
       )}
 
       {messaggi.length > 0 && (
-        <div className="mb-3 max-h-150 space-y-4 overflow-y-auto rounded-md border border-neutral-200 bg-neutral-50 p-4">
+        <div className="mb-3 max-h-150 space-y-4 overflow-y-auto rounded-xl bg-neutral-50 p-4">
           {messaggi.map((m, i) => m.ruolo === 'utente' ? (
             <div key={i} className="flex justify-end">
               <p className="max-w-[85%] rounded-2xl rounded-br-sm bg-bordeaux-700 px-4 py-2 text-sm text-white">

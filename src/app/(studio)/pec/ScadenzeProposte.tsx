@@ -155,7 +155,7 @@ export default function ScadenzeProposte() {
                   <button
                     type="button" disabled={inCorso === p.id}
                     onClick={() => decidi(p.id, 'rifiuta')}
-                    className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
+                    className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-200 disabled:opacity-50"
                   >
                     Scarta
                   </button>

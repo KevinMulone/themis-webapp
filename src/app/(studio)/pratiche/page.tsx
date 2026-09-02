@@ -473,7 +473,7 @@ export default function PraticheePage() {
               <button
                 type="button" onClick={() => setPagina(paginaCorrente - 1)} disabled={paginaCorrente <= 1}
                 aria-label="Pagina precedente"
-                className="rounded-md border border-neutral-300 px-2 py-1 text-neutral-600 disabled:opacity-40"
+                className="premi rounded-full bg-neutral-100 px-2 py-1 text-neutral-600 hover:bg-neutral-200 disabled:opacity-40 disabled:hover:bg-neutral-100"
               >
                 ‹
               </button>
@@ -482,7 +482,7 @@ export default function PraticheePage() {
               <button
                 type="button" onClick={() => setPagina(paginaCorrente + 1)} disabled={paginaCorrente >= pagine}
                 aria-label="Pagina successiva"
-                className="rounded-md border border-neutral-300 px-2 py-1 text-neutral-600 disabled:opacity-40"
+                className="premi rounded-full bg-neutral-100 px-2 py-1 text-neutral-600 hover:bg-neutral-200 disabled:opacity-40 disabled:hover:bg-neutral-100"
               >
                 ›
               </button>

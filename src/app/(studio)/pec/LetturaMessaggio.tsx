@@ -67,7 +67,7 @@ export default function LetturaMessaggio({ messaggioId, onChiudi }: {
               <dd>{dati.dataInvio ? new Date(dati.dataInvio).toLocaleString('it-IT') : '—'}</dd>
             </dl>
 
-            <div className="max-h-150 overflow-y-auto rounded-md border border-neutral-200 bg-neutral-50 p-4">
+            <div className="max-h-150 overflow-y-auto rounded-xl bg-neutral-50 p-4">
               {dati.corpoTesto?.trim()
                 ? <p className="whitespace-pre-wrap text-sm text-neutral-800">{dati.corpoTesto}</p>
                 : <p className="text-sm italic text-neutral-400">
@@ -106,7 +106,7 @@ export default function LetturaMessaggio({ messaggioId, onChiudi }: {
               </p>
               <a
                 href={`/api/pec/messaggio/${messaggioId}/download`}
-                className="shrink-0 rounded-md border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                className="shrink-0 premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-200"
               >
                 Scarica il .eml
               </a>

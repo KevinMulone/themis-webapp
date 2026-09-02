@@ -670,7 +670,7 @@ export default function CalendarioPage() {
 
       {formDate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/30 p-4">
-          <div className="my-8 w-full max-w-md rounded-2xl bg-neutral-50 p-6 shadow-lg">
+          <div className="my-8 w-full max-w-md rounded-2xl bg-white p-6 shadow-lg">
             <h2 className="mb-4 text-lg font-bold text-neutral-900">Nuovo evento</h2>
             <form onSubmit={handleCreate} className="flex flex-col gap-3">
               <div>
@@ -728,7 +728,7 @@ export default function CalendarioPage() {
 
       {detail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-neutral-50 p-6 shadow-lg">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg">
             <div className="mb-4 flex items-start gap-3">
               <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${colore(detail.tipo).tessera}`}>
                 <Icon nome="calendario" className="h-5 w-5" />
@@ -774,7 +774,7 @@ export default function CalendarioPage() {
 
       {appointmentDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-neutral-50 p-6 shadow-lg">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg">
             <h2 className="mb-4 text-lg font-bold text-neutral-900">Prenotazione online</h2>
             <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm">
               <dt className="text-neutral-400">Cliente</dt>

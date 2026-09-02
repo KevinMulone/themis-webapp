@@ -164,7 +164,7 @@ export default function GeneraPage() {
         </button>
 
         {result && (
-          <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm">
+          <div className="mt-4 rounded-xl bg-green-50 p-3 text-sm">
             Documento generato: {result.nome_file}.{' '}
             <a href={`/api/documenti/${result.documento_id}/download`} className="font-semibold text-bordeaux-700 hover:underline">
               Scarica

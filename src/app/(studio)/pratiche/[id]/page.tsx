@@ -311,7 +311,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
         <div className="mt-4 flex justify-between border-t border-neutral-200 pt-4">
-          <button type="button" onClick={handleArchive} className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50">
+          <button type="button" onClick={handleArchive} className="premi rounded-full bg-red-50 px-4 py-2 text-sm text-red-700 hover:bg-red-100">
             Archivia pratica
           </button>
           <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
@@ -323,7 +323,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
       <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold text-neutral-900">Documenti</h2>
-          <label className="cursor-pointer rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50">
+          <label className="premi cursor-pointer rounded-full bg-neutral-100 px-3 py-1.5 text-xs hover:bg-neutral-200">
             {uploadingDoc ? 'Caricamento...' : '+ Carica documento'}
             <input type="file" className="hidden" onChange={handleUploadDocumento} disabled={uploadingDoc} />
           </label>
@@ -552,7 +552,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           <div className="mb-4 rounded-xl bg-neutral-50 p-6">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-semibold text-neutral-900">Testimoni</h2>
-              <button onClick={() => setAddingTestimone(true)} className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50">
+              <button onClick={() => setAddingTestimone(true)} className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs hover:bg-neutral-200">
                 + Aggiungi testimone
               </button>
             </div>
@@ -580,7 +580,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
                   <textarea name="dichiarazione" className="w-full rounded-lg border border-transparent bg-neutral-50 px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
                 </div>
                 <div className="col-span-2 flex justify-end gap-2">
-                  <button type="button" onClick={() => setAddingTestimone(false)} className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50">
+                  <button type="button" onClick={() => setAddingTestimone(false)} className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm hover:bg-neutral-200">
                     Annulla
                   </button>
                   <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">

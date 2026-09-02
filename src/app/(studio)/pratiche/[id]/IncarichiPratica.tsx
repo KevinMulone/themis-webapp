@@ -130,7 +130,7 @@ export default function IncarichiPratica({ matterId, studioId }: { matterId: str
                     <>
                       {i.assegnato_a !== userId && (
                         <button onClick={() => aggiorna(i, { assegnato_a: userId, stato: 'in_corso' })}
-                          className="rounded-md border border-neutral-300 px-2 py-1 text-xs hover:bg-neutral-50">
+                          className="premi rounded-full bg-neutral-100 px-2 py-1 text-xs hover:bg-neutral-200">
                           Prendi in carico
                         </button>
                       )}
@@ -153,7 +153,7 @@ export default function IncarichiPratica({ matterId, studioId }: { matterId: str
                   )}
                   {i.stato === 'completato' && (
                     <button onClick={() => aggiorna(i, { stato: 'in_corso', completato_at: null, completato_da: null })}
-                      className="rounded-md border border-neutral-300 px-2 py-1 text-xs hover:bg-neutral-50">
+                      className="premi rounded-full bg-neutral-100 px-2 py-1 text-xs hover:bg-neutral-200">
                       Riapri
                     </button>
                   )}

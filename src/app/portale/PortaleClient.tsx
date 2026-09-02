@@ -241,7 +241,7 @@ function PortalePageInner() {
           <>
             <div className="mb-4 flex items-center justify-between rounded-xl bg-neutral-50 p-4">
               <span className="text-sm">Ciao, <strong>{portalClient.nome_cliente}</strong></span>
-              <button onClick={handleLogout} className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50">Esci</button>
+              <button onClick={handleLogout} className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs hover:bg-neutral-200">Esci</button>
             </div>
 
             <div className="mb-4 rounded-xl bg-neutral-50 p-6">
@@ -259,9 +259,9 @@ function PortalePageInner() {
                         </span>
                       </span>
                       {a.stato !== 'rifiutato' ? (
-                        <button onClick={() => handleCancel(a.id)} className="rounded-md border border-red-300 px-3 py-1 text-xs text-red-700 hover:bg-red-50">Cancella</button>
+                        <button onClick={() => handleCancel(a.id)} className="premi rounded-full bg-red-50 px-3 py-1 text-xs text-red-700 hover:bg-red-100">Cancella</button>
                       ) : (
-                        <button onClick={() => handleCancel(a.id)} className="rounded-md border border-neutral-300 px-3 py-1 text-xs text-neutral-600 hover:bg-neutral-50">Rimuovi</button>
+                        <button onClick={() => handleCancel(a.id)} className="premi rounded-full bg-neutral-100 px-3 py-1 text-xs text-neutral-600 hover:bg-neutral-200">Rimuovi</button>
                       )}
                     </li>
                   ))}
@@ -285,7 +285,7 @@ function PortalePageInner() {
                       {r.stato === 'caricato' ? (
                         <span className="whitespace-nowrap rounded-full bg-green-100 px-2 py-1 text-xs text-green-700">Caricato</span>
                       ) : (
-                        <label className="cursor-pointer whitespace-nowrap rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50">
+                        <label className="premi cursor-pointer whitespace-nowrap rounded-full bg-neutral-100 px-3 py-1.5 text-xs hover:bg-neutral-200">
                           {caricando === r.id ? 'Caricamento...' : 'Carica file'}
                           <input
                             type="file" className="hidden" disabled={caricando !== null}
@@ -362,7 +362,7 @@ function PortalePageInner() {
                 {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
                 <div className="flex gap-2">
                   <button onClick={handleConfirmBooking} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">Invia richiesta</button>
-                  <button onClick={() => setChosenSlot(null)} className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50">Annulla</button>
+                  <button onClick={() => setChosenSlot(null)} className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm hover:bg-neutral-200">Annulla</button>
                 </div>
               </div>
             )}

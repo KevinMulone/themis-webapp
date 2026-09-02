@@ -141,7 +141,7 @@ export default function NotificheCampanella() {
       {aperto && (
         <div
           style={{ top: posizione.top, left: posizione.left }}
-          className="fixed z-50 w-80 max-w-[calc(100vw-1rem)] rounded-xl bg-neutral-50 shadow-lg"
+          className="fixed z-50 w-80 max-w-[calc(100vw-1rem)] rounded-xl bg-white shadow-lg"
         >
           <div className="flex items-center justify-between border-b border-neutral-100 px-3 py-2">
             <div className="flex gap-1 text-xs">

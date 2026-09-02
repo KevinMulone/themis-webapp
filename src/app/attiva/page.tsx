@@ -86,18 +86,18 @@ function AttivaPageInner() {
           </p>
         )}
 
-        <div className="mb-4 flex rounded-md border border-neutral-200 text-sm">
+        <div className="mb-4 flex rounded-full bg-neutral-100 p-1 text-sm">
           <button
             type="button"
             onClick={() => setTab('chiave')}
-            className={`flex-1 rounded-md py-2 ${tab === 'chiave' ? 'bg-bordeaux-700 text-white' : 'text-neutral-600'}`}
+            className={`premi flex-1 rounded-full py-1.5 ${tab === 'chiave' ? 'bg-bordeaux-700 text-white' : 'text-neutral-600'}`}
           >
             Ho una chiave
           </button>
           <button
             type="button"
             onClick={() => setTab('abbonati')}
-            className={`flex-1 rounded-md py-2 ${tab === 'abbonati' ? 'bg-bordeaux-700 text-white' : 'text-neutral-600'}`}
+            className={`premi flex-1 rounded-full py-1.5 ${tab === 'abbonati' ? 'bg-bordeaux-700 text-white' : 'text-neutral-600'}`}
           >
             Abbonati ora
           </button>
@@ -128,7 +128,7 @@ function AttivaPageInner() {
         ) : (
           <div className="flex flex-col gap-3">
             {PIANI.map((p) => (
-              <div key={p.key} className="rounded-md border border-neutral-200 p-4">
+              <div key={p.key} className="rounded-2xl bg-neutral-50 p-4">
                 <div className="mb-1 flex items-baseline justify-between">
                   <span className="font-semibold text-neutral-900">{p.nome}</span>
                   <span className="font-semibold text-bordeaux-700">{p.prezzo}</span>

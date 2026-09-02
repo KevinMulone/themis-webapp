@@ -497,7 +497,7 @@ export default function ImpostazioniPage() {
             <button
               onClick={handleGestisciAbbonamento}
               disabled={portaleLoading}
-              className="rounded-md border border-neutral-300 px-4 py-2 text-sm hover:bg-neutral-50 disabled:opacity-50"
+              className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm hover:bg-neutral-200 disabled:opacity-50"
             >
               {portaleLoading ? 'Apertura...' : 'Gestisci abbonamento'}
             </button>
@@ -520,7 +520,7 @@ export default function ImpostazioniPage() {
                 <button
                   onClick={handleRichiediRimborso}
                   disabled={refundLoading}
-                  className="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50 disabled:opacity-50"
+                  className="premi rounded-full bg-red-50 px-4 py-2 text-sm text-red-700 hover:bg-red-100 disabled:opacity-50"
                 >
                   {refundLoading ? 'Invio...' : 'Chiedi il rimborso'}
                 </button>
@@ -551,12 +551,12 @@ export default function ImpostazioniPage() {
           <p className="mb-3 text-sm text-neutral-400">Nessuna intestazione caricata.</p>
         )}
         <div className="flex gap-2">
-          <button onClick={() => letterheadFileRef.current?.click()} className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50">
+          <button onClick={() => letterheadFileRef.current?.click()} className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-sm hover:bg-neutral-200">
             Carica intestazione...
           </button>
           <input ref={letterheadFileRef} type="file" accept="image/*" className="hidden" onChange={handleLetterheadUpload} />
           {letterhead.exists && (
-            <button onClick={handleRemoveLetterhead} className="rounded-md border border-red-300 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50">
+            <button onClick={handleRemoveLetterhead} className="premi rounded-full bg-red-50 px-3 py-1.5 text-sm text-red-700 hover:bg-red-100">
               Rimuovi
             </button>
           )}
@@ -637,7 +637,7 @@ export default function ImpostazioniPage() {
           {pecAccounts.length > 0 && (
             <button
               onClick={handleSyncPec} disabled={pecSincronizzando}
-              className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs hover:bg-neutral-50 disabled:opacity-50"
+              className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs hover:bg-neutral-200 disabled:opacity-50"
             >
               {pecSincronizzando ? 'Sincronizzazione...' : 'Scarica le nuove'}
             </button>
@@ -671,7 +671,7 @@ export default function ImpostazioniPage() {
 
         {pecDiagnosi && <p className="mb-3 text-sm text-neutral-600">{pecDiagnosi}</p>}
         {pecCartelle && (
-          <div className="mb-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+          <div className="mb-3 rounded-xl bg-neutral-50 p-3">
             <p className="mb-2 text-xs font-semibold text-neutral-700">
               Cartelle sul server · Themis ne ha archiviati {pecScaricati}
             </p>
@@ -706,7 +706,7 @@ export default function ImpostazioniPage() {
         )}
 
         {pecArretrato && (
-          <div className="mb-3 rounded-md border border-neutral-200 bg-neutral-50 p-3">
+          <div className="mb-3 rounded-xl bg-neutral-50 p-3">
             <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-neutral-200">
               <div className="h-full w-1/3 animate-[scorri_1.2s_ease-in-out_infinite] rounded-full bg-bordeaux-700" />
             </div>
