@@ -1,138 +1,117 @@
 import { NextResponse } from 'next/server';
-import JSZip from 'jszip';
 import { createClient } from '@/lib/supabase/server';
 import { contestoStudio } from '@/lib/studio/contesto';
-import { leggiIcs, type ImpegnoImportato } from '@/lib/calendario/leggiIcs';
 
 export const runtime = 'nodejs';
-/** Un calendario di dieci anni può contenere migliaia di voci: si dà tempo. */
-export const maxDuration = 120;
 
 /**
- * Porta dentro Themis il calendario che l'avvocato aveva prima.
+ * Riceve gli impegni già estratti dal file, non il file.
  *
- * Non serve OAuth né alcun permesso su Google: la migrazione si fa una
- * volta sola, e per farla basta il file che Google stesso mette a
- * disposizione (Impostazioni → Importa ed esporta → Esporta), che arriva
- * come .zip contenente un .ics per ogni calendario.
+ * La prima versione accettava il .ics caricato e lo leggeva qui: sbagliato
+ * per due motivi. Vercel rifiuta qualunque richiesta oltre 4,5 MB — un
+ * limite dell'infrastruttura che non si alza dal codice — e l'export di un
+ * calendario di anni li supera facilmente; per giunta l'errore tornava come
+ * pagina HTML, quindi al posto di un messaggio comprensibile compariva
+ * "risposta non leggibile".
  *
- * Due comportamenti scelti apposta:
- * — si può chiedere l'anteprima (nessuna scrittura) prima di confermare,
- *   perché rovesciare anni di impegni personali dentro l'agenda dello
- *   studio senza vederli prima è un errore che non si disfa comodamente;
- * — un impegno già importato non entra due volte, riconosciuto dal suo
- *   identificativo d'origine: si può rilanciare l'importazione senza
- *   duplicare nulla.
+ * Ora il file viene letto nel browser e qui arrivano solo gli impegni già
+ * filtrati per data, a blocchi. Oltre a togliere il problema della
+ * dimensione, il calendario completo — che per un avvocato contiene anche
+ * tutta la vita privata — non lascia mai il suo computer: viaggia soltanto
+ * ciò che ha scelto di importare.
  */
+
+const MASSIMO_PER_BLOCCO = 500;
+
+type ImpegnoInArrivo = {
+  uid?: unknown; titolo?: unknown; data?: unknown;
+  ora_inizio?: unknown; ora_fine?: unknown; all_day?: unknown;
+  luogo?: unknown; note?: unknown; ricorrente?: unknown;
+};
+
+function testoBreve(valore: unknown, massimo: number): string | null {
+  return typeof valore === 'string' && valore.trim() ? valore.trim().slice(0, massimo) : null;
+}
+
+/** Solo YYYY-MM-DD e HH:MM passano: quello che arriva dal browser è
+ *  comunque input di rete, e va trattato come tale. */
+function dataValida(valore: unknown): string | null {
+  return typeof valore === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(valore) ? valore : null;
+}
+function oraValida(valore: unknown): string | null {
+  return typeof valore === 'string' && /^\d{2}:\d{2}$/.test(valore) ? valore : null;
+}
+
 export async function POST(request: Request) {
   const contesto = await contestoStudio();
   if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
 
-  const form = await request.formData();
-  const file = form.get('file') as File | null;
-  const da = (form.get('da') as string) || '';
-  const soloAnteprima = form.get('anteprima') === 'sì';
-  if (!file) return NextResponse.json({ error: 'Nessun file' }, { status: 400 });
-  if (file.size > 25 * 1024 * 1024) {
-    return NextResponse.json({ error: 'Il file supera i 25 MB' }, { status: 400 });
-  }
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const nome = file.name.toLowerCase();
-
-  // Google esporta uno .zip con dentro un .ics per calendario; chi esporta
-  // un solo calendario ottiene direttamente un .ics.
-  let testi: string[] = [];
+  let corpo: { impegni?: unknown };
   try {
-    if (nome.endsWith('.zip')) {
-      const zip = await JSZip.loadAsync(buffer);
-      const dentro = Object.values(zip.files).filter((f) => !f.dir && f.name.toLowerCase().endsWith('.ics'));
-      if (dentro.length === 0) {
-        return NextResponse.json({ error: 'Nello zip non c’è nessun file .ics' }, { status: 400 });
-      }
-      testi = await Promise.all(dentro.map((f) => f.async('string')));
-    } else {
-      testi = [buffer.toString('utf-8')];
-    }
+    corpo = await request.json();
   } catch {
-    return NextResponse.json({ error: 'Il file non si riesce ad aprire' }, { status: 400 });
+    return NextResponse.json({ error: 'Richiesta non leggibile' }, { status: 400 });
   }
 
-  let impegni: ImpegnoImportato[] = [];
-  for (const t of testi) {
-    if (!t.includes('BEGIN:VCALENDAR')) continue;
-    impegni = impegni.concat(leggiIcs(t));
+  const inArrivo = Array.isArray(corpo.impegni) ? (corpo.impegni as ImpegnoInArrivo[]) : null;
+  if (!inArrivo || inArrivo.length === 0) {
+    return NextResponse.json({ error: 'Nessun impegno da importare' }, { status: 400 });
   }
-  if (impegni.length === 0) {
-    return NextResponse.json({ error: 'Nel file non risultano impegni leggibili' }, { status: 400 });
+  if (inArrivo.length > MASSIMO_PER_BLOCCO) {
+    return NextResponse.json(
+      { error: `Troppi impegni in una sola richiesta (massimo ${MASSIMO_PER_BLOCCO})` },
+      { status: 400 },
+    );
   }
-
-  const totaleNelFile = impegni.length;
-  if (da) impegni = impegni.filter((i) => i.data >= da);
 
   const supabase = await createClient();
 
-  // Chi c'è già non rientra: l'identificativo d'origine è la chiave.
+  // Chi è già stato importato non rientra: l'identificativo d'origine è la
+  // chiave, così l'importazione si può rilanciare senza duplicare nulla.
+  const uid = inArrivo.map((i) => testoBreve(i.uid, 300)).filter(Boolean) as string[];
   const { data: presenti } = await supabase
     .from('eventi')
     .select('google_event_id')
     .eq('studio_id', contesto.studioId)
-    .not('google_event_id', 'is', null);
+    .in('google_event_id', uid.length ? uid : ['-']);
   const giaDentro = new Set((presenti ?? []).map((r) => r.google_event_id));
 
-  const nuovi = impegni.filter((i) => !giaDentro.has(i.uid));
-  const ricorrenti = nuovi.filter((i) => i.ricorrente).length;
+  const righe = [];
+  for (const i of inArrivo) {
+    const data = dataValida(i.data);
+    const identificativo = testoBreve(i.uid, 300);
+    if (!data || !identificativo || giaDentro.has(identificativo)) continue;
 
-  if (soloAnteprima) {
-    const date = nuovi.map((i) => i.data).sort();
-    return NextResponse.json({
-      anteprima: true,
-      totaleNelFile,
-      daImportare: nuovi.length,
-      giaPresenti: impegni.length - nuovi.length,
-      ricorrenti,
-      primaData: date[0] ?? null,
-      ultimaData: date[date.length - 1] ?? null,
-      esempi: nuovi.slice(0, 5).map((i) => ({ titolo: i.titolo, data: i.data, ora: i.ora_inizio })),
+    const note = testoBreve(i.note, 4000);
+    const tuttoIlGiorno = i.all_day === true;
+    righe.push({
+      studio_id: contesto.studioId,
+      titolo: testoBreve(i.titolo, 300) ?? '(senza titolo)',
+      // Google non distingue un'udienza da un pranzo: entrano tutti come
+      // "Attività", e il tipo giusto si mette dopo, sui pochi che contano.
+      tipo: 'altro',
+      data,
+      ora_inizio: tuttoIlGiorno ? null : oraValida(i.ora_inizio),
+      ora_fine: tuttoIlGiorno ? null : oraValida(i.ora_fine),
+      all_day: tuttoIlGiorno,
+      luogo: testoBreve(i.luogo, 500),
+      note: i.ricorrente === true
+        ? [note, '(impegno ricorrente: importata solo la prima data)'].filter(Boolean).join('\n\n')
+        : note,
+      google_event_id: identificativo,
     });
   }
 
-  const righe = nuovi.map((i) => ({
-    studio_id: contesto.studioId,
-    titolo: i.titolo,
-    // Google non distingue un'udienza da un pranzo: entrano tutti come
-    // "Attività", e il tipo giusto si mette dopo, sui pochi che contano.
-    tipo: 'altro',
-    data: i.data,
-    ora_inizio: i.ora_inizio,
-    ora_fine: i.ora_fine,
-    all_day: i.all_day,
-    luogo: i.luogo,
-    note: i.ricorrente
-      ? [i.note, '(impegno ricorrente: importata solo la prima data)'].filter(Boolean).join('\n\n')
-      : i.note,
-    google_event_id: i.uid,
-  }));
-
-  // A blocchi: un singolo insert da migliaia di righe va in timeout.
-  let inseriti = 0;
-  for (let i = 0; i < righe.length; i += 500) {
-    const blocco = righe.slice(i, i + 500);
-    const { error } = await supabase.from('eventi').insert(blocco);
-    if (error) {
-      return NextResponse.json(
-        { error: `Importazione interrotta dopo ${inseriti} impegni: ${error.message}` },
-        { status: 400 },
-      );
-    }
-    inseriti += blocco.length;
+  if (righe.length === 0) {
+    return NextResponse.json({ ok: true, importati: 0, saltati: inArrivo.length });
   }
+
+  const { error } = await supabase.from('eventi').insert(righe);
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
   return NextResponse.json({
     ok: true,
-    importati: inseriti,
-    giaPresenti: impegni.length - nuovi.length,
-    ricorrenti,
-    totaleNelFile,
+    importati: righe.length,
+    saltati: inArrivo.length - righe.length,
   });
 }

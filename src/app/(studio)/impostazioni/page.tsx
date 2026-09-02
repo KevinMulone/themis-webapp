@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_PRATICA, labelFromOptions } from '@/lib/constants';
+import { leggiIcs, type ImpegnoImportato as ImpegnoLetto } from '@/lib/calendario/leggiIcs';
 
 type Template = { id: string; nome: string; categoria: string | null; descrizione: string | null; studio_id: string | null };
 type Settings = { font_family: string; font_size_pt: number; line_spacing: number };
@@ -110,10 +111,11 @@ export default function ImpostazioniPage() {
   const [googleImportoMsg, setGoogleImportoMsg] = useState('');
 
   type AnteprimaIcs = {
-    totaleNelFile: number; daImportare: number; giaPresenti: number; ricorrenti: number;
+    totaleNelFile: number; daImportare: number; ricorrenti: number;
     primaData: string | null; ultimaData: string | null;
     esempi: { titolo: string; data: string; ora: string | null }[];
   };
+  const [migrDaImportare, setMigrDaImportare] = useState<ImpegnoLetto[]>([]);
   const [migrFile, setMigrFile] = useState<File | null>(null);
   const [migrDa, setMigrDa] = useState(() => {
     const d = new Date(); d.setMonth(d.getMonth() - 1);
@@ -124,27 +126,99 @@ export default function ImpostazioniPage() {
   const [migrMsg, setMigrMsg] = useState('');
   const migrRef = useRef<HTMLInputElement>(null);
 
-  async function chiamaImportIcs(anteprima: boolean) {
-    if (!migrFile) return;
+  /**
+   * Legge il file nel browser. Il calendario completo di un avvocato
+   * contiene anche la sua vita privata: così non lascia mai il computer,
+   * e viaggia soltanto ciò che ha scelto di importare.
+   */
+  async function leggiFileMigrazione(): Promise<ImpegnoLetto[]> {
+    if (!migrFile) return [];
+    const nome = migrFile.name.toLowerCase();
+    let testi: string[] = [];
+
+    if (nome.endsWith('.zip')) {
+      const JSZip = (await import('jszip')).default;
+      const zip = await JSZip.loadAsync(await migrFile.arrayBuffer());
+      const dentro = Object.values(zip.files).filter((f) => !f.dir && f.name.toLowerCase().endsWith('.ics'));
+      if (dentro.length === 0) throw new Error('Nello zip non c’è nessun file .ics');
+      testi = await Promise.all(dentro.map((f) => f.async('string')));
+    } else {
+      testi = [await migrFile.text()];
+    }
+
+    let letti: ImpegnoLetto[] = [];
+    for (const t of testi) {
+      if (t.includes('BEGIN:VCALENDAR')) letti = letti.concat(leggiIcs(t));
+    }
+    return letti;
+  }
+
+  async function handleMigrAnteprima() {
     setMigrInCorso(true);
     setMigrMsg('');
-    const form = new FormData();
-    form.append('file', migrFile);
-    form.append('da', migrDa);
-    if (anteprima) form.append('anteprima', 'sì');
-    const res = await fetch('/api/calendario/importa-ics', { method: 'POST', body: form });
-    const b = await res.json().catch(() => ({ error: 'Risposta non leggibile' }));
-    setMigrInCorso(false);
-    if (!res.ok) { setMigrAnteprima(null); setMigrMsg(b.error || 'Importazione non riuscita'); return; }
-    if (anteprima) { setMigrAnteprima(b); return; }
     setMigrAnteprima(null);
-    setMigrFile(null);
-    if (migrRef.current) migrRef.current.value = '';
-    setMigrMsg(
-      `Importati ${b.importati} impegni nel calendario di Themis.`
-      + (b.giaPresenti ? ` ${b.giaPresenti} erano già presenti e sono stati saltati.` : '')
-      + (b.ricorrenti ? ` ${b.ricorrenti} erano ricorrenti: ne è stata importata solo la prima data.` : ''),
-    );
+    try {
+      const letti = await leggiFileMigrazione();
+      if (letti.length === 0) { setMigrMsg('Nel file non risultano impegni leggibili.'); return; }
+      const scelti = letti.filter((i) => !migrDa || i.data >= migrDa);
+      const date = scelti.map((i) => i.data).sort();
+      setMigrDaImportare(scelti);
+      setMigrAnteprima({
+        totaleNelFile: letti.length,
+        daImportare: scelti.length,
+        ricorrenti: scelti.filter((i) => i.ricorrente).length,
+        primaData: date[0] ?? null,
+        ultimaData: date[date.length - 1] ?? null,
+        esempi: scelti.slice(0, 5).map((i) => ({ titolo: i.titolo, data: i.data, ora: i.ora_inizio })),
+      });
+    } catch (e) {
+      setMigrMsg(e instanceof Error ? e.message : 'Il file non si riesce a leggere');
+    } finally {
+      setMigrInCorso(false);
+    }
+  }
+
+  async function handleMigrImporta() {
+    setMigrInCorso(true);
+    setMigrMsg('');
+    let importati = 0;
+    let saltati = 0;
+    try {
+      // A blocchi: una sola richiesta con migliaia di impegni supererebbe
+      // il limite di 4,5 MB che Vercel impone e che non si può alzare.
+      for (let i = 0; i < migrDaImportare.length; i += 400) {
+        const blocco = migrDaImportare.slice(i, i + 400);
+        const res = await fetch('/api/calendario/importa-ics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ impegni: blocco }),
+        });
+        const b = await res.json().catch(() => null);
+        if (!res.ok || !b) {
+          setMigrMsg(
+            (b?.error || `Importazione interrotta (errore ${res.status})`)
+            + (importati ? ` — ${importati} impegni erano già stati importati.` : ''),
+          );
+          return;
+        }
+        importati += b.importati;
+        saltati += b.saltati;
+      }
+      const ricorrenti = migrDaImportare.filter((i) => i.ricorrente).length;
+      setMigrAnteprima(null);
+      setMigrDaImportare([]);
+      setMigrFile(null);
+      if (migrRef.current) migrRef.current.value = '';
+      setMigrMsg(
+        `Importati ${importati} impegni nel calendario di Themis.`
+        + (saltati ? ` ${saltati} erano già presenti e sono stati saltati.` : '')
+        + (ricorrenti ? ` ${ricorrenti} erano ricorrenti: ne è stata importata solo la prima data.` : ''),
+      );
+    } catch {
+      setMigrMsg('Importazione non riuscita: controlla la connessione e riprova.');
+    } finally {
+      setMigrInCorso(false);
+    }
   }
 
   const [icsToken, setIcsToken] = useState<string | null>(null);
@@ -906,7 +980,7 @@ export default function ImpostazioniPage() {
               />
             </div>
             <button
-              type="button" onClick={() => chiamaImportIcs(true)} disabled={!migrFile || migrInCorso}
+              type="button" onClick={handleMigrAnteprima} disabled={!migrFile || migrInCorso}
               className="premi rounded-full bg-neutral-100 px-3.5 py-2 text-xs font-medium text-neutral-700 hover:bg-neutral-200 disabled:opacity-50"
             >
               {migrInCorso ? 'Lettura...' : 'Guarda cosa contiene'}
@@ -917,8 +991,7 @@ export default function ImpostazioniPage() {
             <div className="mt-3 rounded-lg bg-neutral-50 p-3">
               {migrAnteprima.daImportare === 0 ? (
                 <p className="text-xs text-neutral-600">
-                  Nessun impegno nuovo da importare in questo intervallo
-                  {migrAnteprima.giaPresenti > 0 && ` (${migrAnteprima.giaPresenti} risultano già importati)`}.
+                  Nessun impegno in questo intervallo: prova una data d&rsquo;inizio precedente.
                 </p>
               ) : (
                 <>
@@ -930,7 +1003,6 @@ export default function ImpostazioniPage() {
                   </p>
                   <p className="mt-1 text-[11px] text-neutral-500">
                     Il file ne contiene {migrAnteprima.totaleNelFile} in tutto
-                    {migrAnteprima.giaPresenti > 0 && `, ${migrAnteprima.giaPresenti} già importati in precedenza`}
                     {migrAnteprima.ricorrenti > 0 && `, ${migrAnteprima.ricorrenti} ricorrenti (entra solo la prima data)`}.
                     Entrano tutti come tipo &quot;Attività&quot;: il tipo giusto si mette dopo, sui pochi che contano.
                   </p>
@@ -940,7 +1012,7 @@ export default function ImpostazioniPage() {
                     ))}
                   </ul>
                   <button
-                    type="button" onClick={() => chiamaImportIcs(false)} disabled={migrInCorso}
+                    type="button" onClick={handleMigrImporta} disabled={migrInCorso}
                     className="premi mt-3 rounded-full bg-bordeaux-700 px-4 py-2 text-xs font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
                   >
                     {migrInCorso ? 'Importazione...' : `Importa ${migrAnteprima.daImportare} impegni`}
