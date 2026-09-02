@@ -24,8 +24,14 @@ type DatiAvvocato = {
 };
 type Documento = { id: string; nome_file: string; data_generazione: string };
 
+/** Un file .p7m è, per definizione, una busta di firma CAdES: il segno più
+ * affidabile che quel documento è già stato firmato digitalmente. */
+function eFirmato(nomeFile: string): boolean {
+  return nomeFile.toLowerCase().endsWith('.p7m');
+}
+
 /** Una riga del prontuario: etichetta, valore, e un bottone per copiarlo da solo. */
-function Riga({ etichetta, valore, assente }: { etichetta: string; valore: string; assente?: string }) {
+function Riga({ etichetta, valore, assente, firmato }: { etichetta: string; valore: string; assente?: string; firmato?: boolean }) {
   const [copiato, setCopiato] = useState(false);
   const vuoto = !valore.trim();
   async function copia() {
@@ -37,8 +43,11 @@ function Riga({ etichetta, valore, assente }: { etichetta: string; valore: strin
     <div className="flex items-center justify-between gap-3 py-1.5">
       <div className="min-w-0">
         <div className="text-[11px] text-neutral-500">{etichetta}</div>
-        <div className={`truncate text-sm ${vuoto ? 'italic text-amber-600' : 'text-neutral-900'}`}>
-          {vuoto ? (assente || 'da compilare') : valore}
+        <div className={`flex items-center gap-2 truncate text-sm ${vuoto ? 'italic text-amber-600' : 'text-neutral-900'}`}>
+          <span className="truncate">{vuoto ? (assente || 'da compilare') : valore}</span>
+          {firmato && (
+            <span className="shrink-0 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700">Firmato</span>
+          )}
         </div>
       </div>
       {!vuoto && (
@@ -116,8 +125,9 @@ function ProntuarioTesto({ matter, cliente, indirizzoCliente, nomeAvvocato, avvo
   );
 }
 
-export default function PreparaDeposito({ matterId, clientId, matter, documenti }: {
+export default function PreparaDeposito({ matterId, clientId, matter, documenti, onDocumentiCambiati }: {
   matterId: string; clientId: string; matter: MatterInfo; documenti: Documento[];
+  onDocumentiCambiati?: () => void;
 }) {
   const supabase = createClient();
   const { studioId, nomeStudio } = useStudio();
@@ -128,6 +138,8 @@ export default function PreparaDeposito({ matterId, clientId, matter, documenti 
   const [allegatiIds, setAllegatiIds] = useState<string[]>([]);
   const [preparando, setPreparando] = useState(false);
   const [errore, setErrore] = useState('');
+  const [caricandoFirmati, setCaricandoFirmati] = useState(false);
+  const [erroreFirmati, setErroreFirmati] = useState('');
 
   useEffect(() => {
     (async () => {
@@ -174,6 +186,38 @@ export default function PreparaDeposito({ matterId, clientId, matter, documenti 
       URL.revokeObjectURL(url);
     } finally {
       setPreparando(false);
+    }
+  }
+
+  /**
+   * Ricarica in Themis i file già firmati fuori di qui (Dike, ArubaSign,
+   * o la firma di SLpct stesso). Non firma nulla — la chiave resta sempre
+   * nella chiavetta del difensore — si limita ad aggiungerli al fascicolo
+   * come nuovi documenti, accanto agli originali non firmati e non al loro
+   * posto: perdere l'originale per un caricamento fallito a metà sarebbe
+   * peggio che tenerne uno di troppo.
+   */
+  async function handleCaricaFirmati(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files;
+    if (!file || file.length === 0) return;
+    setErroreFirmati('');
+    setCaricandoFirmati(true);
+    try {
+      for (const f of Array.from(file)) {
+        const form = new FormData();
+        form.append('file', f);
+        form.append('matter_id', matterId);
+        const res = await fetch('/api/documenti/upload', { method: 'POST', body: form });
+        if (!res.ok) {
+          const b = await res.json().catch(() => ({ error: 'Errore caricamento' }));
+          setErroreFirmati(`"${f.name}": ${b.error || 'errore di caricamento'}`);
+          return;
+        }
+      }
+      onDocumentiCambiati?.();
+    } finally {
+      setCaricandoFirmati(false);
+      e.target.value = '';
     }
   }
 
@@ -269,7 +313,9 @@ export default function PreparaDeposito({ matterId, clientId, matter, documenti 
           {documenti.length === 0 ? (
             <p className="py-1.5 text-sm text-neutral-500">Nessun documento caricato in questa pratica.</p>
           ) : (
-            documenti.map((d) => <Riga key={d.id} etichetta={formatDateIt(d.data_generazione?.slice(0, 10))} valore={d.nome_file} />)
+            documenti.map((d) => (
+              <Riga key={d.id} etichetta={formatDateIt(d.data_generazione?.slice(0, 10))} valore={d.nome_file} firmato={eFirmato(d.nome_file)} />
+            ))
           )}
         </Sezione>
 
@@ -298,6 +344,9 @@ export default function PreparaDeposito({ matterId, clientId, matter, documenti 
                       onChange={() => setAttoId(d.id)}
                     />
                     <span className="truncate">{d.nome_file}</span>
+                    {eFirmato(d.nome_file) && (
+                      <span className="shrink-0 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700">Firmato</span>
+                    )}
                   </label>
                   <label className="flex shrink-0 items-center gap-1.5 text-xs text-neutral-500">
                     <input
@@ -324,6 +373,25 @@ export default function PreparaDeposito({ matterId, clientId, matter, documenti 
             </div>
           </>
         )}
+      </div>
+
+      <div className="mt-5 rounded-lg bg-white p-4">
+        <div className="mb-1 flex items-center gap-2">
+          <Icon nome="lucchetto" className="h-4 w-4 text-neutral-400" />
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+            Ricarica i file firmati
+          </div>
+        </div>
+        <p className="mb-3 text-xs text-neutral-500">
+          Dopo aver firmato atto e allegati con la tua chiavetta (in Dike, ArubaSign o SLpct), ricarica qui
+          i file firmati (<code>.p7m</code>): restano nella pratica accanto agli originali, come prova.
+          Themis non firma nulla — la chiave non lascia mai il tuo computer.
+        </p>
+        <label className="premi inline-flex cursor-pointer items-center gap-2 rounded-full bg-neutral-100 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200">
+          {caricandoFirmati ? 'Caricamento...' : '+ Carica file firmati'}
+          <input type="file" multiple className="hidden" onChange={handleCaricaFirmati} disabled={caricandoFirmati} />
+        </label>
+        {erroreFirmati && <p className="mt-2 text-xs text-red-600">{erroreFirmati}</p>}
       </div>
     </div>
   );

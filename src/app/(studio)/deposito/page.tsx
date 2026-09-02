@@ -63,14 +63,18 @@ export default function DepositoPage() {
     });
   }, [matters, cerca]);
 
-  async function selezionaPratica(m: Matter) {
-    setSelezionata(m);
+  async function caricaDocumenti(matterId: string) {
     setCaricandoDocumenti(true);
     const { data } = await supabase
       .from('documenti').select('id, nome_file, data_generazione')
-      .eq('matter_id', m.id).order('data_generazione', { ascending: false });
+      .eq('matter_id', matterId).order('data_generazione', { ascending: false });
     setDocumenti(data || []);
     setCaricandoDocumenti(false);
+  }
+
+  async function selezionaPratica(m: Matter) {
+    setSelezionata(m);
+    await caricaDocumenti(m.id);
   }
 
   return (
@@ -117,6 +121,7 @@ export default function DepositoPage() {
                 controparte_nome: selezionata.controparte_nome, data_apertura: selezionata.data_apertura,
               }}
               documenti={documenti}
+              onDocumentiCambiati={() => caricaDocumenti(selezionata.id)}
             />
           )}
         </>
