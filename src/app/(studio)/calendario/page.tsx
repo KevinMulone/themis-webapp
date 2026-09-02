@@ -398,7 +398,7 @@ export default function CalendarioPage() {
                     <div
                       key={i}
                       onClick={() => apriNuovoEvento(iso, '')}
-                      className={`min-h-24 cursor-pointer bg-white p-1.5 text-xs ${c.otherMonth ? 'opacity-40' : ''} ${iso === todayIso ? 'ring-2 ring-inset ring-bordeaux-700' : ''}`}
+                      className={`min-h-24 min-w-0 cursor-pointer overflow-hidden bg-white p-1.5 text-xs ${c.otherMonth ? 'opacity-40' : ''} ${iso === todayIso ? 'ring-2 ring-inset ring-bordeaux-700' : ''}`}
                     >
                       <div className={`mb-1 font-semibold ${iso === todayIso ? 'text-bordeaux-700' : 'text-neutral-700'}`}>
                         {c.date.getDate()}
@@ -409,7 +409,7 @@ export default function CalendarioPage() {
                           <div
                             key={ev.id}
                             onClick={(e) => { e.stopPropagation(); setDetail(ev); }}
-                            className={`mb-1 truncate rounded border px-1 py-0.5 ${col.blocco} ${col.testo}`}
+                            className={`mb-1 min-w-0 truncate rounded border px-1 py-0.5 ${col.blocco} ${col.testo}`}
                             title={ev.titolo}
                           >
                             {!ev.all_day && ev.ora_inizio && `${ev.ora_inizio.slice(0, 5)} `}{ev.titolo}
@@ -420,7 +420,7 @@ export default function CalendarioPage() {
                         <div
                           key={a.id}
                           onClick={(e) => { e.stopPropagation(); setAppointmentDetail(a); }}
-                          className={`mb-1 truncate rounded border px-1 py-0.5 ${a.stato === 'in_attesa' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}
+                          className={`mb-1 min-w-0 truncate rounded border px-1 py-0.5 ${a.stato === 'in_attesa' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}
                           title={`${a.stato === 'in_attesa' ? 'In attesa: ' : ''}${a.nome_cliente || 'Prenotazione'}`}
                         >
                           {a.ora_inizio.slice(0, 5)} {a.stato === 'in_attesa' ? '· ' : ''}{a.nome_cliente || 'Prenotazione'}
@@ -485,7 +485,7 @@ export default function CalendarioPage() {
                           <div
                             key={iso}
                             onClick={() => apriNuovoEvento(iso, ora)}
-                            className={`min-h-11 cursor-pointer border-l border-neutral-100 p-0.5 ${fuoriOrario ? 'bg-neutral-50 hover:bg-neutral-100' : 'bg-white hover:bg-bordeaux-50'}`}
+                            className={`min-h-11 min-w-0 cursor-pointer overflow-hidden border-l border-neutral-100 p-0.5 ${fuoriOrario ? 'bg-neutral-50 hover:bg-neutral-100' : 'bg-white hover:bg-bordeaux-50'}`}
                           >
                             {slotEventi.map((ev) => {
                               const col = colore(ev.tipo);
@@ -493,7 +493,7 @@ export default function CalendarioPage() {
                                 <div
                                   key={ev.id}
                                   onClick={(e) => { e.stopPropagation(); setDetail(ev); }}
-                                  className={`mb-0.5 rounded border p-1 text-[11px] leading-tight ${col.blocco}`}
+                                  className={`mb-0.5 min-w-0 rounded border p-1 text-[11px] leading-tight ${col.blocco}`}
                                   title={ev.titolo}
                                 >
                                   <span className={`block font-semibold ${col.testo}`}>
@@ -510,7 +510,7 @@ export default function CalendarioPage() {
                               <div
                                 key={a.id}
                                 onClick={(e) => { e.stopPropagation(); setAppointmentDetail(a); }}
-                                className={`mb-0.5 truncate rounded border px-1 py-0.5 text-[11px] ${a.stato === 'in_attesa' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}
+                                className={`mb-0.5 min-w-0 truncate rounded border px-1 py-0.5 text-[11px] ${a.stato === 'in_attesa' ? 'border-amber-200 bg-amber-50 text-amber-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}
                                 title={`${a.stato === 'in_attesa' ? 'In attesa: ' : ''}${a.nome_cliente || 'Prenotazione'}`}
                               >
                                 {a.ora_inizio.slice(0, 5)} {a.nome_cliente || 'Prenotazione'}
