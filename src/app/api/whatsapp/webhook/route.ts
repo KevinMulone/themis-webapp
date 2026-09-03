@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   }
 
   const corpo = await request.json().catch(() => null);
-  const { studioId, from, text, waMessageId } = corpo ?? {};
+  const { studioId, from, text, waMessageId, pushName } = corpo ?? {};
   if (typeof studioId !== 'string' || typeof from !== 'string'
     || typeof text !== 'string' || typeof waMessageId !== 'string') {
     return NextResponse.json({ error: 'Messaggio malformato' }, { status: 400 });
@@ -48,8 +48,6 @@ export async function POST(request: Request) {
   }
 
   const cifrato = encryptBuffer(Buffer.from(text, 'utf-8'), studioId).toString('base64');
-  console.log(`[diagnostica cifratura] scope="${studioId}" testoLen=${text.length} `
-    + `base64Len=${cifrato.length} inizioBase64="${cifrato.slice(0, 12)}"`);
 
   const { error } = await admin.from('whatsapp_messaggi').insert({
     studio_id: studioId,
@@ -60,6 +58,7 @@ export async function POST(request: Request) {
     matter_id: matterId,
     stato_match: trovato ? 'abbinato' : 'non_riconosciuto',
     testo_cifrato: cifrato,
+    nome_whatsapp: typeof pushName === 'string' && pushName.trim() ? pushName.trim().slice(0, 200) : null,
     direzione: 'in',
   });
 

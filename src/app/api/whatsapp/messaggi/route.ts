@@ -14,7 +14,7 @@ export const runtime = 'nodejs';
 type RigaMessaggio = {
   id: string; jid_mittente: string; testo_cifrato: string;
   direzione: 'in' | 'out'; stato_match: 'abbinato' | 'non_riconosciuto';
-  cliente_id: string | null; matter_id: string | null; ricevuto_il: string;
+  cliente_id: string | null; matter_id: string | null; ricevuto_il: string; nome_whatsapp: string | null;
   clients: { nome: string | null; cognome: string | null; ragione_sociale: string | null }
     | { nome: string | null; cognome: string | null; ragione_sociale: string | null }[] | null;
 };
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
   const base = admin
     .from('whatsapp_messaggi')
     .select('id, jid_mittente, testo_cifrato, direzione, stato_match, cliente_id, matter_id, ricevuto_il, '
-      + 'clients(nome, cognome, ragione_sociale)')
+      + 'nome_whatsapp, clients(nome, cognome, ragione_sociale)')
     .eq('studio_id', contesto.studioId);
 
   const { data, error } = (soloNonRiconosciuti
@@ -52,9 +52,8 @@ export async function GET(request: Request) {
     try {
       testo = decryptBuffer(Buffer.from(m.testo_cifrato, 'base64'), studioId).toString('utf-8');
     } catch (errore) {
-      console.error(`[diagnostica cifratura] non decifrabile ${m.id} scope="${studioId}" `
-        + `base64Len=${m.testo_cifrato.length} inizioBase64="${m.testo_cifrato.slice(0, 12)}" — `
-        + (errore instanceof Error ? errore.message : errore));
+      console.error('Messaggio WhatsApp non decifrabile', m.id, '—',
+        errore instanceof Error ? errore.message : errore);
       // Un blob non decifrabile non deve far sparire l'intero elenco: si
       // mostra un segnaposto e si prosegue con gli altri messaggi.
     }
@@ -63,9 +62,13 @@ export async function GET(request: Request) {
       id: m.id, jidMittente: m.jid_mittente, testo, direzione: m.direzione,
       statoMatch: m.stato_match, clienteId: m.cliente_id, matterId: m.matter_id,
       ricevutoIl: m.ricevuto_il,
+      // Il nome del cliente Themis vince sempre: è verificato dallo studio.
+      // Il nome WhatsApp è solo un ripiego migliore del numero nudo, per i
+      // contatti non ancora abbinati.
       clienteNome: cliente
         ? [cliente.cognome, cliente.nome].filter(Boolean).join(' ') || cliente.ragione_sociale
         : null,
+      nomeWhatsapp: m.nome_whatsapp,
     };
   });
 

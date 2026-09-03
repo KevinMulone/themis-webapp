@@ -152,6 +152,10 @@ export async function avviaSessione(studioId: string): Promise<Sessione> {
         from: m.key.remoteJid,
         text: testo,
         waMessageId: m.key.id,
+        // Il nome con cui il mittente si è presentato su WhatsApp — non è
+        // detto corrisponda al nome vero, ma è meglio del solo numero
+        // finché il messaggio non è collegato a un cliente.
+        pushName: m.pushName || null,
         timestampMs: m.messageTimestamp ? Number(m.messageTimestamp) * 1000 : Date.now(),
       }).catch((e) => console.error('Invio al webhook fallito:', e));
     }

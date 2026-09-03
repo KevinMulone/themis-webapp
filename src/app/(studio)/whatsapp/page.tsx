@@ -9,8 +9,17 @@ import WhatsappProposte from './WhatsappProposte';
 type Messaggio = {
   id: string; jidMittente: string; testo: string; direzione: 'in' | 'out';
   statoMatch: 'abbinato' | 'non_riconosciuto'; clienteId: string | null; matterId: string | null;
-  ricevutoIl: string; clienteNome: string | null;
+  ricevutoIl: string; clienteNome: string | null; nomeWhatsapp: string | null;
 };
+
+/** Il nome del cliente Themis vince sempre; il nome che il mittente ha
+ *  impostato su WhatsApp è un ripiego migliore del numero nudo per i
+ *  contatti non ancora abbinati; il numero resta l'ultima risorsa. */
+function nomeConversazione(msgs: Messaggio[], jid: string): string {
+  return msgs.find((m) => m.clienteNome)?.clienteNome
+    || msgs.find((m) => m.nomeWhatsapp)?.nomeWhatsapp
+    || jid.split('@')[0];
+}
 
 type ClienteOpzione = { id: string; label: string };
 
@@ -183,7 +192,7 @@ export default function WhatsappPage() {
             <ul>
               {conversazioni.map(({ jid, messaggi: msgs }) => {
                 const ultimo = msgs[msgs.length - 1];
-                const nome = msgs.find((m) => m.clienteNome)?.clienteNome || jid.split('@')[0];
+                const nome = nomeConversazione(msgs, jid);
                 return (
                   <li key={jid}>
                     <button
@@ -218,7 +227,7 @@ export default function WhatsappPage() {
             <>
               <div className="border-b border-neutral-200 px-5 py-3">
                 <p className="text-sm font-medium text-neutral-900">
-                  {aperta.messaggi.find((m) => m.clienteNome)?.clienteNome || aperta.jid.split('@')[0]}
+                  {nomeConversazione(aperta.messaggi, aperta.jid)}
                 </p>
                 <p className="text-xs text-neutral-400">{aperta.jid.split('@')[0]}</p>
               </div>
