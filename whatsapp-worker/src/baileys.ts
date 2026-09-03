@@ -63,6 +63,7 @@ async function inviaAlWebhook(payload: Record<string, unknown>): Promise<void> {
   // Un errore facile da fare incollando l'indirizzo: se manca lo schema,
   // fetch() fallisce con un messaggio poco chiaro. Meglio presumere https.
   const url = /^https?:\/\//.test(configurato) ? configurato : `https://${configurato}`;
+  console.log(`Chiamo il webhook: ${url}`);
   for (let tentativo = 1; tentativo <= 3; tentativo++) {
     try {
       const res = await fetch(url, {
@@ -70,8 +71,8 @@ async function inviaAlWebhook(payload: Record<string, unknown>): Promise<void> {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${segreto}` },
         body: JSON.stringify(payload),
       });
-      if (res.ok) return;
-      console.error(`Webhook Themis rifiutato (tentativo ${tentativo}/3): ${res.status}`);
+      if (res.ok) { console.log('Consegnato a Themis con successo.'); return; }
+      console.error(`Webhook Themis rifiutato (tentativo ${tentativo}/3): ${res.status} — ${await res.text().catch(() => '')}`);
     } catch (errore) {
       console.error(`Webhook Themis non raggiungibile (tentativo ${tentativo}/3):`, errore);
     }
@@ -108,6 +109,7 @@ export async function avviaSessione(studioId: string): Promise<Sessione> {
       s.avviando = false;
       // Il JID dell'account collegato è "<numero>:<device>@s.whatsapp.net".
       s.numero = socket.user?.id?.split(':')[0]?.split('@')[0] ?? null;
+      console.log(`[${studioId}] connesso al numero ${s.numero}`);
     }
 
     if (connection === 'close') {
@@ -115,6 +117,7 @@ export async function avviaSessione(studioId: string): Promise<Sessione> {
       s.avviando = false;
       const codice = (lastDisconnect?.error as Boom | undefined)?.output?.statusCode;
       const disconnessioneDefinitiva = codice === DisconnectReason.loggedOut;
+      console.log(`[${studioId}] connessione chiusa (codice ${codice ?? '?'}, definitiva: ${disconnessioneDefinitiva})`);
 
       if (disconnessioneDefinitiva) {
         // Sessione revocata dal telefono, o mai davvero completata: le
@@ -133,13 +136,17 @@ export async function avviaSessione(studioId: string): Promise<Sessione> {
   });
 
   socket.ev.on('messages.upsert', ({ messages, type }) => {
+    console.log(`[${studioId}] messages.upsert: tipo=${type}, quanti=${messages.length}`);
     if (type !== 'notify') return;
     for (const m of messages) {
+      console.log(`[${studioId}]   messaggio: da=${m.key.remoteJid} fromMe=${m.key.fromMe} `
+        + `haTesto=${!!(m.message?.conversation || m.message?.extendedTextMessage?.text)}`);
       // Niente messaggi mandati da noi stessi, niente gruppi: in v1 legge
       // solo la chat diretta col cliente.
       if (m.key.fromMe || !m.key.remoteJid || m.key.remoteJid.endsWith('@g.us')) continue;
       const testo = m.message?.conversation || m.message?.extendedTextMessage?.text || '';
       if (!testo.trim()) continue;
+      console.log(`[${studioId}]   inoltro a Themis: "${testo.slice(0, 40)}"`);
       inviaAlWebhook({
         studioId,
         from: m.key.remoteJid,
