@@ -21,8 +21,10 @@ import { pino } from 'pino';
 import QRCode from 'qrcode';
 import makeWASocket, {
   useMultiFileAuthState,
+  downloadMediaMessage,
   DisconnectReason,
   type WASocket,
+  type WAMessage,
 } from '@whiskeysockets/baileys';
 
 export type StatoStudio = 'disconnesso' | 'in_attesa_qr' | 'connesso';
@@ -102,8 +104,84 @@ async function inviaStatoAlWebhook(payload: Record<string, unknown>): Promise<vo
   }
 }
 
-/** Il testo di un messaggio Baileys, dove c'è — niente immagini, audio o
- *  documenti in questa prima versione: solo il testo. */
+/** Manda a Themis un documento o un'immagine ricevuti. Stesso schema
+ *  degli altri due webhook, indirizzo ancora diverso: qui il corpo della
+ *  richiesta contiene un file, non del testo o un aggiornamento di stato. */
+async function inviaDocumentoAlWebhook(payload: Record<string, unknown>): Promise<void> {
+  const configurato = process.env.VERCEL_WEBHOOK_URL;
+  const segreto = process.env.WHATSAPP_WORKER_SECRET;
+  if (!configurato || !segreto) {
+    console.error('VERCEL_WEBHOOK_URL o WHATSAPP_WORKER_SECRET non configurati: documento perso.');
+    return;
+  }
+  const base = /^https?:\/\//.test(configurato) ? configurato : `https://${configurato}`;
+  const url = base.replace(/\/webhook\/?$/, '/webhook-documento');
+  for (let tentativo = 1; tentativo <= 2; tentativo++) {
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${segreto}` },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) { console.log('Documento consegnato a Themis con successo.'); return; }
+      console.error(`Webhook documento rifiutato (tentativo ${tentativo}/2): ${res.status} — ${await res.text().catch(() => '')}`);
+    } catch (errore) {
+      console.error(`Webhook documento non raggiungibile (tentativo ${tentativo}/2):`, errore);
+    }
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+  console.error('Documento non consegnato a Themis dopo 2 tentativi.');
+}
+
+/** Scarica un documento o un'immagine ricevuti e li manda a Themis. Un
+ *  file troppo grande viene scartato prima ancora di scaricarlo — inutile
+ *  spendere banda per un file che verrebbe comunque rifiutato dal limite
+ *  di Vercel sul corpo della richiesta. */
+const MASSIMO_BYTE_DOCUMENTO = 3 * 1024 * 1024;
+
+async function gestisciDocumento(studioId: string, m: WAMessage): Promise<void> {
+  const doc = m.message?.documentMessage;
+  const img = m.message?.imageMessage;
+  const parte = doc ?? img;
+  if (!parte || !m.key.remoteJid || !m.key.id) return;
+
+  const dimensione = Number(parte.fileLength ?? 0);
+  if (dimensione > 0 && dimensione > MASSIMO_BYTE_DOCUMENTO) {
+    console.log(`[${studioId}] documento troppo grande (${dimensione} byte), saltato`);
+    return;
+  }
+
+  let buffer: Buffer;
+  try {
+    buffer = (await downloadMediaMessage(m, 'buffer', {})) as Buffer;
+  } catch (errore) {
+    console.error(`[${studioId}] scaricamento documento non riuscito:`, errore);
+    return;
+  }
+  if (buffer.length > MASSIMO_BYTE_DOCUMENTO) {
+    console.log(`[${studioId}] documento troppo grande dopo lo scaricamento (${buffer.length} byte), saltato`);
+    return;
+  }
+
+  const mimeType = parte.mimetype || 'application/octet-stream';
+  const nomeFile = doc?.fileName
+    || `immagine-${Date.now()}.${mimeType.includes('/') ? mimeType.split('/')[1] : 'jpg'}`;
+
+  console.log(`[${studioId}] documento ricevuto: ${nomeFile} (${buffer.length} byte)`);
+  await inviaDocumentoAlWebhook({
+    studioId,
+    from: m.key.remoteJid,
+    waMessageId: m.key.id,
+    pushName: m.pushName || null,
+    timestampMs: m.messageTimestamp ? Number(m.messageTimestamp) * 1000 : Date.now(),
+    fileName: nomeFile,
+    mimeType,
+    caption: parte.caption || null,
+    fileBase64: buffer.toString('base64'),
+  });
+}
+
+/** Il testo di un messaggio Baileys, dove c'è. */
 function testoMessaggio(m: { message?: unknown }): string {
   const msg = m.message as { conversation?: string; extendedTextMessage?: { text?: string } } | undefined;
   return msg?.conversation || msg?.extendedTextMessage?.text || '';
@@ -177,7 +255,15 @@ export async function avviaSessione(studioId: string): Promise<Sessione> {
       // cliente.
       if (m.key.fromMe || !m.key.remoteJid || m.key.remoteJid.endsWith('@g.us')) continue;
       const testo = testoMessaggio(m);
-      if (!testo.trim()) continue;
+      if (!testo.trim()) {
+        // Nessun testo: potrebbe essere un documento o un'immagine.
+        // Qualunque altro tipo (audio, video, sticker...) resta fuori
+        // da questa prima versione.
+        if (m.message?.documentMessage || m.message?.imageMessage) {
+          gestisciDocumento(studioId, m).catch((e) => console.error('Gestione documento fallita:', e));
+        }
+        continue;
+      }
       console.log(`[${studioId}]   inoltro a Themis: "${testo.slice(0, 40)}"`);
       inviaAlWebhook({
         studioId,

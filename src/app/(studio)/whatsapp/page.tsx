@@ -11,6 +11,7 @@ type Messaggio = {
   statoMatch: 'abbinato' | 'non_riconosciuto'; clienteId: string | null; matterId: string | null;
   ricevutoIl: string; clienteNome: string | null; nomeWhatsapp: string | null;
   statoInvio: 'inviato' | 'consegnato' | 'letto' | null;
+  documentoNome: string | null;
 };
 
 /** 1 spunta grigia (inviato) -> 2 grigie (consegnato) -> 2 blu (letto). */
@@ -277,6 +278,14 @@ export default function WhatsappPage() {
                         m.direzione === 'in' ? 'bg-white text-neutral-800' : 'bg-bordeaux-50 text-bordeaux-900'
                       }`}
                     >
+                      {m.documentoNome && (
+                        <a
+                          href={`/api/whatsapp/messaggi/${m.id}/documento`}
+                          className="premi mb-1 flex items-center gap-1.5 rounded-md bg-black/5 px-2 py-1.5 text-xs font-medium text-inherit underline decoration-dotted hover:bg-black/10"
+                        >
+                          📄 {m.documentoNome}
+                        </a>
+                      )}
                       <span className="whitespace-pre-wrap">{m.testo}</span>
                       <span className="ml-2 align-bottom text-[10px] text-neutral-400">{dataOraBreve(m.ricevutoIl)}</span>
                       {m.direzione === 'out' && <Spunte stato={m.statoInvio} />}

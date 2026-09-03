@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { encryptBuffer } from '@/lib/crypto/docEncryption';
-import { normalizzaNumero, numeroDaJid, numeriEquivalenti } from '@/lib/whatsapp/numero';
+import { normalizzaNumero, numeroDaJid } from '@/lib/whatsapp/numero';
+import { trovaClienteEPratica } from '@/lib/whatsapp/abbinamento';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -33,23 +34,7 @@ export async function POST(request: Request) {
 
   const admin = createAdminClient();
   const numero = numeroDaJid(from);
-
-  // Si cerca il cliente per numero fra quelli dello studio: clients.telefono
-  // è un campo libero scritto a mano, quindi il confronto passa da
-  // numeriEquivalenti (ultime 9 cifre), non da un'uguaglianza esatta.
-  const { data: clienti } = await admin
-    .from('clients').select('id, telefono').eq('studio_id', studioId).not('telefono', 'is', null);
-  const trovato = (clienti ?? []).find((c) => c.telefono && numeriEquivalenti(c.telefono, numero));
-
-  // Se il cliente è riconosciuto e ha UNA sola pratica non archiviata, il
-  // messaggio si aggancia subito anche a quella: indovinare fra due
-  // sarebbe sbagliare tanto quanto non collegare nulla.
-  let matterId: string | null = null;
-  if (trovato) {
-    const { data: pratiche } = await admin
-      .from('matters').select('id').eq('client_id', trovato.id).neq('stato', 'archiviata').limit(2);
-    if (pratiche && pratiche.length === 1) matterId = pratiche[0].id;
-  }
+  const { clienteId, matterId } = await trovaClienteEPratica(admin, studioId, numero);
 
   const cifrato = encryptBuffer(Buffer.from(text, 'utf-8'), studioId).toString('base64');
   const ricevutoIl = typeof timestampMs === 'number' && timestampMs > 0
@@ -60,9 +45,9 @@ export async function POST(request: Request) {
     wa_message_id: waMessageId,
     jid_mittente: from,
     numero_normalizzato: normalizzaNumero(numero),
-    cliente_id: trovato?.id ?? null,
+    cliente_id: clienteId,
     matter_id: matterId,
-    stato_match: trovato ? 'abbinato' : 'non_riconosciuto',
+    stato_match: clienteId ? 'abbinato' : 'non_riconosciuto',
     testo_cifrato: cifrato,
     nome_whatsapp: typeof pushName === 'string' && pushName.trim() ? pushName.trim().slice(0, 200) : null,
     direzione,

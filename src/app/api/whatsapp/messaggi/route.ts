@@ -15,7 +15,7 @@ type RigaMessaggio = {
   id: string; jid_mittente: string; testo_cifrato: string;
   direzione: 'in' | 'out'; stato_match: 'abbinato' | 'non_riconosciuto';
   cliente_id: string | null; matter_id: string | null; ricevuto_il: string; nome_whatsapp: string | null;
-  stato_invio: 'inviato' | 'consegnato' | 'letto' | null;
+  stato_invio: 'inviato' | 'consegnato' | 'letto' | null; documento_nome: string | null;
   clients: { nome: string | null; cognome: string | null; ragione_sociale: string | null }
     | { nome: string | null; cognome: string | null; ragione_sociale: string | null }[] | null;
 };
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
   const base = admin
     .from('whatsapp_messaggi')
     .select('id, jid_mittente, testo_cifrato, direzione, stato_match, cliente_id, matter_id, ricevuto_il, '
-      + 'nome_whatsapp, stato_invio, clients(nome, cognome, ragione_sociale)')
+      + 'nome_whatsapp, stato_invio, documento_nome, clients(nome, cognome, ragione_sociale)')
     .eq('studio_id', contesto.studioId);
 
   const { data, error } = (soloNonRiconosciuti
@@ -71,6 +71,7 @@ export async function GET(request: Request) {
         : null,
       nomeWhatsapp: m.nome_whatsapp,
       statoInvio: m.stato_invio,
+      documentoNome: m.documento_nome,
     };
   });
 
