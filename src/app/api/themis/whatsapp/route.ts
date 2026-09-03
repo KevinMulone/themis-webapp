@@ -26,6 +26,8 @@ REGISTRO:
 - Nessuna firma, nessun saluto di chiusura elaborato: è una chat, non una PEC.
 - Se manca un'informazione per rispondere con certezza, dillo chiaramente invece di essere vago.
 
+Se ricevi anche una "NOTA DEL DIFENSORE" (quello che l'avvocato ha già scritto nella casella, magari di getto, con abbreviazioni o punti sparsi): il compito cambia. Non stai più componendo una risposta da zero — stai STRUTTURANDO quella nota in un messaggio sensato. Il contenuto e le decisioni sono quelle della nota: non aggiungere argomenti che l'avvocato non ha menzionato, non ammorbidire o rafforzare quello che ha deciso di dire. Sistemi solo la forma — frasi complete, ordine logico, tono adeguato — a partire da quello che ha scritto lui.
+
 Rispondi SOLO con il testo del messaggio da inviare, senza introduzioni né commenti.`;
 
 export async function POST(request: Request) {
@@ -35,10 +37,11 @@ export async function POST(request: Request) {
   const contesto = await contestoStudio();
   if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
 
-  const { messaggioId } = await request.json();
+  const { messaggioId, bozza } = await request.json();
   if (typeof messaggioId !== 'string') {
     return NextResponse.json({ error: 'Manca il messaggio a cui rispondere' }, { status: 400 });
   }
+  const notaDifensore = typeof bozza === 'string' ? bozza.trim() : '';
 
   const credito = await creditoStudio(contesto.studioId, contesto.plan);
   if (credito.esaurito) {
@@ -107,7 +110,15 @@ export async function POST(request: Request) {
         content: [
           { type: 'text', text: `DATI DELLA PRATICA\n${scheda}` },
           { type: 'text', text: `CONVERSAZIONE WHATSAPP (dalla più vecchia alla più recente):\n${storico}` },
-          { type: 'text', text: 'Scrivi la risposta al messaggio più recente del cliente.' },
+          ...(notaDifensore
+            ? [{ type: 'text' as const, text: `NOTA DEL DIFENSORE (da strutturare in un messaggio):\n${notaDifensore}` }]
+            : []),
+          {
+            type: 'text',
+            text: notaDifensore
+              ? 'Struttura la nota del difensore in un messaggio pronto da inviare.'
+              : 'Scrivi la risposta al messaggio più recente del cliente.',
+          },
         ],
       }],
     }));

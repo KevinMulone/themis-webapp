@@ -141,7 +141,9 @@ export default function WhatsappPage() {
     setGenerando(jid);
     const res = await fetch('/api/themis/whatsapp', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messaggioId }),
+      // Quello che l'avvocato ha già scritto: se c'è, l'IA lo struttura
+      // invece di ignorarlo e proporne uno tutto suo.
+      body: JSON.stringify({ messaggioId, bozza: composizione[jid] || '' }),
     });
     const body = await res.json();
     setGenerando('');
