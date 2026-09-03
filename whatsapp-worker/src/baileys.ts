@@ -81,6 +81,34 @@ async function inviaAlWebhook(payload: Record<string, unknown>): Promise<void> {
   console.error('Messaggio non consegnato a Themis dopo 3 tentativi:', payload);
 }
 
+/** Manda a Themis un cambio di stato di un messaggio già spedito (1
+ *  spunta -> 2 grigie -> 2 blu). Stesso schema di inviaAlWebhook, ma su
+ *  un indirizzo diverso: sono due notizie di natura diversa, non ha senso
+ *  farle finire nella stessa forma. */
+async function inviaStatoAlWebhook(payload: Record<string, unknown>): Promise<void> {
+  const configurato = process.env.VERCEL_WEBHOOK_URL;
+  const segreto = process.env.WHATSAPP_WORKER_SECRET;
+  if (!configurato || !segreto) return;
+  const base = /^https?:\/\//.test(configurato) ? configurato : `https://${configurato}`;
+  const url = base.replace(/\/webhook\/?$/, '/webhook-stato');
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${segreto}` },
+      body: JSON.stringify(payload),
+    });
+  } catch (errore) {
+    console.error('Aggiornamento di stato non consegnato a Themis:', errore);
+  }
+}
+
+/** Il testo di un messaggio Baileys, dove c'è — niente immagini, audio o
+ *  documenti in questa prima versione: solo il testo. */
+function testoMessaggio(m: { message?: unknown }): string {
+  const msg = m.message as { conversation?: string; extendedTextMessage?: { text?: string } } | undefined;
+  return msg?.conversation || msg?.extendedTextMessage?.text || '';
+}
+
 export async function avviaSessione(studioId: string): Promise<Sessione> {
   const s = sessione(studioId);
   if (s.socket || s.avviando) return s;
@@ -140,11 +168,12 @@ export async function avviaSessione(studioId: string): Promise<Sessione> {
     if (type !== 'notify') return;
     for (const m of messages) {
       console.log(`[${studioId}]   messaggio: da=${m.key.remoteJid} fromMe=${m.key.fromMe} `
-        + `haTesto=${!!(m.message?.conversation || m.message?.extendedTextMessage?.text)}`);
-      // Niente messaggi mandati da noi stessi, niente gruppi: in v1 legge
-      // solo la chat diretta col cliente.
+        + `haTesto=${!!testoMessaggio(m)}`);
+      // Niente messaggi mandati da noi stessi (arrivano già registrati da
+      // /invia), niente gruppi: in v1 legge solo la chat diretta col
+      // cliente.
       if (m.key.fromMe || !m.key.remoteJid || m.key.remoteJid.endsWith('@g.us')) continue;
-      const testo = m.message?.conversation || m.message?.extendedTextMessage?.text || '';
+      const testo = testoMessaggio(m);
       if (!testo.trim()) continue;
       console.log(`[${studioId}]   inoltro a Themis: "${testo.slice(0, 40)}"`);
       inviaAlWebhook({
@@ -159,6 +188,63 @@ export async function avviaSessione(studioId: string): Promise<Sessione> {
         timestampMs: m.messageTimestamp ? Number(m.messageTimestamp) * 1000 : Date.now(),
       }).catch((e) => console.error('Invio al webhook fallito:', e));
     }
+  });
+
+  // 1 spunta (mandato) -> 2 grigie (consegnato) -> 2 blu (letto). Solo per
+  // i messaggi mandati da qui: di quelli ricevuti non ha senso parlare di
+  // "letto", li ha già letti chi guarda Themis.
+  socket.ev.on('messages.update', (aggiornamenti) => {
+    for (const u of aggiornamenti) {
+      if (!u.key.fromMe || !u.key.id || u.update.status === undefined) continue;
+      inviaStatoAlWebhook({ studioId, waMessageId: u.key.id, status: u.update.status })
+        .catch((e) => console.error('Aggiornamento stato non inoltrato:', e));
+    }
+  });
+
+  // La cronologia che WhatsApp condivide al primo collegamento (quanta ne
+  // manda dipende dal telefono, non è controllabile da qui). Si importa
+  // solo l'essenziale: chat dirette, solo testo, solo gli ultimi 30 giorni
+  // e un tetto massimo — non è pensata per ricostruire l'intero archivio,
+  // solo per non ripartire da una casella vuota.
+  const LIMITE_GIORNI_STORICO = 30;
+  const MASSIMO_STORICO = 300;
+  let storicoGiaImportato = false;
+  socket.ev.on('messaging-history.set', ({ messages, contacts }) => {
+    if (storicoGiaImportato) return; // una volta sola per connessione
+    storicoGiaImportato = true;
+
+    const nomi = new Map<string, string>();
+    for (const c of contacts) {
+      const nome = c.name || c.notify || c.verifiedName;
+      if (c.id && nome) nomi.set(c.id, nome);
+    }
+
+    const sogliaMs = Date.now() - LIMITE_GIORNI_STORICO * 24 * 60 * 60 * 1000;
+    const candidati = messages
+      .filter((m) => m.key.remoteJid && !m.key.remoteJid.endsWith('@g.us') && testoMessaggio(m).trim())
+      .filter((m) => !m.messageTimestamp || Number(m.messageTimestamp) * 1000 >= sogliaMs)
+      .sort((a, b) => Number(a.messageTimestamp ?? 0) - Number(b.messageTimestamp ?? 0))
+      .slice(-MASSIMO_STORICO);
+
+    console.log(`[${studioId}] cronologia ricevuta: ${messages.length} messaggi, ${candidati.length} da importare`);
+
+    (async () => {
+      for (const m of candidati) {
+        await inviaAlWebhook({
+          studioId,
+          from: m.key.remoteJid,
+          text: testoMessaggio(m),
+          waMessageId: m.key.id,
+          pushName: (m.key.fromMe ? null : m.pushName) || nomi.get(m.key.remoteJid!) || null,
+          direzione: m.key.fromMe ? 'out' : 'in',
+          timestampMs: m.messageTimestamp ? Number(m.messageTimestamp) * 1000 : Date.now(),
+        }).catch((e) => console.error('Messaggio storico non importato:', e));
+        // Un giro alla volta, non tutti insieme: altrimenti centinaia di
+        // richieste in parallelo travolgerebbero Themis nello stesso istante.
+        await new Promise((r) => setTimeout(r, 150));
+      }
+      console.log(`[${studioId}] importazione cronologia completata`);
+    })().catch((e) => console.error('Importazione cronologia interrotta:', e));
   });
 
   return s;
@@ -180,11 +266,15 @@ export async function disconnetti(studioId: string): Promise<void> {
   sessioni.delete(studioId);
 }
 
-export async function invia(studioId: string, a: string, testo: string): Promise<void> {
+/** Torna l'id vero che WhatsApp assegna al messaggio spedito — serve a
+ *  Themis per riconoscere, più avanti, gli aggiornamenti di stato
+ *  (consegnato, letto) che arrivano riferiti a quello stesso id. */
+export async function invia(studioId: string, a: string, testo: string): Promise<string> {
   const s = sessione(studioId);
   if (!s.socket || s.stato !== 'connesso') throw new Error('Il numero di questo studio non è connesso');
   const jid = a.includes('@') ? a : `${a}@s.whatsapp.net`;
-  await s.socket.sendMessage(jid, { text: testo });
+  const risultato = await s.socket.sendMessage(jid, { text: testo });
+  return risultato?.key?.id ?? '';
 }
 
 /** Al riavvio del processo, riapre da sole le sessioni che avevano già

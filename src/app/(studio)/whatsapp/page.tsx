@@ -10,7 +10,23 @@ type Messaggio = {
   id: string; jidMittente: string; testo: string; direzione: 'in' | 'out';
   statoMatch: 'abbinato' | 'non_riconosciuto'; clienteId: string | null; matterId: string | null;
   ricevutoIl: string; clienteNome: string | null; nomeWhatsapp: string | null;
+  statoInvio: 'inviato' | 'consegnato' | 'letto' | null;
 };
+
+/** 1 spunta grigia (inviato) -> 2 grigie (consegnato) -> 2 blu (letto). */
+function Spunte({ stato }: { stato: Messaggio['statoInvio'] }) {
+  if (!stato) return null;
+  const blu = stato === 'letto';
+  const doppia = stato !== 'inviato';
+  return (
+    <svg viewBox="0 0 18 12" className={`ml-1 inline-block h-3 w-4 align-text-bottom ${blu ? 'text-sky-500' : 'text-neutral-400'}`}>
+      <path d="M1 6.5 4.5 10 11 2" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      {doppia && (
+        <path d="M6 6.5 9.5 10 16 2" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      )}
+    </svg>
+  );
+}
 
 /** Il nome del cliente Themis vince sempre; il nome che il mittente ha
  *  impostato su WhatsApp è un ripiego migliore del numero nudo per i
@@ -242,6 +258,7 @@ export default function WhatsappPage() {
                     >
                       <span className="whitespace-pre-wrap">{m.testo}</span>
                       <span className="ml-2 align-bottom text-[10px] text-neutral-400">{dataOraBreve(m.ricevutoIl)}</span>
+                      {m.direzione === 'out' && <Spunte stato={m.statoInvio} />}
                     </div>
                   </div>
                 ))}

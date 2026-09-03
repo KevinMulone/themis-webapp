@@ -65,11 +65,12 @@ export async function disconnettiWorker(studioId: string): Promise<void> {
  *  l'indirizzo WhatsApp completo del destinatario, dominio compreso
  *  (es. "393331234567@s.whatsapp.net" o "...@lid") — mai solo il numero:
  *  WhatsApp non usa sempre il numero di telefono come identificativo. */
-export async function inviaWorker(studioId: string, a: string, testo: string): Promise<void> {
-  await chiamaWorker(`/studi/${studioId}/invia`, {
+export async function inviaWorker(studioId: string, a: string, testo: string): Promise<string> {
+  const risposta = await chiamaWorker<{ waMessageId?: string }>(`/studi/${studioId}/invia`, {
     method: 'POST',
     body: JSON.stringify({ a, testo }),
   });
+  return risposta.waMessageId || '';
 }
 
 /**

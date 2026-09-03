@@ -20,7 +20,11 @@ export async function POST(request: Request) {
   }
 
   const corpo = await request.json().catch(() => null);
-  const { studioId, from, text, waMessageId, pushName } = corpo ?? {};
+  const { studioId, from, text, waMessageId, pushName, timestampMs } = corpo ?? {};
+  // "direzione" arriva solo dall'importazione della cronologia (la
+  // ricezione dal vivo è sempre e solo 'in': i messaggi mandati da qui si
+  // registrano già da soli in /api/whatsapp/invia).
+  const direzione = corpo?.direzione === 'out' ? 'out' : 'in';
   if (typeof studioId !== 'string' || typeof from !== 'string'
     || typeof text !== 'string' || typeof waMessageId !== 'string') {
     return NextResponse.json({ error: 'Messaggio malformato' }, { status: 400 });
@@ -48,6 +52,8 @@ export async function POST(request: Request) {
   }
 
   const cifrato = encryptBuffer(Buffer.from(text, 'utf-8'), studioId).toString('base64');
+  const ricevutoIl = typeof timestampMs === 'number' && timestampMs > 0
+    ? new Date(timestampMs).toISOString() : undefined;
 
   const { error } = await admin.from('whatsapp_messaggi').insert({
     studio_id: studioId,
@@ -59,7 +65,12 @@ export async function POST(request: Request) {
     stato_match: trovato ? 'abbinato' : 'non_riconosciuto',
     testo_cifrato: cifrato,
     nome_whatsapp: typeof pushName === 'string' && pushName.trim() ? pushName.trim().slice(0, 200) : null,
-    direzione: 'in',
+    direzione,
+    // Per la cronologia importata, la data vera del messaggio — non il
+    // momento in cui è stata importata, altrimenti anni di conversazione
+    // comparirebbero tutti "adesso" e fuori ordine.
+    ...(ricevutoIl ? { ricevuto_il: ricevutoIl } : {}),
+    ...(direzione === 'out' ? { stato_invio: 'inviato' } : {}),
   });
 
   // Un conflitto sul vincolo (studio_id, wa_message_id) significa che il

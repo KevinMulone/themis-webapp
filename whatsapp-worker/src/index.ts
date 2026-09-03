@@ -64,8 +64,8 @@ app.post('/studi/:studioId/invia', async (req, res) => {
     return;
   }
   try {
-    await invia(req.params.studioId, a, testo);
-    res.json({ ok: true });
+    const waMessageId = await invia(req.params.studioId, a, testo);
+    res.json({ ok: true, waMessageId });
   } catch (errore) {
     res.status(502).json({ error: errore instanceof Error ? errore.message : 'Invio non riuscito' });
   }

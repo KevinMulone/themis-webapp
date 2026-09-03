@@ -15,6 +15,7 @@ type RigaMessaggio = {
   id: string; jid_mittente: string; testo_cifrato: string;
   direzione: 'in' | 'out'; stato_match: 'abbinato' | 'non_riconosciuto';
   cliente_id: string | null; matter_id: string | null; ricevuto_il: string; nome_whatsapp: string | null;
+  stato_invio: 'inviato' | 'consegnato' | 'letto' | null;
   clients: { nome: string | null; cognome: string | null; ragione_sociale: string | null }
     | { nome: string | null; cognome: string | null; ragione_sociale: string | null }[] | null;
 };
@@ -35,13 +36,13 @@ export async function GET(request: Request) {
   const base = admin
     .from('whatsapp_messaggi')
     .select('id, jid_mittente, testo_cifrato, direzione, stato_match, cliente_id, matter_id, ricevuto_il, '
-      + 'nome_whatsapp, clients(nome, cognome, ragione_sociale)')
+      + 'nome_whatsapp, stato_invio, clients(nome, cognome, ragione_sociale)')
     .eq('studio_id', contesto.studioId);
 
   const { data, error } = (soloNonRiconosciuti
     ? await base.eq('stato_match', 'non_riconosciuto').eq('direzione', 'in')
-        .order('ricevuto_il', { ascending: false }).limit(100)
-    : await base.order('ricevuto_il', { ascending: false }).limit(100)) as {
+        .order('ricevuto_il', { ascending: false }).limit(200)
+    : await base.order('ricevuto_il', { ascending: false }).limit(200)) as {
     data: RigaMessaggio[] | null; error: { message: string } | null;
   };
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -69,6 +70,7 @@ export async function GET(request: Request) {
         ? [cliente.cognome, cliente.nome].filter(Boolean).join(' ') || cliente.ragione_sociale
         : null,
       nomeWhatsapp: m.nome_whatsapp,
+      statoInvio: m.stato_invio,
     };
   });
 
