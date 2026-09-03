@@ -91,7 +91,14 @@ export default function WhatsappPage() {
     return () => clearInterval(id);
   }, [caricaMessaggi]);
 
-  const nonRiconosciuti = messaggi.filter((m) => m.direzione === 'in' && m.statoMatch === 'non_riconosciuto');
+  // Solo chi manda un documento, una foto o un video chiede davvero
+  // attenzione: un semplice messaggio di testo da un numero sconosciuto
+  // resta comunque visibile in "Conversazioni recenti", ma non deve
+  // costringere l'avvocato a decidere qualcosa ogni volta che scrive
+  // qualcuno che non conosce.
+  const nonRiconosciuti = messaggi.filter(
+    (m) => m.direzione === 'in' && m.statoMatch === 'non_riconosciuto' && m.documentoNome,
+  );
 
   // Le conversazioni, dalla più recente: si scorre l'elenco (già ordinato
   // dal più recente) e si registra l'ordine di prima comparsa di ogni

@@ -142,7 +142,8 @@ const MASSIMO_BYTE_DOCUMENTO = 3 * 1024 * 1024;
 async function gestisciDocumento(studioId: string, m: WAMessage): Promise<void> {
   const doc = m.message?.documentMessage;
   const img = m.message?.imageMessage;
-  const parte = doc ?? img;
+  const video = m.message?.videoMessage;
+  const parte = doc ?? img ?? video;
   if (!parte || !m.key.remoteJid || !m.key.id) return;
 
   const dimensione = Number(parte.fileLength ?? 0);
@@ -164,8 +165,8 @@ async function gestisciDocumento(studioId: string, m: WAMessage): Promise<void> 
   }
 
   const mimeType = parte.mimetype || 'application/octet-stream';
-  const nomeFile = doc?.fileName
-    || `immagine-${Date.now()}.${mimeType.includes('/') ? mimeType.split('/')[1] : 'jpg'}`;
+  const estensione = mimeType.includes('/') ? mimeType.split('/')[1] : (video ? 'mp4' : 'jpg');
+  const nomeFile = doc?.fileName || `${video ? 'video' : 'immagine'}-${Date.now()}.${estensione}`;
 
   console.log(`[${studioId}] documento ricevuto: ${nomeFile} (${buffer.length} byte)`);
   await inviaDocumentoAlWebhook({
@@ -256,10 +257,9 @@ export async function avviaSessione(studioId: string): Promise<Sessione> {
       if (m.key.fromMe || !m.key.remoteJid || m.key.remoteJid.endsWith('@g.us')) continue;
       const testo = testoMessaggio(m);
       if (!testo.trim()) {
-        // Nessun testo: potrebbe essere un documento o un'immagine.
-        // Qualunque altro tipo (audio, video, sticker...) resta fuori
-        // da questa prima versione.
-        if (m.message?.documentMessage || m.message?.imageMessage) {
+        // Nessun testo: potrebbe essere un documento, un'immagine o un
+        // video. Audio e sticker restano fuori da questa prima versione.
+        if (m.message?.documentMessage || m.message?.imageMessage || m.message?.videoMessage) {
           gestisciDocumento(studioId, m).catch((e) => console.error('Gestione documento fallita:', e));
         }
         continue;
