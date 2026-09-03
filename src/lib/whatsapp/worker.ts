@@ -61,8 +61,10 @@ export async function disconnettiWorker(studioId: string): Promise<void> {
   await chiamaWorker(`/studi/${studioId}/disconnetti`, { method: 'POST' });
 }
 
-/** Invia un messaggio dal numero collegato a quello studio. `a` è il
- *  numero destinatario in formato internazionale (senza "+"). */
+/** Invia un messaggio dal numero collegato a quello studio. `a` è
+ *  l'indirizzo WhatsApp completo del destinatario, dominio compreso
+ *  (es. "393331234567@s.whatsapp.net" o "...@lid") — mai solo il numero:
+ *  WhatsApp non usa sempre il numero di telefono come identificativo. */
 export async function inviaWorker(studioId: string, a: string, testo: string): Promise<void> {
   await chiamaWorker(`/studi/${studioId}/invia`, {
     method: 'POST',

@@ -32,7 +32,12 @@ export async function POST(request: Request) {
   if (!originale) return NextResponse.json({ error: 'Messaggio non trovato' }, { status: 404 });
 
   try {
-    await inviaWorker(contesto.studioId, originale.jid_mittente.split('@')[0], testo.trim());
+    // L'indirizzo va passato per intero, dominio compreso: WhatsApp usa
+    // sia "@s.whatsapp.net" (numero di telefono) sia "@lid" (il suo
+    // identificativo privato più recente), e togliere il dominio per poi
+    // riattaccarne uno fisso avrebbe mandato il messaggio a un indirizzo
+    // che non esiste.
+    await inviaWorker(contesto.studioId, originale.jid_mittente, testo.trim());
   } catch (errore) {
     return NextResponse.json(
       { error: errore instanceof Error ? errore.message : 'Invio non riuscito' },
