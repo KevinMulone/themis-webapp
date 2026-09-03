@@ -123,8 +123,6 @@ export default function WhatsappPage() {
         <p className="mb-4 text-xs text-neutral-500">Collegato al numero {stato.numero}.</p>
       )}
 
-      <WhatsappProposte />
-
       {nonRiconosciuti.length > 0 && (
         <div className="mb-4 rounded-2xl bg-neutral-50 p-5">
           <h2 className="mb-1 font-semibold text-neutral-900">Messaggi da collegare a un cliente</h2>
@@ -241,6 +239,10 @@ export default function WhatsappPage() {
             })}
           </div>
         )}
+      </div>
+
+      <div className="mt-4">
+        <WhatsappProposte />
       </div>
     </div>
   );
