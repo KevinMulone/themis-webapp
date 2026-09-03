@@ -186,9 +186,16 @@ export async function invia(studioId: string, a: string, testo: string): Promise
 /** Al riavvio del processo, riapre da sole le sessioni che avevano già
  *  una cartella di credenziali salvata — altrimenti ogni riavvio del
  *  worker (un deploy, un crash) scollegherebbe tutti gli studi. */
+/** Solo un uuid (studioId vero) può essere una cartella di sessione: un
+ *  volume vuoto contiene già da sé cartelle come "lost+found" create dal
+ *  filesystem, che non sono sessioni di nessuno studio. */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export function ripristinaSessioniEsistenti(): void {
   if (!existsSync(DATA_DIR)) return;
-  for (const studioId of readdirSync(DATA_DIR)) {
+  const trovate = readdirSync(DATA_DIR).filter((nome) => UUID.test(nome));
+  console.log(`Sessioni da ripristinare: ${trovate.length ? trovate.join(', ') : 'nessuna'}`);
+  for (const studioId of trovate) {
     avviaSessione(studioId).catch((e) => console.error('Sessione non ripristinata per lo studio', studioId, e));
   }
 }
