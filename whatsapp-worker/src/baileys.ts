@@ -117,7 +117,10 @@ export async function avviaSessione(studioId: string): Promise<Sessione> {
   mkdirSync(cartellaStudio(studioId), { recursive: true });
   const { state, saveCreds } = await useMultiFileAuthState(cartellaStudio(studioId));
 
-  const socket = makeWASocket({ auth: state, logger: LOG as never });
+  // Senza syncFullHistory, WhatsApp manda solo una cronologia ridotta (o
+  // niente): senza questa opzione l'evento messaging-history.set non
+  // arriva affatto in un nuovo accoppiamento.
+  const socket = makeWASocket({ auth: state, logger: LOG as never, syncFullHistory: true });
   s.socket = socket;
 
   socket.ev.on('creds.update', saveCreds);
