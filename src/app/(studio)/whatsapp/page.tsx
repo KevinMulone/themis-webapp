@@ -68,6 +68,8 @@ export default function WhatsappPage() {
   const [nuovoCognome, setNuovoCognome] = useState<Record<string, string>>({});
   const [nuovoRagioneSociale, setNuovoRagioneSociale] = useState<Record<string, string>>({});
   const [creandoCliente, setCreandoCliente] = useState('');
+  const [motiviSuggerimento, setMotiviSuggerimento] = useState<Record<string, string>>({});
+  const richiesteSuggerimento = useRef<Set<string>>(new Set());
   const [composizione, setComposizione] = useState<Record<string, string>>({});
   const [generando, setGenerando] = useState('');
   const [inviando, setInviando] = useState('');
@@ -105,6 +107,39 @@ export default function WhatsappPage() {
   const nonRiconosciuti = messaggi.filter(
     (m) => m.direzione === 'in' && m.statoMatch === 'non_riconosciuto' && m.documentoNome,
   );
+
+  // Un suggerimento per volta, la prima volta che un documento non
+  // riconosciuto compare — mai richiesto di nuovo per lo stesso
+  // messaggio, altrimenti il poll ogni 15 secondi lo chiederebbe
+  // ripetutamente e spenderebbe credito IA senza motivo. Precompila la
+  // scelta, ma non decide da sola: resta un suggerimento da confermare.
+  useEffect(() => {
+    for (const m of nonRiconosciuti) {
+      if (richiesteSuggerimento.current.has(m.id)) continue;
+      richiesteSuggerimento.current.add(m.id);
+      fetch('/api/themis/whatsapp-abbina', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messaggioId: m.id }),
+      })
+        .then((r) => r.json())
+        .then((body) => {
+          const s = body?.suggerimento;
+          if (!s) return;
+          if (s.motivo) setMotiviSuggerimento((prev) => ({ ...prev, [m.id]: s.motivo }));
+          if (s.tipo === 'esistente' && s.clienteId) {
+            setPercorso((prev) => ({ ...prev, [m.id]: 'esistente' }));
+            setCollegamento((prev) => ({ ...prev, [m.id]: s.clienteId }));
+          } else if (s.tipo === 'nuovo') {
+            setPercorso((prev) => ({ ...prev, [m.id]: 'nuovo' }));
+            setNuovoTipo((prev) => ({ ...prev, [m.id]: s.tipoSoggetto === 'persona_giuridica' ? 'persona_giuridica' : 'persona_fisica' }));
+            if (s.nome) setNuovoNome((prev) => ({ ...prev, [m.id]: s.nome }));
+            if (s.cognome) setNuovoCognome((prev) => ({ ...prev, [m.id]: s.cognome }));
+            if (s.ragioneSociale) setNuovoRagioneSociale((prev) => ({ ...prev, [m.id]: s.ragioneSociale }));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [nonRiconosciuti]);
 
   // Le conversazioni, dalla più recente: si scorre l'elenco (già ordinato
   // dal più recente) e si registra l'ordine di prima comparsa di ogni
@@ -234,6 +269,11 @@ export default function WhatsappPage() {
                     <span className="text-xs text-neutral-400">{m.jidMittente.split('@')[0]}</span>
                     <span className="min-w-0 flex-1 truncate text-neutral-700">{m.testo}</span>
                   </div>
+                  {motiviSuggerimento[m.id] && (
+                    <p className="mb-2 text-[11px] italic text-bordeaux-700">
+                      Themis suggerisce: {motiviSuggerimento[m.id]} — controlla prima di confermare.
+                    </p>
+                  )}
 
                   <div className="mb-2 flex gap-3 text-xs">
                     <label className="flex items-center gap-1.5">

@@ -86,7 +86,7 @@ export async function creditoStudio(studioId: string, plan: string | null): Prom
  */
 export async function registraUtilizzo(
   studioId: string,
-  funzione: 'domanda' | 'scadenze' | 'bozza' | 'whatsapp-scadenze' | 'whatsapp-bozza',
+  funzione: 'domanda' | 'scadenze' | 'bozza' | 'whatsapp-scadenze' | 'whatsapp-bozza' | 'whatsapp-abbina',
   usage: Anthropic.Usage,
 ): Promise<void> {
   const admin = createAdminClient();
