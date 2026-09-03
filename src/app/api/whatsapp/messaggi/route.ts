@@ -90,14 +90,14 @@ export async function PATCH(request: Request) {
 
   const admin = createAdminClient();
   const { data: cliente } = await admin
-    .from('clients').select('id').eq('id', clienteId).eq('studio_id', contesto.studioId).maybeSingle();
+    .from('clients').select('id, telefono').eq('id', clienteId).eq('studio_id', contesto.studioId).maybeSingle();
   if (!cliente) return NextResponse.json({ error: 'Cliente non trovato' }, { status: 404 });
 
   // Si aggancia lo stesso cliente anche ai messaggi precedenti dello stesso
   // numero, non solo a quello selezionato: altrimenti l'avvocato dovrebbe
   // ripetere il collegamento un messaggio alla volta per la stessa persona.
   const { data: messaggio } = await admin
-    .from('whatsapp_messaggi').select('jid_mittente')
+    .from('whatsapp_messaggi').select('jid_mittente, numero_normalizzato')
     .eq('id', id).eq('studio_id', contesto.studioId).maybeSingle();
   if (!messaggio) return NextResponse.json({ error: 'Messaggio non trovato' }, { status: 404 });
 
@@ -106,6 +106,15 @@ export async function PATCH(request: Request) {
     .eq('studio_id', contesto.studioId)
     .eq('jid_mittente', messaggio.jid_mittente)
     .eq('stato_match', 'non_riconosciuto');
+
+  // Senza salvare il numero sulla scheda del cliente, il collegamento vale
+  // solo per questi messaggi: il prossimo messaggio dallo stesso numero
+  // tornerebbe di nuovo "da collegare". Si scrive solo se il cliente non
+  // ha già un numero: non si sovrascrive un dato che potrebbe essere
+  // corretto (un cliente può scrivere anche da un secondo telefono).
+  if (!cliente.telefono?.trim() && messaggio.numero_normalizzato) {
+    await admin.from('clients').update({ telefono: messaggio.numero_normalizzato }).eq('id', clienteId);
+  }
 
   return NextResponse.json({ ok: true });
 }
