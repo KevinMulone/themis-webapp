@@ -47,6 +47,10 @@ export async function POST(request: Request) {
     if (pratiche && pratiche.length === 1) matterId = pratiche[0].id;
   }
 
+  const cifrato = encryptBuffer(Buffer.from(text, 'utf-8'), studioId).toString('base64');
+  console.log(`[diagnostica cifratura] scope="${studioId}" testoLen=${text.length} `
+    + `base64Len=${cifrato.length} inizioBase64="${cifrato.slice(0, 12)}"`);
+
   const { error } = await admin.from('whatsapp_messaggi').insert({
     studio_id: studioId,
     wa_message_id: waMessageId,
@@ -55,7 +59,7 @@ export async function POST(request: Request) {
     cliente_id: trovato?.id ?? null,
     matter_id: matterId,
     stato_match: trovato ? 'abbinato' : 'non_riconosciuto',
-    testo_cifrato: encryptBuffer(Buffer.from(text, 'utf-8'), studioId).toString('base64'),
+    testo_cifrato: cifrato,
     direzione: 'in',
   });
 

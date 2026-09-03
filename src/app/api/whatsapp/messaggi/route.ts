@@ -52,8 +52,9 @@ export async function GET(request: Request) {
     try {
       testo = decryptBuffer(Buffer.from(m.testo_cifrato, 'base64'), studioId).toString('utf-8');
     } catch (errore) {
-      console.error('Messaggio WhatsApp non decifrabile', m.id, '—',
-        errore instanceof Error ? errore.message : errore);
+      console.error(`[diagnostica cifratura] non decifrabile ${m.id} scope="${studioId}" `
+        + `base64Len=${m.testo_cifrato.length} inizioBase64="${m.testo_cifrato.slice(0, 12)}" — `
+        + (errore instanceof Error ? errore.message : errore));
       // Un blob non decifrabile non deve far sparire l'intero elenco: si
       // mostra un segnaposto e si prosegue con gli altri messaggi.
     }
