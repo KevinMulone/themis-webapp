@@ -172,7 +172,6 @@ export default function WhatsappPage() {
           <div className="space-y-4">
             {conversazioni.map(({ jid, messaggi: msgs }) => {
               const ultimo = msgs[msgs.length - 1];
-              const puoRispondere = ultimo.direzione === 'in';
               return (
                 <div key={jid} className="rounded-xl bg-white p-4">
                   <p className="mb-2 text-xs font-medium text-neutral-500">
@@ -194,15 +193,23 @@ export default function WhatsappPage() {
                     ))}
                   </ul>
 
-                  {puoRispondere && (
-                    <div className="mt-3 border-t border-neutral-100 pt-3">
+                  <div className="mt-3 border-t border-neutral-100 pt-3">
                       {bozze[ultimo.id] === undefined ? (
-                        <button
-                          type="button" onClick={() => generaBozza(ultimo.id)} disabled={generando === ultimo.id}
-                          className="premi rounded-lg border border-bordeaux-700 px-3 py-1.5 text-xs font-medium text-bordeaux-700 hover:bg-bordeaux-50 disabled:opacity-50"
-                        >
-                          {generando === ultimo.id ? 'Themis sta scrivendo...' : 'Genera bozza di risposta'}
-                        </button>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button" onClick={() => generaBozza(ultimo.id)} disabled={generando === ultimo.id}
+                            className="premi rounded-lg border border-bordeaux-700 px-3 py-1.5 text-xs font-medium text-bordeaux-700 hover:bg-bordeaux-50 disabled:opacity-50"
+                          >
+                            {generando === ultimo.id ? 'Themis sta scrivendo...' : 'Genera bozza di risposta'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setBozze((prev) => ({ ...prev, [ultimo.id]: '' }))}
+                            className="premi rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-50"
+                          >
+                            Scrivi tu
+                          </button>
+                        </div>
                       ) : (
                         <div className="space-y-2">
                           <textarea
@@ -229,7 +236,6 @@ export default function WhatsappPage() {
                         </div>
                       )}
                     </div>
-                  )}
                 </div>
               );
             })}
