@@ -78,43 +78,90 @@ export async function GET(request: Request) {
   return NextResponse.json({ ok: true, messaggi });
 }
 
-/** Collega a mano un messaggio non riconosciuto a un cliente. */
-export async function PATCH(request: Request) {
-  const contesto = await contestoStudio();
-  if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
-
-  const { id, clienteId } = await request.json();
-  if (typeof id !== 'string' || typeof clienteId !== 'string') {
-    return NextResponse.json({ error: 'Richiesta non valida' }, { status: 400 });
-  }
-
-  const admin = createAdminClient();
-  const { data: cliente } = await admin
-    .from('clients').select('id, telefono').eq('id', clienteId).eq('studio_id', contesto.studioId).maybeSingle();
-  if (!cliente) return NextResponse.json({ error: 'Cliente non trovato' }, { status: 404 });
-
-  // Si aggancia lo stesso cliente anche ai messaggi precedenti dello stesso
-  // numero, non solo a quello selezionato: altrimenti l'avvocato dovrebbe
-  // ripetere il collegamento un messaggio alla volta per la stessa persona.
-  const { data: messaggio } = await admin
-    .from('whatsapp_messaggi').select('jid_mittente, numero_normalizzato')
-    .eq('id', id).eq('studio_id', contesto.studioId).maybeSingle();
-  if (!messaggio) return NextResponse.json({ error: 'Messaggio non trovato' }, { status: 404 });
+/** Collega tutti i messaggi non ancora abbinati dello stesso numero al
+ *  cliente indicato, e — se il cliente non ha già un numero salvato —
+ *  scrive quello, così i messaggi successivi vengono riconosciuti da
+ *  soli. Condivisa fra "collega a un cliente esistente" e "crea un
+ *  cliente nuovo": la parte finale è identica in entrambi i casi. */
+async function collegaANumero(
+  admin: ReturnType<typeof createAdminClient>, studioId: string,
+  messaggioId: string, clienteId: string,
+): Promise<{ error: string } | { ok: true }> {
+  const [{ data: cliente }, { data: messaggio }] = await Promise.all([
+    admin.from('clients').select('id, telefono').eq('id', clienteId).eq('studio_id', studioId).maybeSingle(),
+    admin.from('whatsapp_messaggi').select('jid_mittente, numero_normalizzato')
+      .eq('id', messaggioId).eq('studio_id', studioId).maybeSingle(),
+  ]);
+  if (!cliente) return { error: 'Cliente non trovato' };
+  if (!messaggio) return { error: 'Messaggio non trovato' };
 
   await admin.from('whatsapp_messaggi')
     .update({ cliente_id: clienteId, stato_match: 'abbinato' })
-    .eq('studio_id', contesto.studioId)
+    .eq('studio_id', studioId)
     .eq('jid_mittente', messaggio.jid_mittente)
     .eq('stato_match', 'non_riconosciuto');
 
-  // Senza salvare il numero sulla scheda del cliente, il collegamento vale
-  // solo per questi messaggi: il prossimo messaggio dallo stesso numero
-  // tornerebbe di nuovo "da collegare". Si scrive solo se il cliente non
-  // ha già un numero: non si sovrascrive un dato che potrebbe essere
-  // corretto (un cliente può scrivere anche da un secondo telefono).
   if (!cliente.telefono?.trim() && messaggio.numero_normalizzato) {
     await admin.from('clients').update({ telefono: messaggio.numero_normalizzato }).eq('id', clienteId);
   }
 
-  return NextResponse.json({ ok: true });
+  return { ok: true };
+}
+
+/**
+ * Collega a mano un messaggio non riconosciuto: a un cliente già in
+ * anagrafica (`clienteId`), oppure a uno appena creato al volo
+ * (`nuovoCliente`) — l'avvocato spesso non sa a priori se chi scrive è
+ * già un cliente registrato o no, e deve poter scegliere qui, invece di
+ * dover prima andare ad aprire la pagina Clienti.
+ *
+ * Crea solo l'anagrafica, non la pratica: la pratica ha bisogno di dati
+ * che non stanno in un collegamento veloce (tipo di pratica, controparte,
+ * eventuale sinistro...) e si crea meglio dalla scheda del cliente, dove
+ * quei campi hanno senso.
+ */
+export async function PATCH(request: Request) {
+  const contesto = await contestoStudio();
+  if (!contesto) return NextResponse.json({ error: 'Non autenticato' }, { status: 401 });
+
+  const corpo = await request.json();
+  const { id, clienteId, nuovoCliente } = corpo ?? {};
+  if (typeof id !== 'string') {
+    return NextResponse.json({ error: 'Richiesta non valida' }, { status: 400 });
+  }
+
+  const admin = createAdminClient();
+
+  if (typeof clienteId === 'string') {
+    const risultato = await collegaANumero(admin, contesto.studioId, id, clienteId);
+    if ('error' in risultato) return NextResponse.json(risultato, { status: 404 });
+    return NextResponse.json(risultato);
+  }
+
+  if (nuovoCliente && typeof nuovoCliente === 'object') {
+    const tipoSoggetto = nuovoCliente.tipoSoggetto === 'persona_giuridica' ? 'persona_giuridica' : 'persona_fisica';
+    const nome = typeof nuovoCliente.nome === 'string' ? nuovoCliente.nome.trim().slice(0, 200) : '';
+    const cognome = typeof nuovoCliente.cognome === 'string' ? nuovoCliente.cognome.trim().slice(0, 200) : '';
+    const ragioneSociale = typeof nuovoCliente.ragioneSociale === 'string' ? nuovoCliente.ragioneSociale.trim().slice(0, 200) : '';
+    if (tipoSoggetto === 'persona_fisica' ? !nome && !cognome : !ragioneSociale) {
+      return NextResponse.json({ error: 'Manca il nome del cliente' }, { status: 400 });
+    }
+
+    const { data: nuovo, error: erroreCreazione } = await admin.from('clients').insert({
+      studio_id: contesto.studioId,
+      tipo_soggetto: tipoSoggetto,
+      nome: tipoSoggetto === 'persona_fisica' ? (nome || null) : null,
+      cognome: tipoSoggetto === 'persona_fisica' ? (cognome || null) : null,
+      ragione_sociale: tipoSoggetto === 'persona_giuridica' ? ragioneSociale : null,
+    }).select('id').single();
+    if (erroreCreazione || !nuovo) {
+      return NextResponse.json({ error: erroreCreazione?.message ?? 'Cliente non creato' }, { status: 400 });
+    }
+
+    const risultato = await collegaANumero(admin, contesto.studioId, id, nuovo.id);
+    if ('error' in risultato) return NextResponse.json(risultato, { status: 404 });
+    return NextResponse.json({ ok: true, clienteId: nuovo.id });
+  }
+
+  return NextResponse.json({ error: 'Richiesta non valida' }, { status: 400 });
 }

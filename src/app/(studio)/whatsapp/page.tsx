@@ -62,6 +62,12 @@ export default function WhatsappPage() {
   const [messaggi, setMessaggi] = useState<Messaggio[]>([]);
   const [clienti, setClienti] = useState<ClienteOpzione[]>([]);
   const [collegamento, setCollegamento] = useState<Record<string, string>>({});
+  const [percorso, setPercorso] = useState<Record<string, 'esistente' | 'nuovo'>>({});
+  const [nuovoTipo, setNuovoTipo] = useState<Record<string, 'persona_fisica' | 'persona_giuridica'>>({});
+  const [nuovoNome, setNuovoNome] = useState<Record<string, string>>({});
+  const [nuovoCognome, setNuovoCognome] = useState<Record<string, string>>({});
+  const [nuovoRagioneSociale, setNuovoRagioneSociale] = useState<Record<string, string>>({});
+  const [creandoCliente, setCreandoCliente] = useState('');
   const [composizione, setComposizione] = useState<Record<string, string>>({});
   const [generando, setGenerando] = useState('');
   const [inviando, setInviando] = useState('');
@@ -145,6 +151,27 @@ export default function WhatsappPage() {
     caricaMessaggi();
   }
 
+  async function creaClienteECollega(messaggioId: string) {
+    const tipoSoggetto = nuovoTipo[messaggioId] || 'persona_fisica';
+    setCreandoCliente(messaggioId);
+    const res = await fetch('/api/whatsapp/messaggi', {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: messaggioId,
+        nuovoCliente: {
+          tipoSoggetto,
+          nome: nuovoNome[messaggioId] || '',
+          cognome: nuovoCognome[messaggioId] || '',
+          ragioneSociale: nuovoRagioneSociale[messaggioId] || '',
+        },
+      }),
+    });
+    const body = await res.json();
+    setCreandoCliente('');
+    if (!res.ok) { alert(body.error || 'Cliente non creato'); return; }
+    caricaMessaggi();
+  }
+
   async function generaBozza(jid: string, messaggioId: string) {
     setGenerando(jid);
     const res = await fetch('/api/themis/whatsapp', {
@@ -197,27 +224,92 @@ export default function WhatsappPage() {
           <p className="mb-2 text-sm font-medium text-neutral-700">
             {nonRiconosciuti.length} messagg{nonRiconosciuti.length === 1 ? 'io' : 'i'} da collegare a un cliente
           </p>
-          <ul className="space-y-2">
-            {nonRiconosciuti.map((m) => (
-              <li key={m.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-white p-2.5 text-sm">
-                <span className="text-xs text-neutral-400">{m.jidMittente.split('@')[0]}</span>
-                <span className="min-w-0 flex-1 truncate text-neutral-700">{m.testo}</span>
-                <select
-                  value={collegamento[m.id] || ''}
-                  onChange={(e) => setCollegamento((prev) => ({ ...prev, [m.id]: e.target.value }))}
-                  className="rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-bordeaux-400"
-                >
-                  <option value="">Scegli un cliente...</option>
-                  {clienti.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-                </select>
-                <button
-                  type="button" onClick={() => collega(m.id)} disabled={!collegamento[m.id]}
-                  className="premi rounded-full bg-neutral-900 px-3 py-1 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
-                >
-                  Collega
-                </button>
-              </li>
-            ))}
+          <ul className="space-y-3">
+            {nonRiconosciuti.map((m) => {
+              const scelta = percorso[m.id] || 'esistente';
+              const tipo = nuovoTipo[m.id] || 'persona_fisica';
+              return (
+                <li key={m.id} className="rounded-lg bg-white p-3 text-sm">
+                  <div className="mb-2 flex items-center gap-2">
+                    <span className="text-xs text-neutral-400">{m.jidMittente.split('@')[0]}</span>
+                    <span className="min-w-0 flex-1 truncate text-neutral-700">{m.testo}</span>
+                  </div>
+
+                  <div className="mb-2 flex gap-3 text-xs">
+                    <label className="flex items-center gap-1.5">
+                      <input
+                        type="radio" checked={scelta === 'esistente'}
+                        onChange={() => setPercorso((prev) => ({ ...prev, [m.id]: 'esistente' }))}
+                      />
+                      È un cliente già registrato
+                    </label>
+                    <label className="flex items-center gap-1.5">
+                      <input
+                        type="radio" checked={scelta === 'nuovo'}
+                        onChange={() => setPercorso((prev) => ({ ...prev, [m.id]: 'nuovo' }))}
+                      />
+                      È un cliente nuovo
+                    </label>
+                  </div>
+
+                  {scelta === 'esistente' ? (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        value={collegamento[m.id] || ''}
+                        onChange={(e) => setCollegamento((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                        className="rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-bordeaux-400"
+                      >
+                        <option value="">Chi è...</option>
+                        {clienti.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                      </select>
+                      <button
+                        type="button" onClick={() => collega(m.id)} disabled={!collegamento[m.id]}
+                        className="premi rounded-full bg-neutral-900 px-3 py-1 text-xs font-medium text-white hover:bg-neutral-800 disabled:opacity-50"
+                      >
+                        Allega al fascicolo
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <select
+                        value={tipo}
+                        onChange={(e) => setNuovoTipo((prev) => ({ ...prev, [m.id]: e.target.value as 'persona_fisica' | 'persona_giuridica' }))}
+                        className="rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-bordeaux-400"
+                      >
+                        <option value="persona_fisica">Persona fisica</option>
+                        <option value="persona_giuridica">Azienda / ente</option>
+                      </select>
+                      {tipo === 'persona_fisica' ? (
+                        <>
+                          <input
+                            placeholder="Nome" value={nuovoNome[m.id] || ''}
+                            onChange={(e) => setNuovoNome((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                            className="w-28 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-bordeaux-400"
+                          />
+                          <input
+                            placeholder="Cognome" value={nuovoCognome[m.id] || ''}
+                            onChange={(e) => setNuovoCognome((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                            className="w-28 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-bordeaux-400"
+                          />
+                        </>
+                      ) : (
+                        <input
+                          placeholder="Ragione sociale" value={nuovoRagioneSociale[m.id] || ''}
+                          onChange={(e) => setNuovoRagioneSociale((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                          className="w-56 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs outline-none focus:border-bordeaux-400"
+                        />
+                      )}
+                      <button
+                        type="button" onClick={() => creaClienteECollega(m.id)} disabled={creandoCliente === m.id}
+                        className="premi rounded-full bg-bordeaux-700 px-3 py-1 text-xs font-medium text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                      >
+                        {creandoCliente === m.id ? 'Creazione...' : 'Crea cliente e allega'}
+                      </button>
+                    </div>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
