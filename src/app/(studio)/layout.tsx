@@ -27,6 +27,7 @@ const NAV = [
   { href: '/calendario', label: 'Calendario' },
   { href: '/pec', label: 'PEC' },
   { href: '/whatsapp', label: 'WhatsApp' },
+  { href: '/whatsapp/documenti', label: 'Reparto fascicoli' },
   { href: '/genera', label: 'Genera Atto' },
   { href: '/deposito', label: 'Deposito' },
   { href: '/calcolo-danno', label: 'Calcolo Danno' },

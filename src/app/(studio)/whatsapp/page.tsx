@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { clientLabel } from '@/lib/constants';
 import WhatsappProposte from './WhatsappProposte';
-import WhatsappDocumenti from './WhatsappDocumenti';
 
 type Messaggio = {
   id: string; jidMittente: string; testo: string; direzione: 'in' | 'out';
@@ -472,7 +471,6 @@ export default function WhatsappPage() {
       <div className="mt-4">
         <WhatsappProposte />
       </div>
-      <WhatsappDocumenti />
     </div>
   );
 }
