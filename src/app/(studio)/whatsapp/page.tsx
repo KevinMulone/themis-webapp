@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { clientLabel } from '@/lib/constants';
@@ -65,6 +65,8 @@ export default function WhatsappPage() {
   const [generando, setGenerando] = useState('');
   const [inviando, setInviando] = useState('');
   const [selezionata, setSelezionata] = useState<string | null>(null);
+  const fondoChatRef = useRef<HTMLDivElement>(null);
+  const areaTestoRef = useRef<HTMLTextAreaElement>(null);
 
   const caricaMessaggi = useCallback(async () => {
     const res = await fetch('/api/whatsapp/messaggi');
@@ -107,6 +109,23 @@ export default function WhatsappPage() {
   }, [conversazioni, selezionata]);
 
   const aperta = conversazioni.find((c) => c.jid === selezionata) ?? null;
+
+  // Scorre da sola all'ultimo messaggio: alla prima apertura della
+  // conversazione e ogni volta che ne arriva uno nuovo, come in un vero
+  // programma di chat — non deve mai essere l'utente a doverlo cercare.
+  useEffect(() => {
+    fondoChatRef.current?.scrollIntoView({ block: 'end' });
+  }, [aperta?.jid, aperta?.messaggi.length]);
+
+  // La casella si allarga da sola col testo scritto, fino a un limite,
+  // esattamente come in WhatsApp: oltre quel limite scorre al suo interno
+  // invece di continuare a crescere all'infinito.
+  useEffect(() => {
+    const el = areaTestoRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+  }, [aperta?.jid, composizione[aperta?.jid ?? '']]);
 
   async function collega(messaggioId: string) {
     const clienteId = collegamento[messaggioId];
@@ -262,16 +281,18 @@ export default function WhatsappPage() {
                     </div>
                   </div>
                 ))}
+                <div ref={fondoChatRef} />
               </div>
 
               <div className="border-t border-neutral-200 p-3">
                 <div className="flex items-end gap-2">
                   <textarea
+                    ref={areaTestoRef}
                     value={composizione[aperta.jid] || ''}
                     onChange={(e) => setComposizione((prev) => ({ ...prev, [aperta.jid]: e.target.value }))}
                     placeholder="Scrivi un messaggio..."
                     rows={1}
-                    className="max-h-32 min-h-[2.5rem] flex-1 resize-none rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-bordeaux-400"
+                    className="max-h-[200px] min-h-[2.5rem] flex-1 resize-none overflow-y-auto rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-bordeaux-400"
                   />
                   <button
                     type="button"
