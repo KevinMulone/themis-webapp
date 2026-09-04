@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { clientLabel } from '@/lib/constants';
+import { Icon } from '@/components/ui/Icon';
 import WhatsappProposte from './WhatsappProposte';
 
 type Messaggio = {
@@ -157,7 +158,12 @@ export default function WhatsappPage() {
   }, [messaggi]);
 
   useEffect(() => {
-    if (!selezionata && conversazioni.length > 0) setSelezionata(conversazioni[0].jid);
+    // Da telefono la selezione automatica nasconderebbe subito l'elenco
+    // dietro la prima chat: lì si parte dall'elenco, e si apre una
+    // conversazione solo con un tocco.
+    if (!selezionata && conversazioni.length > 0 && window.innerWidth >= 768) {
+      setSelezionata(conversazioni[0].jid);
+    }
   }, [conversazioni, selezionata]);
 
   const aperta = conversazioni.find((c) => c.jid === selezionata) ?? null;
@@ -376,9 +382,10 @@ export default function WhatsappPage() {
         </div>
       )}
 
-      <div className="flex h-[65vh] min-h-[420px] overflow-hidden rounded-2xl bg-neutral-50">
-        {/* Elenco conversazioni */}
-        <aside className="w-72 shrink-0 overflow-y-auto border-r border-neutral-200">
+      <div className="flex h-[70vh] min-h-[420px] overflow-hidden rounded-2xl bg-neutral-50 md:h-[65vh]">
+        {/* Elenco conversazioni — da telefono occupa tutto lo spazio finché
+            non si apre una chat, poi lascia il posto a quella. */}
+        <aside className={`w-full shrink-0 overflow-y-auto border-neutral-200 md:block md:w-72 md:border-r ${selezionata ? 'hidden' : 'block'}`}>
           <div className="flex items-center justify-between px-4 py-3">
             <span className="text-xs font-medium text-neutral-500">Conversazioni</span>
             <button type="button" onClick={caricaMessaggi} className="premi text-xs text-neutral-500 hover:text-neutral-700">
@@ -416,19 +423,29 @@ export default function WhatsappPage() {
           )}
         </aside>
 
-        {/* Conversazione aperta */}
-        <section className="flex min-w-0 flex-1 flex-col">
+        {/* Conversazione aperta — su desktop sempre affiancata all'elenco,
+            da telefono lo sostituisce: il pulsante Indietro torna alla lista. */}
+        <section className={`min-w-0 flex-1 flex-col md:flex ${selezionata ? 'flex' : 'hidden'}`}>
           {!aperta ? (
             <div className="flex flex-1 items-center justify-center text-sm text-neutral-400">
               Scegli una conversazione dall&rsquo;elenco.
             </div>
           ) : (
             <>
-              <div className="border-b border-neutral-200 px-5 py-3">
-                <p className="text-sm font-medium text-neutral-900">
-                  {nomeConversazione(aperta.messaggi, aperta.jid)}
-                </p>
-                <p className="text-xs text-neutral-400">{aperta.jid.split('@')[0]}</p>
+              <div className="flex items-center gap-2 border-b border-neutral-200 px-5 py-3">
+                <button
+                  type="button" onClick={() => setSelezionata(null)}
+                  className="premi -ml-1.5 shrink-0 rounded-full p-1.5 text-neutral-500 hover:bg-neutral-100 md:hidden"
+                  aria-label="Torna all'elenco"
+                >
+                  <Icon nome="freccia" className="h-4 w-4 rotate-180" />
+                </button>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-neutral-900">
+                    {nomeConversazione(aperta.messaggi, aperta.jid)}
+                  </p>
+                  <p className="text-xs text-neutral-400">{aperta.jid.split('@')[0]}</p>
+                </div>
               </div>
 
               <div className="flex-1 space-y-1.5 overflow-y-auto px-5 py-4">

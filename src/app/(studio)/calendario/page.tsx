@@ -119,6 +119,14 @@ export default function CalendarioPage() {
   const [miniMese, setMiniMese] = useState(today.getMonth() + 1);
   const [tipiNascosti, setTipiNascosti] = useState<string[]>([]);
 
+  // Sette colonne di "Settimana" non stanno su uno schermo di telefono: chi
+  // apre il calendario da mobile parte dalla vista Giorno, che invece ci
+  // sta. Resta una preferenza iniziale, non un blocco: da qui si passa
+  // comunque a Settimana o Mese quando serve.
+  useEffect(() => {
+    if (window.innerWidth < 640) setVista('giorno');
+  }, []);
+
   const todayIso = toIso(today);
 
   async function load() {

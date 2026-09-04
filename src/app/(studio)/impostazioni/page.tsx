@@ -1270,9 +1270,9 @@ export default function ImpostazioniPage() {
         {pecAccounts.length > 0 && (
           <ul className="mb-4 divide-y divide-neutral-100 text-sm">
             {pecAccounts.map((a) => (
-              <li key={a.id} className="flex items-center justify-between py-2">
-                <div>
-                  <div className="font-medium text-neutral-800">{a.etichetta} — {a.indirizzo_pec}</div>
+              <li key={a.id} className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="font-medium text-neutral-800 break-words">{a.etichetta} — {a.indirizzo_pec}</div>
                   <div className="text-xs text-neutral-400">
                     {a.ultimo_controllo_at
                       ? `Ultimo controllo: ${new Date(a.ultimo_controllo_at).toLocaleString('it-IT')}`
@@ -1300,7 +1300,7 @@ export default function ImpostazioniPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex shrink-0 items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3 sm:shrink-0">
                   <button
                     type="button" onClick={handleRileggiTutto}
                     className="text-xs text-neutral-500 hover:underline"
