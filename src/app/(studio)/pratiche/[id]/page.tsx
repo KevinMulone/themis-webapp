@@ -74,6 +74,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const [patrocinio, setPatrocinio] = useState<Patrocinio | null>(null);
   const [savedPatrocinio, setSavedPatrocinio] = useState(false);
   const [patrocinioError, setPatrocinioError] = useState('');
+  const [copiatoRg, setCopiatoRg] = useState(false);
 
   async function loadDocumenti() {
     const { data } = await supabase.from('documenti').select('id, nome_file, data_generazione').eq('matter_id', id).order('data_generazione', { ascending: false });
@@ -244,6 +245,16 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     load();
   }
 
+  async function handleCopiaRg() {
+    if (!matter) return;
+    const testo = `R.G. ${matter.rg_numero}${matter.rg_anno ? `/${matter.rg_anno}` : ''}`;
+    try {
+      await navigator.clipboard.writeText(testo);
+      setCopiatoRg(true);
+      setTimeout(() => setCopiatoRg(false), 2000);
+    } catch { /* clipboard non disponibile: l'avvocato lo legge e lo trascrive a mano */ }
+  }
+
   async function handleArchive() {
     if (!confirm('Archiviare questa pratica?')) return;
     await supabase.from('matters').update({ stato: 'archiviata' }).eq('id', id);
@@ -319,6 +330,33 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           </button>
         </div>
       </form>
+
+      {matter.rg_numero && (
+        <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+          <h2 className="mb-3 font-semibold text-neutral-900">Verifica sul portale Giustizia Civile</h2>
+          <p className="mb-3 text-sm text-neutral-600">
+            R.G. <span className="font-semibold">{matter.rg_numero}{matter.rg_anno && `/${matter.rg_anno}`}</span>
+            {matter.tribunale && <> — {matter.tribunale}</>}
+          </p>
+          <p className="mb-3 text-xs text-neutral-500">
+            Il portale del Ministero richiede una verifica manuale con CAPTCHA: nessuna automazione può
+            completarla al posto tuo. Apri il portale, scegli Regione, Ufficio giudiziario e Registro, poi
+            &quot;Ruolo generale&quot; e incolla qui il numero R.G.
+          </p>
+          <div className="flex items-center gap-2">
+            <a
+              href="https://servizipst.giustizia.it/PST/it/pst_2_6.wp"
+              target="_blank" rel="noopener noreferrer"
+              className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
+            >
+              Apri portale Giustizia Civile
+            </a>
+            <button type="button" onClick={handleCopiaRg} className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm hover:bg-neutral-200">
+              {copiatoRg ? 'Copiato' : 'Copia R.G.'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="mb-4 rounded-xl bg-neutral-50 p-6">
         <div className="mb-3 flex items-center justify-between">
