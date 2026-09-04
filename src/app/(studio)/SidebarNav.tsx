@@ -33,6 +33,7 @@ const ICONE: Record<string, NomeIcona> = {
   '/calcolo-danno': 'calcolo',
   '/parcelle': 'parcelle',
   '/patrocinio': 'patrocinio',
+  '/registri-giustizia': 'cerca',
   '/domande-frequenti': 'aiuto',
   '/attivita': 'attivita',
   '/collaboratori': 'collaboratori',
