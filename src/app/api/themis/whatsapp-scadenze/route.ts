@@ -87,6 +87,21 @@ export async function POST() {
     }
   };
 
+  // Le proposte che l'avvocato ha scartato in passato: non sono un fatto
+  // da riproporre in altre parole, sono un esempio di "questo non è una
+  // vera scadenza" per questo studio. Un giro solo, non per ogni
+  // messaggio: cinque esempi bastano a orientare senza appesantire ogni
+  // singola richiesta.
+  const { data: rifiutate } = await admin
+    .from('whatsapp_proposte')
+    .select('titolo_proposto, estratto')
+    .eq('studio_id', studioId).eq('stato', 'rifiutata')
+    .order('creata_il', { ascending: false }).limit(5);
+  const bloccoRifiutate = (rifiutate ?? []).length
+    ? `\n\nPROPOSTE SCARTATE DALL'AVVOCATO IN PASSATO (non erano vere scadenze — sii più cauto con frasi simili):\n`
+      + rifiutate!.map((r, i) => `${i + 1}. "${r.titolo_proposto}" — dal testo: «${r.estratto ?? ''}»`).join('\n')
+    : '';
+
   let create = 0;
   let falliti = 0;
   try {
@@ -125,7 +140,8 @@ export async function POST() {
             role: 'user',
             content: `DATA DEL MESSAGGIO DA ANALIZZARE: ${dataMessaggio}\n\n`
               + (contestoConversazione ? `CONVERSAZIONE PRECEDENTE (solo contesto):\n${contestoConversazione}\n\n` : '')
-              + `MESSAGGIO DA ANALIZZARE:\nCLIENTE: ${testoDaAnalizzare}`,
+              + `MESSAGGIO DA ANALIZZARE:\nCLIENTE: ${testoDaAnalizzare}`
+              + bloccoRifiutate,
           }],
         }));
 

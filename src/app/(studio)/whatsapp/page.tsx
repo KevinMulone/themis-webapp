@@ -72,6 +72,9 @@ export default function WhatsappPage() {
   const richiesteSuggerimento = useRef<Set<string>>(new Set());
   const [composizione, setComposizione] = useState<Record<string, string>>({});
   const [generando, setGenerando] = useState('');
+  const [bozzaDaValutare, setBozzaDaValutare] = useState<Record<string, boolean>>({});
+  const [notaNegativa, setNotaNegativa] = useState<Record<string, string>>({});
+  const [scriveNota, setScriveNota] = useState<Record<string, boolean>>({});
   const [inviando, setInviando] = useState('');
   const [selezionata, setSelezionata] = useState<string | null>(null);
   const fondoChatRef = useRef<HTMLDivElement>(null);
@@ -219,6 +222,24 @@ export default function WhatsappPage() {
     setGenerando('');
     if (!res.ok) { alert(body.error || 'Bozza non riuscita'); return; }
     setComposizione((prev) => ({ ...prev, [jid]: body.testo }));
+    // Solo una bozza scritta da Themis chiede un riscontro: se l'avvocato
+    // scrive da sé, non c'è nulla su cui Themis debba imparare.
+    setBozzaDaValutare((prev) => ({ ...prev, [jid]: true }));
+    setScriveNota((prev) => ({ ...prev, [jid]: false }));
+  }
+
+  async function valutaBozza(jid: string, buono: boolean) {
+    if (!buono && !notaNegativa[jid]?.trim()) {
+      setScriveNota((prev) => ({ ...prev, [jid]: true }));
+      return;
+    }
+    await fetch('/api/themis/whatsapp-bozza-feedback', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ buono, nota: buono ? undefined : notaNegativa[jid] }),
+    });
+    setBozzaDaValutare((prev) => ({ ...prev, [jid]: false }));
+    setScriveNota((prev) => ({ ...prev, [jid]: false }));
+    setNotaNegativa((prev) => ({ ...prev, [jid]: '' }));
   }
 
   async function invia(jid: string, messaggioId: string) {
@@ -233,6 +254,7 @@ export default function WhatsappPage() {
     setInviando('');
     if (!res.ok) { alert(body.error || 'Invio non riuscito'); return; }
     setComposizione((prev) => ({ ...prev, [jid]: '' }));
+    setBozzaDaValutare((prev) => ({ ...prev, [jid]: false }));
     caricaMessaggi();
   }
 
@@ -435,6 +457,43 @@ export default function WhatsappPage() {
               </div>
 
               <div className="border-t border-neutral-200 p-3">
+                {bozzaDaValutare[aperta.jid] && (
+                  <div className="mb-2 rounded-lg bg-gold-50 p-2 text-xs">
+                    {!scriveNota[aperta.jid] ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-gold-800">La bozza di Themis andava bene?</span>
+                        <button
+                          type="button" onClick={() => valutaBozza(aperta.jid, true)}
+                          className="premi rounded-full bg-white px-2.5 py-1 font-medium text-gold-800 hover:bg-gold-100"
+                        >
+                          Sì
+                        </button>
+                        <button
+                          type="button" onClick={() => valutaBozza(aperta.jid, false)}
+                          className="premi rounded-full bg-white px-2.5 py-1 font-medium text-gold-800 hover:bg-gold-100"
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          autoFocus placeholder="Cosa cambieresti?"
+                          value={notaNegativa[aperta.jid] || ''}
+                          onChange={(e) => setNotaNegativa((prev) => ({ ...prev, [aperta.jid]: e.target.value }))}
+                          className="min-w-0 flex-1 rounded-lg border border-gold-200 bg-white px-2 py-1 text-xs outline-none focus:border-gold-400"
+                        />
+                        <button
+                          type="button" onClick={() => valutaBozza(aperta.jid, false)}
+                          disabled={!notaNegativa[aperta.jid]?.trim()}
+                          className="premi rounded-full bg-gold-700 px-2.5 py-1 font-medium text-white hover:bg-gold-800 disabled:opacity-50"
+                        >
+                          Invia riscontro
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="flex items-end gap-2">
                   <textarea
                     ref={areaTestoRef}

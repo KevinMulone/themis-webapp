@@ -81,6 +81,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, esaminati: 0, proposte: 0, restanti: 0 });
   }
 
+  // Le proposte che l'avvocato ha scartato in passato — non le righe
+  // "Nessuna scadenza rilevata" che questa stessa route inserisce da sola
+  // per non rianalizzare una PEC senza scadenze (quelle hanno estratto
+  // nullo, un vero scarto dell'avvocato ha sempre la frase da cui viene).
+  const { data: rifiutate } = await admin
+    .from('pec_proposte')
+    .select('titolo_proposto, estratto')
+    .eq('studio_id', contesto.studioId).eq('stato', 'rifiutata').not('estratto', 'is', null)
+    .order('created_at', { ascending: false }).limit(5);
+  const bloccoRifiutate = (rifiutate ?? []).length
+    ? `\n\nPROPOSTE SCARTATE DALL'AVVOCATO IN PASSATO (non erano vere scadenze — sii più cauto con frasi simili):\n`
+      + rifiutate!.map((r, i) => `${i + 1}. "${r.titolo_proposto}" — dal testo: «${r.estratto}»`).join('\n')
+    : '';
+
   let create = 0;
   let falliti = 0;
   try {
@@ -108,7 +122,8 @@ export async function POST(request: Request) {
         messages: [{
           role: 'user',
           content: `DATA DEL MESSAGGIO: ${dataMessaggio}\nMITTENTE: ${messaggio.mittente ?? '?'}\n`
-            + `OGGETTO: ${messaggio.oggetto ?? '?'}\n\nTESTO:\n${corpo}`,
+            + `OGGETTO: ${messaggio.oggetto ?? '?'}\n\nTESTO:\n${corpo}`
+            + bloccoRifiutate,
         }],
       }));
 

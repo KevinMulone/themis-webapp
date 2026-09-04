@@ -80,6 +80,19 @@ export async function POST(request: Request) {
     .map((m) => `${m.direzione === 'in' ? 'CLIENTE' : 'STUDIO'}: ${decifra(m.testo_cifrato)}`)
     .join('\n');
 
+  // Le correzioni segnalate su bozze WhatsApp precedenti di questo studio:
+  // stesso meccanismo delle bozze di atti (atto_feedback). Un "sì" non
+  // lascia traccia, solo un "no" con una nota entra nel prompt.
+  const { data: correzioni } = await admin
+    .from('whatsapp_bozza_feedback')
+    .select('nota')
+    .eq('studio_id', studioId).eq('buono', false)
+    .order('created_at', { ascending: false }).limit(5);
+  const bloccoCorrezioni = (correzioni ?? []).length
+    ? `CORREZIONI SEGNALATE DALL'AVVOCATO SU BOZZE WHATSAPP PRECEDENTI — tienine conto:\n`
+      + correzioni!.map((c, i) => `${i + 1}. ${c.nota}`).join('\n')
+    : '';
+
   let scheda = 'Nessuna pratica collegata a questo numero.';
   if (messaggio.matter_id) {
     const { data: pratica } = await admin
@@ -110,6 +123,7 @@ export async function POST(request: Request) {
         content: [
           { type: 'text', text: `DATI DELLA PRATICA\n${scheda}` },
           { type: 'text', text: `CONVERSAZIONE WHATSAPP (dalla più vecchia alla più recente):\n${storico}` },
+          ...(bloccoCorrezioni ? [{ type: 'text' as const, text: bloccoCorrezioni }] : []),
           ...(notaDifensore
             ? [{ type: 'text' as const, text: `NOTA DEL DIFENSORE (da strutturare in un messaggio):\n${notaDifensore}` }]
             : []),
