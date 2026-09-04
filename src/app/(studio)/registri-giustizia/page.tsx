@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { TIPI_PRATICA, labelFromOptions, clientLabel } from '@/lib/constants';
 import { Icon } from '@/components/ui/Icon';
+import { linkGiustiziaCivile } from '@/lib/giustiziaCivile';
 
 type Client = { id: string; tipo_soggetto: string; nome: string | null; cognome: string | null; ragione_sociale: string | null };
 type Matter = {
@@ -12,8 +13,6 @@ type Matter = {
   rg_numero: string | null; rg_anno: string | null;
   clients?: Client;
 };
-
-const URL_PORTALE = 'https://servizipst.giustizia.it/PST/it/pst_2_6.wp';
 
 export default function RegistriGiustiziaPage() {
   const supabase = createClient();
@@ -111,7 +110,11 @@ export default function RegistriGiustiziaPage() {
                     {copiatoId === m.id ? 'Copiato' : 'Copia R.G.'}
                   </button>
                   <a
-                    href={URL_PORTALE} target="_blank" rel="noopener noreferrer"
+                    href={linkGiustiziaCivile({
+                      tribunale: m.tribunale, tipoPratica: m.tipo_pratica,
+                      rgNumero: m.rg_numero, rgAnno: m.rg_anno,
+                    })}
+                    target="_blank" rel="noopener noreferrer"
                     className="premi rounded-full bg-bordeaux-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-bordeaux-800"
                   >
                     Apri portale
@@ -124,9 +127,10 @@ export default function RegistriGiustiziaPage() {
       )}
 
       <p className="mt-4 text-xs text-neutral-400">
-        Il portale del Ministero richiede una verifica manuale con CAPTCHA per ogni ricerca: nessuna
-        automazione può completarla al posto tuo. Apri il portale, scegli Regione, Ufficio giudiziario e
-        Registro, poi &quot;Ruolo generale&quot; e incolla il numero R.G. copiato da qui.
+        Il portale del Ministero richiede sempre una verifica manuale con CAPTCHA: nessuna automazione può
+        completarla al posto tuo. Per i tribunali siciliani riconosciuti, &quot;Apri portale&quot; porta già a
+        Regione, Ufficio giudiziario, Registro e R.G. compilati — resta solo da risolvere il CAPTCHA. Per
+        gli altri, usa &quot;Copia R.G.&quot; e componi tu i primi passaggi.
       </p>
     </div>
   );

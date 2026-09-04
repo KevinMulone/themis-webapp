@@ -14,6 +14,7 @@ import {
   labelFromOptions, clientLabel,
 } from '@/lib/constants';
 import { GRUPPI_SCADENZE, gruppiPerPratica, calcolaScadenza, toIsoLocale, type RegolaScadenza } from '@/lib/scadenzeLegali';
+import { linkGiustiziaCivile } from '@/lib/giustiziaCivile';
 
 type Matter = {
   id: string; client_id: string; tipo_pratica: string; stato: string;
@@ -339,13 +340,17 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             {matter.tribunale && <> — {matter.tribunale}</>}
           </p>
           <p className="mb-3 text-xs text-neutral-500">
-            Il portale del Ministero richiede una verifica manuale con CAPTCHA: nessuna automazione può
-            completarla al posto tuo. Apri il portale, scegli Regione, Ufficio giudiziario e Registro, poi
-            &quot;Ruolo generale&quot; e incolla qui il numero R.G.
+            Il portale del Ministero richiede sempre una verifica manuale con CAPTCHA: nessuna automazione
+            può completarla al posto tuo. Il link qui sotto porta già a Regione, Ufficio giudiziario,
+            Registro e R.G. compilati, quando il tribunale è tra quelli riconosciuti — resta solo da
+            risolvere il CAPTCHA.
           </p>
           <div className="flex items-center gap-2">
             <a
-              href="https://servizipst.giustizia.it/PST/it/pst_2_6.wp"
+              href={linkGiustiziaCivile({
+                tribunale: matter.tribunale, tipoPratica: matter.tipo_pratica,
+                rgNumero: matter.rg_numero, rgAnno: matter.rg_anno,
+              })}
               target="_blank" rel="noopener noreferrer"
               className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
             >
