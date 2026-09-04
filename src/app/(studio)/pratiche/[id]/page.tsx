@@ -271,7 +271,6 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           <h1 className="text-2xl font-display font-semibold text-neutral-900">{clientLabel(client)}</h1>
           <p className="text-sm text-neutral-500">{labelFromOptions(TIPI_PRATICA, matter.tipo_pratica)}</p>
         </div>
-        {saved && <span className="text-sm text-green-700">Salvato</span>}
       </div>
 
       <form onSubmit={handleSaveMatter} className="mb-4 rounded-xl bg-neutral-50 p-6">
@@ -322,13 +321,16 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             <textarea name="descrizione" defaultValue={matter.descrizione ?? ''} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
         </div>
-        <div className="mt-4 flex justify-between border-t border-neutral-200 pt-4">
+        <div className="mt-4 flex items-center justify-between border-t border-neutral-200 pt-4">
           <button type="button" onClick={handleArchive} className="premi rounded-full bg-red-50 px-4 py-2 text-sm text-red-700 hover:bg-red-100">
             Archivia pratica
           </button>
-          <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
-            Salva
-          </button>
+          <span className="flex items-center gap-3">
+            {saved && <span className="text-sm text-green-700">Salvato correttamente</span>}
+            <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
+              Salva
+            </button>
+          </span>
         </div>
       </form>
 
@@ -436,7 +438,6 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         <form onSubmit={handleSavePatrocinio} className="mb-4 rounded-xl bg-neutral-50 p-6">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-semibold text-neutral-900">Patrocinio a spese dello Stato</h2>
-            {savedPatrocinio && <span className="text-sm text-green-700">Salvato</span>}
           </div>
           {patrocinioError && <p className="mb-3 text-sm text-red-600">{patrocinioError}</p>}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -479,7 +480,8 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
               <textarea name="note" defaultValue={patrocinio?.note ?? ''} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
             </div>
           </div>
-          <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
+          <div className="mt-4 flex items-center justify-end gap-3 border-t border-neutral-200 pt-4">
+            {savedPatrocinio && <span className="text-sm text-green-700">Salvato correttamente</span>}
             <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
               Salva
             </button>
@@ -585,7 +587,8 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
                 <textarea name="note" defaultValue={sinistro.note ?? ''} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
               </div>
             </div>
-            <div className="mt-4 flex justify-end border-t border-neutral-200 pt-4">
+            <div className="mt-4 flex items-center justify-end gap-3 border-t border-neutral-200 pt-4">
+              {saved && <span className="text-sm text-green-700">Salvato correttamente</span>}
               <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800">
                 Salva
               </button>
