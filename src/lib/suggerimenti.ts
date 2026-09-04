@@ -63,6 +63,13 @@ export const TRIBUNALI = [
   'Giudice di Pace di Gela', 'Giudice di Pace di Enna',
 ];
 
+export const SEZIONI = [
+  'Sezione Civile', 'Prima Sezione Civile', 'Seconda Sezione Civile', 'Terza Sezione Civile',
+  'Sezione Lavoro e Previdenza', 'Sezione Volontaria Giurisdizione',
+  'Sezione Fallimentare', 'Sezione Esecuzioni Mobiliari', 'Sezione Esecuzioni Immobiliari',
+  'Sezione Penale', 'Sezione Distaccata',
+];
+
 /**
  * Aiuto per i campi a nome fisso delle schede pratica e sinistro.
  * Le chiavi sono i nomi delle colonne.

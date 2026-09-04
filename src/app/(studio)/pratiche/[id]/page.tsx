@@ -4,7 +4,7 @@ import { useEffect, useState, use as usePromise } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
-import { AIUTO_CAMPI, COMPAGNIE_ASSICURATIVE, TRIBUNALI } from '@/lib/suggerimenti';
+import { AIUTO_CAMPI, COMPAGNIE_ASSICURATIVE, TRIBUNALI, SEZIONI } from '@/lib/suggerimenti';
 import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import IncarichiPratica from './IncarichiPratica';
 import ChiediAlFascicolo from './ChiediAlFascicolo';
@@ -304,7 +304,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           )}
           <Field label="Numero riferimento" name="numero_riferimento" defaultValue={matter.numero_riferimento} />
           <Field opzioni={TRIBUNALI} label="Tribunale" name="tribunale" defaultValue={matter.tribunale} />
-          <Field label="Sezione" name="sezione" defaultValue={matter.sezione} />
+          <Field opzioni={SEZIONI} label="Sezione" name="sezione" defaultValue={matter.sezione} />
           <Field label="RG numero" name="rg_numero" defaultValue={matter.rg_numero} />
           <Field label="RG anno" name="rg_anno" defaultValue={matter.rg_anno} />
           <Field label="Giudice" name="giudice" defaultValue={matter.giudice} />
