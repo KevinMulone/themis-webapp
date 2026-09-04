@@ -14,6 +14,7 @@ export default function AccediClient() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
+  const [mostraPassword, setMostraPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -144,14 +145,24 @@ export default function AccediClient() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
-            type="password"
-            placeholder="Password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          <div className="relative">
+            <input
+              className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 pr-10 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              type={mostraPassword ? 'text' : 'password'}
+              placeholder="Password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => setMostraPassword((v) => !v)}
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-xs text-neutral-500 hover:text-neutral-700"
+              aria-label={mostraPassword ? 'Nascondi password' : 'Mostra password'}
+            >
+              {mostraPassword ? 'Nascondi' : 'Mostra'}
+            </button>
+          </div>
           <div className="flex items-center justify-between">
             <label className="flex items-center gap-2 text-sm text-neutral-600">
               <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
