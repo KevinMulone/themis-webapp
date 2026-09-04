@@ -33,6 +33,7 @@ const ICONE: Record<string, NomeIcona> = {
   '/calcolo-danno': 'calcolo',
   '/parcelle': 'parcelle',
   '/patrocinio': 'patrocinio',
+  '/domande-frequenti': 'aiuto',
   '/attivita': 'attivita',
   '/collaboratori': 'collaboratori',
   '/impostazioni': 'impostazioni',
@@ -112,7 +113,8 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
         <div className="border-t border-neutral-200/70 pt-1">
           <LogoutButton />
         </div>
-        <p className="pb-2 pt-2 text-center text-[10px] text-neutral-300">Creato da Kevin M. D.</p>
+        <p className="pt-2 text-center text-[10px] text-neutral-300">Creato da Kevin M. D.</p>
+        <p className="pb-2 text-center text-[10px] text-neutral-300">Versione beta</p>
       </div>
     </>
   );

@@ -33,6 +33,7 @@ const NAV = [
   { href: '/calcolo-danno', label: 'Calcolo Danno' },
   { href: '/parcelle', label: 'Parcelle' },
   { href: '/patrocinio', label: 'Patrocinio Stato' },
+  { href: '/domande-frequenti', label: 'Domande frequenti' },
 ];
 
 // Resta sempre in fondo, dopo le voci riservate al titolare.
