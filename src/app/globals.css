@@ -1,18 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f5f5f7;
   --foreground: #1d1d1f;
+  --surface: #ffffff;
+  --hairline: rgba(0, 0, 0, 0.08);
 
-  /* Themis ha un solo tema, chiaro: lo si dichiara al browser così anche i
-     controlli nativi — campi di testo, tendine, selettori di data —
-     restano chiari su un telefono impostato in modalità scura, invece di
-     comparire scuri dentro schede bianche. */
   color-scheme: light;
 
-  /* Le due curve del sistema. La prima fa comparire le cose: parte veloce
-     e si posa lentamente, senza mai rimbalzare. È quella che Apple usa in
-     tutte le sue pagine, e la ragione per cui il movimento non distrae. */
   --molla: cubic-bezier(.16, 1, .3, 1);
   --dolce: cubic-bezier(.28, .11, .32, 1);
 }
@@ -21,27 +16,14 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* Il carattere è San Francisco quando c'è — su Mac, iPhone e iPad —
-     e Inter dove non c'è. SF non si scarica: appartiene al sistema, e
-     nominarlo per primo è l'unico modo di averlo davvero. */
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
                var(--font-inter), 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
                   var(--font-inter), 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-mono: var(--font-geist-mono);
 
-  /* ------------------------------------------------------------------
-     I grigi.
-     Non sono i grigi di Tailwind: sono quelli di Apple, sostituiti qui
-     una volta sola. In tutta l'app ci sono più di milleduecento classi
-     neutral-*; ridefinirle alla radice le converte tutte insieme, senza
-     toccare un solo file di pagina. #f5f5f7 è il grigio dei blocchi,
-     #d2d2d7 quello dei fili, #86868b e #6e6e73 i due grigi del testo,
-     #1d1d1f il nero. Sono appena freddi, ed è per questo che accanto a
-     loro il bianco sembra più bianco.
-     ------------------------------------------------------------------ */
   --color-neutral-50:  #f5f5f7;
-  --color-neutral-100: #ecebef;
+  --color-neutral-100: #ebebed;
   --color-neutral-200: #d2d2d7;
   --color-neutral-300: #c7c7cc;
   --color-neutral-400: #aeaeb2;
@@ -52,19 +34,15 @@
   --color-neutral-900: #1d1d1f;
   --color-neutral-950: #000000;
 
-  /* Gli angoli, più morbidi di quelli predefiniti: rounded-md diventa 8px,
-     rounded-2xl 18px. Anche questo si applica a tutta l'app in un colpo. */
-  --radius-sm:  6px;
-  --radius-md:  8px;
-  --radius-lg:  10px;
-  --radius-xl:  14px;
-  --radius-2xl: 18px;
-  --radius-3xl: 24px;
+  --radius-sm:  8px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  18px;
+  --radius-2xl: 24px;
+  --radius-3xl: 32px;
 
   --color-bordeaux-50: #fbf1f3;
   --color-bordeaux-100: #f5dbe1;
-  /* 200 e 300 mancavano: le classi che li usavano (hover:border-bordeaux-300)
-     non producevano nulla, e l'effetto restava invisibile senza un errore. */
   --color-bordeaux-200: #ecbcc7;
   --color-bordeaux-300: #db8ba0;
   --color-bordeaux-400: #bf5170;
@@ -75,10 +53,6 @@
   --color-bordeaux-900: #451224;
   --color-bordeaux-950: #2e0c18;
 
-  /* Anche qui mancavano tonalità già usate nel codice: i riquadri d'avviso
-     ("Da controllare prima di firmare") chiedevano bg-gold-50 e text-gold-800
-     e li ottenevano trasparenti, cioè senza sfondo e col testo del colore
-     ereditato. */
   --color-gold-50: #fdf8e9;
   --color-gold-100: #f9edc7;
   --color-gold-200: #f3dc8e;
@@ -90,57 +64,101 @@
   --color-gold-800: #653f14;
 }
 
-/* Qui c'era un blocco @media (prefers-color-scheme: dark) lasciato dallo
-   scaffold di create-next-app, che rendeva il testo del body quasi bianco
-   (#ededed) quando il telefono era in modalità scura. Ma l'app non ha mai
-   avuto un tema scuro — nessuna classe dark: da nessuna parte — e le schede
-   restavano bianche: risultato, testo bianco su bianco, e nei campi si
-   scriveva alla cieca. Rimosso. */
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: rgba(107, 29, 57, 0.16);
+  color: #451224;
+}
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.011em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* La regola tipografica che dà ai titoli la loro compattezza: più il testo
-   è grande, più le lettere si stringono. È questo, più del disegno del
-   carattere, a far somigliare una pagina a quelle di Apple. */
-h1 { letter-spacing: -0.026em; }
-h2 { letter-spacing: -0.022em; }
-h3, .font-display { letter-spacing: -0.018em; }
+h1 { letter-spacing: -0.03em; }
+h2 { letter-spacing: -0.024em; }
+h3, .font-display { letter-spacing: -0.02em; }
 
-/* I numeri delle tabelle e degli importi restano incolonnati anche quando
-   cambiano: le cifre hanno tutte la stessa larghezza. */
 .num, table, tbody, .tabular {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
 }
 
-/* ------------------------------------------------------------------
-   Il materiale traslucido delle barre: lo sfondo si intravede sfocato e
-   più saturo. È la ricetta esatta delle barre di Apple.
-   ------------------------------------------------------------------ */
+/* Vetro: barre Apple — saturo, sfocato, hairline. */
 .vetro {
   background: rgba(255, 255, 255, 0.72);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  backdrop-filter: saturate(180%) blur(22px);
 }
 
-/* ------------------------------------------------------------------
-   Il movimento. Una sola grammatica: le cose entrano sfocate, un po' più
-   in basso e appena più piccole, e si mettono a fuoco salendo. Durate
-   lunghe, nessun rimbalzo, ritardi a scalare di settanta millisecondi.
-   ------------------------------------------------------------------ */
+.vetro-scuro {
+  background: rgba(18, 8, 12, 0.72);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  backdrop-filter: saturate(180%) blur(24px);
+}
+
+.scheda {
+  background: #fff;
+  border: 1px solid var(--hairline);
+  border-radius: 24px;
+  box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 18px 40px -28px rgba(0,0,0,.18);
+}
+
+.campo {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(255,255,255,.9);
+  padding: 0.85rem 1rem;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+  outline: none;
+  transition: border-color .25s var(--dolce), box-shadow .25s var(--dolce), background .25s var(--dolce);
+}
+
+.campo:focus {
+  border-color: rgba(107, 29, 57, .45);
+  box-shadow: 0 0 0 4px rgba(107, 29, 57, .12);
+  background: #fff;
+}
+
+.pagina-auth {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  background:
+    radial-gradient(60% 50% at 12% 0%, rgba(107,29,57,.07), transparent 60%),
+    radial-gradient(50% 40% at 100% 8%, rgba(201,147,42,.08), transparent 55%),
+    #f5f5f7;
+}
+
+.scheda-auth {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255,255,255,.78);
+  border: 1px solid rgba(255,255,255,.7);
+  border-radius: 28px;
+  box-shadow: 0 30px 80px -40px rgba(45, 12, 24, .35);
+  -webkit-backdrop-filter: saturate(160%) blur(24px);
+  backdrop-filter: saturate(160%) blur(24px);
+  padding: 2.25rem 1.75rem 1.75rem;
+}
+
 @keyframes entra {
-  from { opacity: 0; transform: translateY(28px) scale(.985); filter: blur(10px); }
+  from { opacity: 0; transform: translateY(24px) scale(.985); filter: blur(10px); }
   to   { opacity: 1; transform: none;                         filter: blur(0); }
 }
 @keyframes entra-piano {
-  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  from { opacity: 0; transform: translateY(12px); filter: blur(6px); }
   to   { opacity: 1; transform: none;             filter: blur(0); }
 }
 @keyframes traccia { from { transform: scaleX(0); } to { transform: scaleX(1); } }
@@ -156,34 +174,24 @@ h3, .font-display { letter-spacing: -0.018em; }
 .traccia { transform-origin: left; animation: traccia 1.2s var(--molla) both .35s; }
 .respiro { animation: respiro 3.4s ease-in-out infinite; }
 
-/* Il rilievo al passaggio del mouse è minimo: meno dell'uno per cento di
-   scala e un'ombra che quasi non si vede. */
-.rialzo { transition: transform .6s var(--dolce), box-shadow .6s var(--dolce), background-color .4s var(--dolce); }
-.rialzo:hover { transform: translateY(-2px) scale(1.006); box-shadow: 0 10px 40px -14px rgba(0,0,0,.14); }
+.rialzo { transition: transform .55s var(--dolce), box-shadow .55s var(--dolce), background-color .35s var(--dolce); }
+.rialzo:hover { transform: translateY(-3px) scale(1.008); box-shadow: 0 22px 50px -28px rgba(0,0,0,.22); }
 
-/* I comandi si comprimono quando li premi, come sui dispositivi Apple. */
-.premi { transition: transform .35s var(--dolce), opacity .35s var(--dolce); }
+.premi { transition: transform .28s var(--dolce), opacity .28s var(--dolce); }
 .premi:active { transform: scale(.97); }
 
-/* I numeri grandi salgono da zero. È CSS puro: dove il browser non sa
-   animare un contatore il numero resta fermo sul valore giusto, senza
-   buchi e senza errori. Si usa così: <span class="conta" style={{'--n': 41}} /> */
 @property --n { syntax: '<integer>'; initial-value: 0; inherits: false; }
 @keyframes conta { from { --n: 0; } }
 .conta { counter-reset: n var(--n); animation: conta 1.7s var(--molla) both .35s; }
 .conta::after { content: counter(n); }
 
-/* Barra di avanzamento indeterminata: si usa dove non sappiamo quanto
-   manca (lo scarico IMAP), perché una percentuale inventata è peggio di
-   nessuna percentuale. */
 @keyframes scorri {
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(300%); }
 }
 
-/* Chi ha chiesto al sistema operativo meno animazioni non ne vede
-   nessuna: restano solo i contenuti, già al loro posto. */
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   .entra, .piano, .traccia, .respiro, .conta {
     animation: none;
     opacity: 1;

@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Themis",
-  description: "Gestione pratiche legali per studi legali",
+  description: "Gestione pratiche, PEC, calendario e generazione atti per studi legali.",
 };
 
 export const viewport: Viewport = {

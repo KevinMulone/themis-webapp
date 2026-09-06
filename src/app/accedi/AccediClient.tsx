@@ -33,7 +33,7 @@ export default function AccediClient() {
     setError('');
     setLoading(true);
     const supabase = createClient();
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError) {
       setLoading(false);
       setError('Email o password errati.');
@@ -43,11 +43,6 @@ export default function AccediClient() {
     if (rememberMe) localStorage.setItem(REMEMBER_KEY, email);
     else localStorage.removeItem(REMEMBER_KEY);
 
-    // Stessa domanda del layout: non "la riga studios che sono io", ma "a
-    // quale studio appartengo". Un collaboratore non ha una riga studios
-    // propria e senza questo verrebbe mandato ad attivare una licenza.
-    // Quando non si appartiene a nessuno studio la funzione non
-    // restituisce righe, ed è il caso gestito qui sotto da !studio.
     const { data: contesto } = await supabase.rpc('contesto_studio').maybeSingle();
     const studio = contesto as {
       plan: string | null;
@@ -88,26 +83,23 @@ export default function AccediClient() {
       redirectTo: `${window.location.origin}/reimposta-password`,
     });
     setRecuperoLoading(false);
-    // Messaggio uguale a prescindere dal risultato: non conferma né smentisce
-    // se quell'indirizzo è registrato, per non rivelare a chi non è
-    // autorizzato quali email hanno un account.
     setRecuperoMsg("Se l'indirizzo è registrato, riceverai a breve un'email con le istruzioni per reimpostare la password.");
   }
 
   if (modalitaRecupero) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
-        <div className="w-full max-w-sm rounded-xl bg-neutral-50 p-8">
-          <BrandHero />
-          <p className="mb-6 text-center text-sm text-neutral-500">Recupera la password</p>
+      <div className="pagina-auth">
+        <div className="scheda-auth entra">
+          <BrandHero titolo="Recupera l'accesso" />
+          <p className="mb-7 text-center text-[15px] text-neutral-500">Ti invieremo un link all&apos;email dello studio.</p>
           {recuperoMsg ? (
-            <p className="text-sm text-green-700">{recuperoMsg}</p>
+            <p className="rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{recuperoMsg}</p>
           ) : (
             <form onSubmit={handleRecupero} className="flex flex-col gap-3">
               <input
-                className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="campo"
                 type="email"
-                placeholder="La tua email"
+                placeholder="Email"
                 autoComplete="username"
                 value={recuperoEmail}
                 onChange={(e) => setRecuperoEmail(e.target.value)}
@@ -115,14 +107,14 @@ export default function AccediClient() {
               <button
                 type="submit"
                 disabled={recuperoLoading}
-                className="mt-2 premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                className="premi mt-2 rounded-full bg-neutral-900 py-3 text-[15px] font-medium text-white hover:bg-black disabled:opacity-50"
               >
-                {recuperoLoading ? 'Invio...' : 'Invia il link per reimpostarla'}
+                {recuperoLoading ? 'Invio...' : 'Invia il link'}
               </button>
             </form>
           )}
-          <p className="mt-4 text-center text-sm text-neutral-500">
-            <button type="button" onClick={() => setModalitaRecupero(false)} className="text-bordeaux-700 hover:underline">
+          <p className="mt-6 text-center text-sm text-neutral-500">
+            <button type="button" onClick={() => setModalitaRecupero(false)} className="font-medium text-neutral-900 hover:underline">
               Torna al login
             </button>
           </p>
@@ -132,13 +124,13 @@ export default function AccediClient() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
-      <div className="w-full max-w-sm rounded-xl bg-neutral-50 p-8">
-        <BrandHero />
-        <p className="mb-6 text-center text-sm text-neutral-500">Accedi con le credenziali del tuo studio</p>
+    <div className="pagina-auth">
+      <div className="scheda-auth entra">
+        <BrandHero titolo="Accedi" />
+        <p className="mb-7 text-center text-[15px] text-neutral-500">Usa le credenziali del tuo studio.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="campo"
             type="email"
             placeholder="Email"
             autoComplete="username"
@@ -147,7 +139,7 @@ export default function AccediClient() {
           />
           <div className="relative">
             <input
-              className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 pr-10 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+              className="campo pr-16"
               type={mostraPassword ? 'text' : 'password'}
               placeholder="Password"
               autoComplete="current-password"
@@ -157,18 +149,18 @@ export default function AccediClient() {
             <button
               type="button"
               onClick={() => setMostraPassword((v) => !v)}
-              className="absolute inset-y-0 right-0 flex items-center px-3 text-xs text-neutral-500 hover:text-neutral-700"
+              className="absolute inset-y-0 right-0 px-4 text-[13px] font-medium text-neutral-500 hover:text-neutral-800"
               aria-label={mostraPassword ? 'Nascondi password' : 'Mostra password'}
             >
               {mostraPassword ? 'Nascondi' : 'Mostra'}
             </button>
           </div>
-          <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-sm text-neutral-600">
-              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+          <div className="flex items-center justify-between pt-1">
+            <label className="flex items-center gap-2 text-[13px] text-neutral-600">
+              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="accent-bordeaux-700" />
               Ricordami
             </label>
-            <button type="button" onClick={apriRecupero} className="text-sm text-bordeaux-700 hover:underline">
+            <button type="button" onClick={apriRecupero} className="text-[13px] font-medium text-neutral-800 hover:underline">
               Password dimenticata?
             </button>
           </div>
@@ -176,14 +168,14 @@ export default function AccediClient() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+            className="premi mt-3 rounded-full bg-neutral-900 py-3 text-[15px] font-medium text-white hover:bg-black disabled:opacity-50"
           >
             {loading ? 'Accesso...' : 'Entra'}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-neutral-500">
+        <p className="mt-6 text-center text-sm text-neutral-500">
           Non hai ancora un account?{' '}
-          <Link href="/registrati" className="text-bordeaux-700 hover:underline">
+          <Link href="/registrati" className="font-medium text-neutral-900 hover:underline">
             Registrati
           </Link>
         </p>

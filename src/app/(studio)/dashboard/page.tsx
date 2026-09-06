@@ -58,7 +58,7 @@ function Tessera({ href, icona, tinta, valore, titolo, sottotitolo, allerta = fa
   return (
     <Link
       href={href}
-      className="rialzo group flex flex-col rounded-2xl bg-neutral-50 p-5"
+      className="rialzo group flex flex-col rounded-[22px] bg-white p-5 ring-1 ring-black/[0.04]"
     >
       <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${TINTE[tinta]}`}>
         <Icon nome={icona} className="h-5 w-5" />
@@ -100,7 +100,7 @@ function AzioneRapida({ href, icona, testo }: { href: string; icona: NomeIcona; 
   return (
     <Link
       href={href}
-      className="premi flex items-center gap-2.5 rounded-xl bg-neutral-50 px-4 py-3 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-bordeaux-700"
+      className="premi flex items-center gap-2.5 rounded-2xl bg-white px-4 py-3 text-sm font-medium text-neutral-700 ring-1 ring-black/[0.04] transition-colors hover:bg-neutral-50 hover:text-bordeaux-700"
     >
       <Icon nome={icona} className="h-[18px] w-[18px] text-bordeaux-600" />
       {testo}
@@ -168,19 +168,19 @@ export default async function DashboardPage() {
     <div className="mx-auto max-w-7xl">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-neutral-900">Dashboard</h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Dashboard</h1>
+          <p className="mt-1 text-[15px] text-neutral-500">
             Bentornato, ecco cosa sta succedendo oggi.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="flex items-center gap-2 rounded-lg bg-neutral-50 px-3 py-2 text-sm text-neutral-600">
+          <span className="flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-sm text-neutral-600 ring-1 ring-black/[0.04]">
             <Icon nome="calendario" className="h-4 w-4 text-neutral-400" />
             {oggiEsteso}
           </span>
           <Link
             href="/pratiche"
-            className="flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
+            className="premi flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-black"
           >
             <Icon nome="piu" className="h-4 w-4" />
             Nuova pratica
@@ -219,7 +219,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl bg-neutral-50 p-6">
+        <div className="rounded-[24px] bg-white p-6 ring-1 ring-black/[0.04]">
           <TestataSezione icona="orologio" titolo="Prossime scadenze" href="/calendario" azione="Vedi calendario" />
           {scadenze.length === 0 ? (
             <div className="py-10 text-center">
@@ -247,7 +247,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="rounded-2xl bg-neutral-50 p-6">
+        <div className="rounded-[24px] bg-white p-6 ring-1 ring-black/[0.04]">
           <TestataSezione icona="pratiche" titolo="Pratiche recenti" href="/pratiche" azione="Vedi tutte" />
           {pratiche.length === 0 ? (
             <div className="py-10 text-center">
@@ -285,8 +285,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl bg-neutral-50 p-6">
-        <h2 className="mb-4 font-semibold text-neutral-900">Azioni rapide</h2>
+      <div className="mt-6 rounded-[24px] bg-white p-6 ring-1 ring-black/[0.04]">
+        <h2 className="mb-4 font-semibold tracking-tight text-neutral-900">Azioni rapide</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <AzioneRapida href="/clienti" icona="clienti" testo="Nuovo cliente" />
           <AzioneRapida href="/pratiche" icona="pratiche" testo="Nuova pratica" />

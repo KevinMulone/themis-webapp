@@ -11,10 +11,10 @@ export default async function AccountSospesoPage({
   const rimosso = motivo === 'collaboratore_rimosso';
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
-      <div className="w-full max-w-sm rounded-xl bg-neutral-50 p-8 text-center">
-        <BrandHero />
-        <p className="mb-1 font-semibold text-red-700">
+    <div className="pagina-auth">
+      <div className="scheda-auth entra text-center">
+        <BrandHero titolo="Themis" />
+        <p className="mb-1 text-lg font-semibold tracking-tight text-neutral-900">
           {rimosso ? 'Accesso revocato' : scaduto ? 'Abbonamento scaduto' : 'Account sospeso'}
         </p>
         <p className="mb-6 text-sm text-neutral-600">

@@ -49,19 +49,19 @@ export default function RegistratiClient() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
-      <div className="w-full max-w-sm rounded-xl bg-neutral-50 p-8">
-        <BrandHero />
-        <p className="mb-6 text-center text-sm text-neutral-500">Crea l&apos;account del tuo studio</p>
+    <div className="pagina-auth">
+      <div className="scheda-auth entra">
+        <BrandHero titolo="Crea lo studio" />
+        <p className="mb-7 text-center text-[15px] text-neutral-500">Crea l&apos;account del tuo studio.</p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <input
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="campo"
             placeholder="Nome dello studio"
             value={nomeStudio}
             onChange={(e) => setNomeStudio(e.target.value)}
           />
           <input
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="campo"
             type="email"
             placeholder="Email"
             autoComplete="username"
@@ -69,7 +69,7 @@ export default function RegistratiClient() {
             onChange={(e) => setEmail(e.target.value)}
           />
           <input
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+            className="campo"
             type="password"
             placeholder="Password (almeno 8 caratteri)"
             autoComplete="new-password"
@@ -80,14 +80,14 @@ export default function RegistratiClient() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+            className="premi mt-3 rounded-full bg-neutral-900 py-3 text-[15px] font-medium text-white hover:bg-black disabled:opacity-50"
           >
             {loading ? 'Registrazione...' : 'Registrati'}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-neutral-500">
+        <p className="mt-6 text-center text-sm text-neutral-500">
           Hai già un account?{' '}
-          <Link href="/accedi" className="text-bordeaux-700 hover:underline">
+          <Link href="/accedi" className="font-medium text-neutral-900 hover:underline">
             Accedi
           </Link>
         </p>

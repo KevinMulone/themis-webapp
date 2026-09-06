@@ -70,10 +70,10 @@ function AttivaPageInner() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-100 px-4">
-      <div className="w-full max-w-md rounded-xl bg-neutral-50 p-8">
-        <BrandHero />
-        <p className="mb-6 text-center text-sm text-neutral-500">Attiva il tuo account</p>
+    <div className="pagina-auth">
+      <div className="scheda-auth entra">
+        <BrandHero titolo="Attiva Themis" />
+        <p className="mb-7 text-center text-[15px] text-neutral-500">Attiva l&apos;account del tuo studio.</p>
 
         {checkoutEsito === 'success' && (
           <p className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-700">
@@ -86,18 +86,18 @@ function AttivaPageInner() {
           </p>
         )}
 
-        <div className="mb-4 flex rounded-full bg-neutral-100 p-1 text-sm">
+        <div className="mb-5 flex rounded-full bg-neutral-100 p-1 text-sm">
           <button
             type="button"
             onClick={() => setTab('chiave')}
-            className={`premi flex-1 rounded-full py-1.5 ${tab === 'chiave' ? 'bg-bordeaux-700 text-white' : 'text-neutral-600'}`}
+            className={`premi flex-1 rounded-full py-2 ${tab === 'chiave' ? 'bg-neutral-900 text-white' : 'text-neutral-600'}`}
           >
             Ho una chiave
           </button>
           <button
             type="button"
             onClick={() => setTab('abbonati')}
-            className={`premi flex-1 rounded-full py-1.5 ${tab === 'abbonati' ? 'bg-bordeaux-700 text-white' : 'text-neutral-600'}`}
+            className={`premi flex-1 rounded-full py-2 ${tab === 'abbonati' ? 'bg-neutral-900 text-white' : 'text-neutral-600'}`}
           >
             Abbonati ora
           </button>
@@ -110,7 +110,7 @@ function AttivaPageInner() {
             </p>
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               <textarea
-                className="min-h-24 rounded-lg border border-neutral-200 bg-white px-3 py-2 font-mono text-xs outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                className="campo min-h-24 font-mono text-xs"
                 placeholder="THM-....."
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
@@ -119,7 +119,7 @@ function AttivaPageInner() {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-2 premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                className="premi mt-2 rounded-full bg-neutral-900 py-3 text-[15px] font-medium text-white hover:bg-black disabled:opacity-50"
               >
                 {loading ? 'Attivazione...' : 'Attiva'}
               </button>
@@ -128,16 +128,16 @@ function AttivaPageInner() {
         ) : (
           <div className="flex flex-col gap-3">
             {PIANI.map((p) => (
-              <div key={p.key} className="rounded-2xl bg-neutral-50 p-4">
+              <div key={p.key} className="rounded-2xl bg-neutral-50 p-4 ring-1 ring-black/[0.04]">
                 <div className="mb-1 flex items-baseline justify-between">
                   <span className="font-semibold text-neutral-900">{p.nome}</span>
-                  <span className="font-semibold text-bordeaux-700">{p.prezzo}</span>
+                  <span className="font-semibold text-neutral-900">{p.prezzo}</span>
                 </div>
                 <p className="mb-3 text-xs text-neutral-500">{p.dettaglio}</p>
                 <button
                   onClick={() => handleAbbonati(p.key)}
                   disabled={pianoInCorso !== null}
-                  className="w-full premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
+                  className="premi w-full rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-black disabled:opacity-50"
                 >
                   {pianoInCorso === p.key ? 'Reindirizzamento...' : 'Scegli questo piano'}
                 </button>
