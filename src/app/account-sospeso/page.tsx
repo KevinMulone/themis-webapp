@@ -27,7 +27,7 @@ export default async function AccountSospesoPage({
           {rimosso ? '.' : scaduto ? ' per rinnovarlo.' : ' per riattivarlo.'}
         </p>
         <div className="flex justify-center">
-          <LogoutButton />
+          <LogoutButton className="premi rounded-full bg-neutral-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-black" />
         </div>
       </div>
     </div>

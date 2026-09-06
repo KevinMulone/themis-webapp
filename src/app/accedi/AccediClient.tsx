@@ -43,7 +43,12 @@ export default function AccediClient() {
     if (rememberMe) localStorage.setItem(REMEMBER_KEY, email);
     else localStorage.removeItem(REMEMBER_KEY);
 
-    const { data: contesto } = await supabase.rpc('contesto_studio').maybeSingle();
+    const { data: contesto, error: contestoError } = await supabase.rpc('contesto_studio').maybeSingle();
+    if (contestoError) {
+      setLoading(false);
+      setError('Accesso riuscito, ma non riesco a caricare lo studio. Riprova tra un momento.');
+      return;
+    }
     const studio = contesto as {
       plan: string | null;
       subscription_status: string | null;
@@ -54,6 +59,7 @@ export default function AccediClient() {
 
     if (!studio || studio.plan === null) {
       router.push('/attiva');
+      router.refresh();
       return;
     }
     if (studio.subscription_status !== 'active') {
@@ -65,6 +71,7 @@ export default function AccediClient() {
       return;
     }
     router.push('/dashboard');
+    router.refresh();
   }
 
   function apriRecupero() {

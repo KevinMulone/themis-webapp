@@ -55,14 +55,16 @@ function Chrome({ children, titolo }: { children: ReactNode; titolo: string }) {
 }
 
 function RotatingWord() {
-  const parole = ['pratiche', 'PEC', 'udienze', 'atti', 'fascicoli'];
+  const parole = ['le pratiche', 'la PEC', 'le udienze', 'gli atti', 'i fascicoli'];
   const [i, setI] = useState(0);
   useEffect(() => {
+    const riduci = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (riduci) return;
     const t = setInterval(() => setI((n) => (n + 1) % parole.length), 2200);
     return () => clearInterval(t);
-  }, []);
+  }, [parole.length]);
   return (
-    <span className="relative inline-block min-w-[8.5rem] text-left text-bordeaux-700">
+    <span className="relative inline-block min-w-[11rem] text-left text-bordeaux-700">
       {parole.map((p, idx) => (
         <span
           key={p}
@@ -70,10 +72,10 @@ function RotatingWord() {
             idx === i ? 'translate-y-0 opacity-100 blur-none' : 'translate-y-3 opacity-0 blur-sm'
           }`}
         >
-          {p}
+          {p}.
         </span>
       ))}
-      <span className="invisible">{parole[0]}</span>
+      <span className="invisible">{parole[0]}.</span>
     </span>
   );
 }
@@ -166,9 +168,11 @@ function MockSlide({ tipo }: { tipo: (typeof SLIDES)[number]['mock'] }) {
 function ProductSlides() {
   const [attiva, setAttiva] = useState(0);
   useEffect(() => {
+    const riduci = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (riduci) return;
     const t = setInterval(() => setAttiva((n) => (n + 1) % SLIDES.length), 5200);
     return () => clearInterval(t);
-  }, []);
+  }, [attiva]);
   const s = SLIDES[attiva];
   return (
     <div className="mx-auto max-w-6xl">
@@ -258,7 +262,7 @@ export default function Home() {
             <h1 className="mt-6 max-w-3xl text-[44px] font-semibold leading-[1.05] tracking-tight text-neutral-900 sm:text-[72px]">
               Lo studio.
               <br />
-              Le tue <RotatingWord />.
+              Poi <RotatingWord />
             </h1>
           </Reveal>
           <Reveal delay={160}>
