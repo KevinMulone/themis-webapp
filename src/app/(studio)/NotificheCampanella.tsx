@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
@@ -34,7 +35,17 @@ export default function NotificheCampanella() {
   const [scheda, setScheda] = useState<'mie' | 'studio'>('mie');
   const contenitore = useRef<HTMLDivElement>(null);
   const bottone = useRef<HTMLButtonElement>(null);
+  // Il pannello vive altrove nel DOM (portal): "fuori" va controllato anche
+  // rispetto a lui, non solo al contenitore del pulsante, altrimenti ogni
+  // click al suo interno (una notifica, "Segna lette") lo chiuderebbe
+  // subito, prima ancora che il suo stesso onClick possa scattare.
+  const pannello = useRef<HTMLDivElement>(null);
   const [posizione, setPosizione] = useState({ top: 0, left: 0 });
+  // Il portal serve solo lato client: prima dell'idratazione document.body
+  // non è un bersaglio sicuro, e renderizzarci dentro romperebbe l'HTML
+  // generato dal server.
+  const [montato, setMontato] = useState(false);
+  useEffect(() => setMontato(true), []);
 
   /**
    * Il pannello si posiziona rispetto alla finestra, non al contenitore.
@@ -44,6 +55,13 @@ export default function NotificheCampanella() {
    * veniva tagliato. Misurando il pulsante e disegnando il pannello in
    * posizione fissa si esce da quel ritaglio, e non si dipende più da
    * quanto è larga la barra.
+   *
+   * Non basta però restare figlio della barra nel DOM: la barra è
+   * "sticky", e Safari (a differenza di Chrome) tratta un antenato
+   * sticky come se fosse il contenitore di un elemento fixed, quindi
+   * il pannello finiva comunque agganciato lì, sovrapposto al resto
+   * della pagina in modo confuso. Il portal lo sposta per davvero fuori
+   * dalla barra nel DOM, non solo visivamente.
    */
   function misura() {
     const r = bottone.current?.getBoundingClientRect();
@@ -91,7 +109,10 @@ export default function NotificheCampanella() {
   useEffect(() => {
     if (!aperto) return;
     function fuori(e: MouseEvent) {
-      if (contenitore.current && !contenitore.current.contains(e.target as Node)) setAperto(false);
+      const target = e.target as Node;
+      const dentroContenitore = contenitore.current?.contains(target);
+      const dentroPannello = pannello.current?.contains(target);
+      if (!dentroContenitore && !dentroPannello) setAperto(false);
     }
     document.addEventListener('mousedown', fuori);
     return () => document.removeEventListener('mousedown', fuori);
@@ -138,8 +159,9 @@ export default function NotificheCampanella() {
         )}
       </button>
 
-      {aperto && (
+      {aperto && montato && createPortal(
         <div
+          ref={pannello}
           style={{ top: posizione.top, left: posizione.left }}
           className="fixed z-50 w-80 max-w-[calc(100vw-1rem)] rounded-xl bg-white shadow-lg"
         >
@@ -183,7 +205,8 @@ export default function NotificheCampanella() {
               </li>
             ))}
           </ul>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
