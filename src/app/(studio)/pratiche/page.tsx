@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_PRATICA, STATI_PRATICA, labelFromOptions, clientLabel, formatDateIt } from '@/lib/constants';
 import { Icon, type NomeIcona } from '@/components/ui/Icon';
+import HoverLift from '@/components/motion/HoverLift';
 
 type Client = { id: string; tipo_soggetto: string; nome: string | null; cognome: string | null; ragione_sociale: string | null };
 type Matter = {
@@ -67,7 +68,8 @@ function TesseraConteggio({ icona, tinta, valore, etichetta }: {
   icona: NomeIcona; tinta: string; valore: number; etichetta: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white ring-1 ring-black/[0.04] p-4">
+    <HoverLift className="h-full">
+    <div className="flex h-full items-center gap-3 rounded-2xl bg-white p-4 ring-1 ring-black/[0.04]">
       <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${tinta}`}>
         <Icon nome={icona} className="h-5 w-5" />
       </span>
@@ -77,6 +79,7 @@ function TesseraConteggio({ icona, tinta, valore, etichetta }: {
         <div className="text-xs text-neutral-400">Pratiche</div>
       </div>
     </div>
+    </HoverLift>
   );
 }
 
@@ -390,7 +393,7 @@ export default function PraticheePage() {
                     <tr
                       key={m.id}
                       onClick={() => router.push(`/pratiche/${m.id}`)}
-                      className="cursor-pointer border-b border-neutral-50 last:border-0 hover:bg-neutral-50"
+                      className="riga-reattiva cursor-pointer border-b border-neutral-50 last:border-0 hover:bg-neutral-50"
                     >
                       <td className="px-4 py-3">
                         <span className="flex items-center gap-3">

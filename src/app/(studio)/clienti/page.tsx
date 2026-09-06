@@ -2,11 +2,13 @@
 
 import CampoComune from './CampoComune';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_SOGGETTO, TIPI_PRATICA, labelFromOptions, clientLabel } from '@/lib/constants';
 import { Icon, type NomeIcona } from '@/components/ui/Icon';
+import HoverLift from '@/components/motion/HoverLift';
+import { explodeNode } from '@/lib/motion/explode';
 
 type Client = {
   id: string;
@@ -54,6 +56,7 @@ function TesseraConteggio({ icona, tinta, valore, etichetta }: {
   icona: NomeIcona; tinta: string; valore: number | string; etichetta: string;
 }) {
   return (
+    <HoverLift>
     <div className="flex items-center gap-3">
       <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${tinta}`}>
         <Icon nome={icona} className="h-5 w-5" />
@@ -63,6 +66,7 @@ function TesseraConteggio({ icona, tinta, valore, etichetta }: {
         <div className="text-xs text-neutral-500">{etichetta}</div>
       </div>
     </div>
+    </HoverLift>
   );
 }
 
@@ -114,6 +118,7 @@ export default function ClientiPage() {
   const [conteggi, setConteggi] = useState<{ attivi: number; archiviati: number; questoMese: number | null }>({
     attivi: 0, archiviati: 0, questoMese: null,
   });
+  const righeRef = useRef<Record<string, HTMLTableRowElement | null>>({});
 
   async function load() {
     setLoading(true);
@@ -260,8 +265,9 @@ export default function ClientiPage() {
 
   async function handleArchive(id: string) {
     if (!confirm('Archiviare questo cliente?')) return;
-    await supabase.from('clients').update({ archiviato: true }).eq('id', id);
     setEditing(null);
+    await explodeNode(righeRef.current[id] ?? null);
+    await supabase.from('clients').update({ archiviato: true }).eq('id', id);
     load();
   }
 
@@ -272,8 +278,11 @@ export default function ClientiPage() {
       'generati collegati. Non è reversibile.\n\n' +
       'Se vuoi solo nasconderlo dall\'elenco mantenendo lo storico, usa "Archivia" invece.',
     )) return;
+    setEditing(null);
+    await explodeNode(righeRef.current[id] ?? null);
     const { error } = await supabase.from('clients').delete().eq('id', id);
     if (error) {
+      if (righeRef.current[id]) righeRef.current[id]!.style.visibility = '';
       if (error.code === '23503') {
         alert('Impossibile eliminare: questo cliente ha pratiche o documenti collegati. Elimina prima quelli, oppure usa "Archivia".');
       } else {
@@ -281,7 +290,6 @@ export default function ClientiPage() {
       }
       return;
     }
-    setEditing(null);
     load();
   }
 
@@ -476,7 +484,8 @@ export default function ClientiPage() {
                 {visibili.map((c) => (
                   <tr
                     key={c.id}
-                    className="cursor-pointer border-b border-neutral-50 last:border-0 hover:bg-neutral-50"
+                    ref={(nodo) => { righeRef.current[c.id] = nodo; }}
+                    className="riga-reattiva cursor-pointer border-b border-neutral-50 last:border-0 hover:bg-neutral-50"
                     onClick={() => openEdit(c)}
                   >
                     <td className="px-4 py-3">

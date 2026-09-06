@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { TIPI_PRATICA, labelFromOptions, clientLabel } from '@/lib/constants';
 import { Icon, type NomeIcona } from '@/components/ui/Icon';
+import HoverLift from '@/components/motion/HoverLift';
 import ChiediAlFascicolo from '../pratiche/[id]/ChiediAlFascicolo';
 import RedigiAtto from '../pratiche/[id]/RedigiAtto';
 
@@ -27,10 +28,11 @@ function CapacitaCard({ icona, titolo, testo, onClick, azione }: {
   icona: NomeIcona; titolo: string; testo: string; onClick: () => void; azione: string;
 }) {
   return (
+    <HoverLift className="h-full">
     <button
       type="button"
       onClick={onClick}
-      className="rialzo group rounded-[24px] bg-white p-5 text-left ring-1 ring-black/[0.04]"
+      className="group h-full w-full rounded-[24px] bg-white p-5 text-left ring-1 ring-black/[0.04]"
     >
       <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-50 text-bordeaux-700">
         <Icon nome={icona} className="h-5 w-5" />
@@ -42,6 +44,7 @@ function CapacitaCard({ icona, titolo, testo, onClick, azione }: {
         <Icon nome="freccia" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
       </span>
     </button>
+    </HoverLift>
   );
 }
 

@@ -6,6 +6,7 @@ import { oggiIso, addDaysIso } from '@/lib/dateUtils';
 import { TIPI_EVENTO, TIPI_PRATICA, STATI_PRATICA, labelFromOptions, clientLabel, formatDateIt } from '@/lib/constants';
 import { STATI_APERTI } from '@/lib/incarichi';
 import { Icon, type NomeIcona } from '@/components/ui/Icon';
+import HoverLift from '@/components/motion/HoverLift';
 
 type ScadenzaRow = { id: string; titolo: string; tipo: string; data: string; ora_inizio: string | null };
 type ClienteRef = { tipo_soggetto: string; nome: string | null; cognome: string | null; ragione_sociale: string | null };
@@ -56,9 +57,10 @@ function Tessera({ href, icona, tinta, valore, titolo, sottotitolo, allerta = fa
   valore: number | string; titolo: string; sottotitolo?: string; allerta?: boolean;
 }) {
   return (
+    <HoverLift tilt className="h-full">
     <Link
       href={href}
-      className="rialzo group flex flex-col rounded-[22px] bg-white p-5 ring-1 ring-black/[0.04]"
+      className="group flex h-full flex-col rounded-[22px] bg-white p-5 ring-1 ring-black/[0.04]"
     >
       <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${TINTE[tinta]}`}>
         <Icon nome={icona} className="h-5 w-5" />
@@ -72,6 +74,7 @@ function Tessera({ href, icona, tinta, valore, titolo, sottotitolo, allerta = fa
         <Icon nome="freccia" className="h-4 w-4 text-neutral-300 group-hover:text-bordeaux-600" />
       </div>
     </Link>
+    </HoverLift>
   );
 }
 
@@ -260,7 +263,7 @@ export default async function DashboardPage() {
                 <li key={m.id}>
                   <Link
                     href={`/pratiche/${m.id}`}
-                    className="group flex items-center gap-3 py-3 transition-colors hover:text-bordeaux-700"
+                    className="riga-reattiva group flex items-center gap-3 py-3 transition-colors hover:text-bordeaux-700"
                   >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-bordeaux-50 text-bordeaux-600">
                       <Icon nome="documento" className="h-[18px] w-[18px]" />

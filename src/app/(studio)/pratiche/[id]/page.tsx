@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use as usePromise } from 'react';
+import { useEffect, useRef, useState, use as usePromise } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
@@ -15,6 +15,7 @@ import {
 } from '@/lib/constants';
 import { GRUPPI_SCADENZE, gruppiPerPratica, calcolaScadenza, toIsoLocale, type RegolaScadenza } from '@/lib/scadenzeLegali';
 import { linkGiustiziaCivile } from '@/lib/giustiziaCivile';
+import { explodeNode } from '@/lib/motion/explode';
 
 type Matter = {
   id: string; client_id: string; tipo_pratica: string; stato: string;
@@ -57,6 +58,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const supabase = createClient();
   const { studioId } = useStudio();
   const router = useRouter();
+  const paginaRef = useRef<HTMLDivElement>(null);
   const [matter, setMatter] = useState<Matter | null>(null);
   const [tutteLeScadenze, setTutteLeScadenze] = useState(false);
   const [membriStudio, setMembriStudio] = useState<{ user_id: string; nome: string | null; email: string }[]>([]);
@@ -258,6 +260,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
   async function handleArchive() {
     if (!confirm('Archiviare questa pratica?')) return;
+    await explodeNode(paginaRef.current);
     await supabase.from('matters').update({ stato: 'archiviata' }).eq('id', id);
     router.push('/pratiche');
   }
@@ -265,7 +268,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   if (!matter) return <p className="text-sm text-neutral-500">Caricamento...</p>;
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div ref={paginaRef} className="mx-auto max-w-3xl">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">{clientLabel(client)}</h1>
