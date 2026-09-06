@@ -185,10 +185,10 @@ export default function CollaboratoriClient() {
     <div className="mx-auto max-w-5xl">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-neutral-900">Collaboratori</h1>
+          <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Collaboratori</h1>
           <p className="mt-1 text-sm text-neutral-500">Gestisci il tuo team e i permessi di accesso</p>
         </div>
-        <div className="min-w-64 rounded-xl bg-neutral-50 p-4">
+        <div className="min-w-64 rounded-2xl bg-white ring-1 ring-black/[0.04] p-4">
           <div className="flex items-center gap-3">
             <Icon nome="collaboratori" className="h-5 w-5 shrink-0 text-neutral-400" />
             <p className="text-sm text-neutral-500">
@@ -218,7 +218,7 @@ export default function CollaboratoriClient() {
         </p>
       )}
 
-      <div className="mb-4 rounded-2xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-4 font-semibold text-neutral-900">Chi collabora con te</h2>
         {caricando ? (
           <p className="text-sm text-neutral-500">Caricamento...</p>
@@ -261,7 +261,7 @@ export default function CollaboratoriClient() {
         )}
       </div>
 
-      <div className="mb-4 rounded-2xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="font-semibold text-neutral-900">Invita un collaboratore</h2>
         {linkGenerato ? (
           <>
@@ -326,7 +326,7 @@ export default function CollaboratoriClient() {
         )}
       </div>
 
-      <div className="mb-4 grid grid-cols-1 gap-6 rounded-2xl bg-neutral-50 p-6 md:grid-cols-3 md:divide-x md:divide-neutral-100">
+      <div className="mb-4 grid grid-cols-1 gap-6 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-6 md:grid-cols-3 md:divide-x md:divide-neutral-100">
         <Garanzia
           icona="lucchetto" tinta="bg-violet-50 text-violet-500" titolo="Sicuro"
           testo="Fatturazione, caselle PEC ed eliminazioni restano solo tue."
@@ -345,7 +345,7 @@ export default function CollaboratoriClient() {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-neutral-50 p-6">
+      <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-semibold text-neutral-900">Attività recenti</h2>
           <Link

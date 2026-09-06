@@ -68,7 +68,7 @@ export default function WhatsappProposte() {
   }
 
   return (
-    <div className="mb-4 rounded-2xl bg-neutral-50 p-5">
+    <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-60 flex-1 gap-4">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-50 text-gold-600">

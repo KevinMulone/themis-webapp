@@ -54,6 +54,155 @@ function Chrome({ children, titolo }: { children: ReactNode; titolo: string }) {
   );
 }
 
+function RotatingWord() {
+  const parole = ['pratiche', 'PEC', 'udienze', 'atti', 'fascicoli'];
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setI((n) => (n + 1) % parole.length), 2200);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <span className="relative inline-block min-w-[8.5rem] text-left text-bordeaux-700">
+      {parole.map((p, idx) => (
+        <span
+          key={p}
+          className={`absolute inset-x-0 transition-all duration-700 ease-[cubic-bezier(.16,1,.3,1)] ${
+            idx === i ? 'translate-y-0 opacity-100 blur-none' : 'translate-y-3 opacity-0 blur-sm'
+          }`}
+        >
+          {p}
+        </span>
+      ))}
+      <span className="invisible">{parole[0]}</span>
+    </span>
+  );
+}
+
+const SLIDES = [
+  {
+    kicker: 'Dashboard',
+    titolo: 'La giornata dello studio, in un colpo d’occhio.',
+    testo: 'Scadenze, PEC non lette e incarichi aperti — senza aprire cinque programmi.',
+    mock: 'dash',
+  },
+  {
+    kicker: 'Assistente',
+    titolo: 'Chiedi al fascicolo. Risponde con la pagina.',
+    testo: 'Themis legge solo i documenti che scegli tu. Niente precedenti inventati.',
+    mock: 'ai',
+  },
+  {
+    kicker: 'PEC',
+    titolo: 'La posta certificata entra nel fascicolo.',
+    testo: 'Non lette in evidenza. I termini proposti sul calendario, appena arrivano.',
+    mock: 'pec',
+  },
+  {
+    kicker: 'Calendario',
+    titolo: 'Udienze visibili a tutto lo studio.',
+    testo: 'Un’agenda sola. Il nome dell’assistito accanto a ogni voce.',
+    mock: 'cal',
+  },
+] as const;
+
+function MockSlide({ tipo }: { tipo: (typeof SLIDES)[number]['mock'] }) {
+  if (tipo === 'ai') {
+    return (
+      <div className="space-y-3 p-5">
+        <div className="ml-auto max-w-[86%] rounded-2xl rounded-br-md bg-neutral-900 px-4 py-2.5 text-[13px] text-white">
+          Da quando decorre l’invalidità del verbale?
+        </div>
+        <div className="max-w-[90%] rounded-2xl rounded-bl-md bg-neutral-50 px-4 py-2.5 text-[13px] text-neutral-700">
+          Decorrenza dalla domanda amministrativa. Invalidità riconosciuta all’80%.
+        </div>
+        <div className="text-[11px] text-neutral-400">Verbale INPS.pdf · p. 2</div>
+      </div>
+    );
+  }
+  if (tipo === 'pec') {
+    return (
+      <div className="divide-y divide-black/[0.04] p-2">
+        {[
+          ['Tribunale di Caltanissetta', 'Fissazione udienza'],
+          ['Generali Italia', 'Riscontro sinistro'],
+          ['Avv. Di Vita', 'Trasmissione ricorso'],
+        ].map(([a, b], i) => (
+          <div key={a} className="flex items-center gap-3 px-4 py-3">
+            <span className={`h-1.5 w-1.5 rounded-full ${i < 2 ? 'bg-bordeaux-700' : 'bg-transparent'}`} />
+            <div className="min-w-0">
+              <div className={`truncate text-[13px] ${i < 2 ? 'font-semibold' : 'text-neutral-500'}`}>{a}</div>
+              <div className="truncate text-[12px] text-neutral-400">{b}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (tipo === 'cal') {
+    const g = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
+    return (
+      <div className="p-6">
+        <div className="grid grid-cols-7 gap-2 text-center">
+          {g.map((d, i) => <span key={i} className="text-[10px] text-neutral-400">{d}</span>)}
+          {Array.from({ length: 7 }).map((_, i) => (
+            <span key={i} className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-[13px] ${i === 2 ? 'bg-neutral-900 text-white' : ''}`}>{9 + i}</span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="grid grid-cols-3 gap-3 p-5">
+      {[['12', 'Pratiche'], ['3', 'Udienze'], ['7', 'PEC']].map(([n, l]) => (
+        <div key={l} className="rounded-2xl bg-neutral-50 p-4">
+          <div className="text-[22px] font-semibold tracking-tight">{n}</div>
+          <div className="text-[11px] text-neutral-500">{l}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProductSlides() {
+  const [attiva, setAttiva] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setAttiva((n) => (n + 1) % SLIDES.length), 5200);
+    return () => clearInterval(t);
+  }, []);
+  const s = SLIDES[attiva];
+  return (
+    <div className="mx-auto max-w-6xl">
+      <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
+        <div>
+          <p className="text-[13px] font-medium text-bordeaux-700">{s.kicker}</p>
+          <h2 className="mt-3 text-[32px] font-semibold leading-[1.12] tracking-tight sm:text-[44px]">
+            {s.titolo}
+          </h2>
+          <p className="mt-4 max-w-md text-[17px] leading-relaxed text-neutral-500">{s.testo}</p>
+          <div className="mt-8 flex gap-2">
+            {SLIDES.map((slide, i) => (
+              <button
+                key={slide.kicker}
+                type="button"
+                aria-label={slide.kicker}
+                onClick={() => setAttiva(i)}
+                className={`h-1.5 rounded-full transition-all duration-500 ${i === attiva ? 'w-8 bg-neutral-900' : 'w-3 bg-neutral-300 hover:bg-neutral-400'}`}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="fluttua">
+          <Chrome titolo={`Themis — ${s.kicker}`}>
+            <div className="min-h-[220px] bg-white">
+              <MockSlide tipo={s.mock} />
+            </div>
+          </Chrome>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const FUNZIONI: { icona: NomeIcona; titolo: string; testo: string }[] = [
   { icona: 'pratiche', titolo: 'Gestione pratiche', testo: 'Fascicoli, scadenze e stato in un unico posto.' },
   { icona: 'calendario', titolo: 'Calendario dello studio', testo: 'Udienze e termini visibili a tutti i collaboratori.' },
@@ -106,16 +255,16 @@ export default function Home() {
             </span>
           </Reveal>
           <Reveal delay={80}>
-            <h1 className="mt-6 max-w-3xl text-[48px] font-semibold leading-[1.05] tracking-tight text-neutral-900 sm:text-[72px]">
-              Lo studio,
+            <h1 className="mt-6 max-w-3xl text-[44px] font-semibold leading-[1.05] tracking-tight text-neutral-900 sm:text-[72px]">
+              Lo studio.
               <br />
-              in un solo posto.
+              Le tue <RotatingWord />.
             </h1>
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-neutral-500 sm:text-[21px]">
-              Pratiche, PEC, calendario e un assistente che legge i fascicoli.
-              Progettato per il lavoro quotidiano dell&rsquo;avvocato.
+              Un’unica app per fascicoli, posta certificata, calendario
+              e un assistente che legge solo ciò che gli dai tu.
             </p>
           </Reveal>
           <Reveal delay={240}>
@@ -136,40 +285,25 @@ export default function Home() {
           </Reveal>
         </div>
 
-        <Reveal delay={280} className="relative mx-auto max-w-5xl px-5 pb-20">
-          <Chrome titolo="Themis — Dashboard">
-            <div className="grid gap-3 bg-neutral-50 p-4 sm:grid-cols-3 sm:p-6">
-              {[
-                { k: '12', l: 'Pratiche attive' },
-                { k: '3', l: 'Udienze questa settimana' },
-                { k: '7', l: 'PEC da leggere' },
-              ].map((c) => (
-                <div key={c.l} className="rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-black/[0.04]">
-                  <div className="text-[28px] font-semibold tracking-tight text-neutral-900">{c.k}</div>
-                  <div className="mt-1 text-[13px] text-neutral-500">{c.l}</div>
-                </div>
-              ))}
-              <div className="rounded-2xl bg-white p-5 text-left shadow-sm ring-1 ring-black/[0.04] sm:col-span-3">
-                <div className="mb-3 text-[12px] font-medium uppercase tracking-wide text-neutral-400">Prossime scadenze</div>
-                <div className="space-y-2.5">
-                  {[
-                    ['Udienza R.G. 1135/2018', 'Domani · 9:30'],
-                    ['Termine memoria difensiva', 'Tra 4 giorni'],
-                    ['Appuntamento Rossi', 'Venerdì · 16:00'],
-                  ].map(([t, d]) => (
-                    <div key={t} className="flex items-center justify-between text-[13.5px]">
-                      <span className="font-medium text-neutral-800">{t}</span>
-                      <span className="text-neutral-400">{d}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Chrome>
-        </Reveal>
+        <div className="relative mx-auto max-w-[100vw] overflow-hidden pb-8 pt-4">
+          <div className="nastro flex w-max gap-10 px-8 text-[13px] font-medium text-neutral-400">
+            {Array.from({ length: 2 }).flatMap((_, k) =>
+              ['Pratiche', 'PEC', 'Calendario', 'Themis AI', 'Deposito', 'Parcelle', 'WhatsApp', 'Collaboratori', 'Cifratura'].map((v) => (
+                <span key={`${k}-${v}`} className="flex items-center gap-10">
+                  {v}
+                  <span className="h-1 w-1 rounded-full bg-neutral-300" />
+                </span>
+              )),
+            )}
+          </div>
+        </div>
       </section>
 
-      <section id="prodotto" className="px-6 py-8 lg:px-12">
+      <section id="prodotto" className="px-6 py-20 lg:px-12">
+        <ProductSlides />
+      </section>
+
+      <section className="px-6 py-8 lg:px-12">
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {FUNZIONI.map((f, i) => (
             <Reveal key={f.titolo} delay={i * 60}>

@@ -266,10 +266,10 @@ export default function WhatsappPage() {
 
   return (
     <div className="mx-auto max-w-6xl p-6">
-      <h1 className="mb-4 text-xl font-semibold text-neutral-900">WhatsApp</h1>
+      <h1 className="mb-4 text-[24px] font-semibold tracking-tight text-neutral-900">WhatsApp</h1>
 
       {stato && !stato.configurato && (
-        <div className="mb-4 rounded-2xl bg-neutral-50 p-5 text-sm text-neutral-600">
+        <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-5 text-sm text-neutral-600">
           WhatsApp non è ancora attivo su questo sito.
         </div>
       )}
@@ -283,7 +283,7 @@ export default function WhatsappPage() {
       )}
 
       {nonRiconosciuti.length > 0 && (
-        <div className="mb-4 rounded-2xl bg-neutral-50 p-4">
+        <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-4">
           <p className="mb-2 text-sm font-medium text-neutral-700">
             {nonRiconosciuti.length} messagg{nonRiconosciuti.length === 1 ? 'io' : 'i'} da collegare a un cliente
           </p>
@@ -382,7 +382,7 @@ export default function WhatsappPage() {
         </div>
       )}
 
-      <div className="flex h-[70vh] min-h-[420px] overflow-hidden rounded-2xl bg-neutral-50 md:h-[65vh]">
+      <div className="flex h-[70vh] min-h-[420px] overflow-hidden rounded-[24px] bg-white ring-1 ring-black/[0.04] md:h-[65vh]">
         {/* Elenco conversazioni — da telefono occupa tutto lo spazio finché
             non si apre una chat, poi lascia il posto a quella. */}
         <aside className={`w-full shrink-0 overflow-y-auto border-neutral-200 md:block md:w-72 md:border-r ${selezionata ? 'hidden' : 'block'}`}>

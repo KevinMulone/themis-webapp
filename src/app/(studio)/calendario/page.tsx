@@ -322,12 +322,12 @@ export default function CalendarioPage() {
     <div className="mx-auto max-w-[1600px]">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-neutral-900">Calendario</h1>
+          <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Calendario</h1>
           <p className="mt-1 text-sm text-neutral-500">Organizza udienze, scadenze e attività dello studio.</p>
         </div>
         <button
           onClick={() => apriNuovoEvento(toIso(cursore), '')}
-          className="flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
+          className="flex items-center gap-2 premi rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black"
         >
           <Icon nome="piu" className="h-4 w-4" />
           Nuovo evento
@@ -336,7 +336,7 @@ export default function CalendarioPage() {
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_18rem]">
         <div className="min-w-0">
-          <div className="mb-4 rounded-2xl bg-neutral-50 p-4">
+          <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <button
@@ -410,7 +410,7 @@ export default function CalendarioPage() {
           </div>
 
           {vista === 'mese' && (
-            <div className="overflow-x-auto rounded-2xl bg-neutral-50">
+            <div className="overflow-x-auto rounded-[24px] bg-white ring-1 ring-black/[0.04]">
               <div className="grid min-w-[640px] grid-cols-7 gap-px overflow-hidden bg-neutral-200">
                 {GIORNI.map((g) => (
                   <div key={g} className="bg-neutral-50 px-2 py-2 text-center text-xs font-semibold text-neutral-500">{g}</div>
@@ -459,7 +459,7 @@ export default function CalendarioPage() {
           )}
 
           {(vista === 'settimana' || vista === 'giorno') && (
-            <div className="overflow-x-auto rounded-2xl bg-neutral-50">
+            <div className="overflow-x-auto rounded-[24px] bg-white ring-1 ring-black/[0.04]">
               <div style={{ minWidth: vista === 'giorno' ? '320px' : '700px' }}>
                 <div className="grid border-b border-neutral-200" style={{ gridTemplateColumns: `56px repeat(${giorniVista.length}, 1fr)` }}>
                   <div />
@@ -552,7 +552,7 @@ export default function CalendarioPage() {
           )}
 
           {inScadenza.length > 0 && (
-            <div className="mt-4 rounded-2xl bg-neutral-50 p-5">
+            <div className="mt-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-5">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h3 className="flex items-center gap-2 font-semibold text-neutral-900">
                   Scadenze imminenti
@@ -598,7 +598,7 @@ export default function CalendarioPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-2xl bg-neutral-50 p-4">
+          <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-4">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-neutral-900">{MESI[miniMese - 1]} {miniAnno}</h3>
               <div className="flex gap-1">
@@ -646,7 +646,7 @@ export default function CalendarioPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-neutral-50 p-4">
+          <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-4">
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold text-neutral-900">Prossimi eventi</h3>
               <button

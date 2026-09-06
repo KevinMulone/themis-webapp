@@ -727,9 +727,9 @@ export default function ImpostazioniPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="mb-6 text-2xl font-display font-semibold text-neutral-900">Impostazioni</h1>
+      <h1 className="mb-6 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Impostazioni</h1>
 
-      <form onSubmit={handleChangePassword} className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <form onSubmit={handleChangePassword} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Cambia password</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -752,7 +752,7 @@ export default function ImpostazioniPage() {
       </form>
 
       {ruolo === 'titolare' && (
-      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Abbonamento</h2>
         {abbonamento?.stripe_customer_id ? (
           <>
@@ -808,7 +808,7 @@ export default function ImpostazioniPage() {
       </div>
       )}
 
-      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Intestazione documenti</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Immagine (logo e dati dello studio) usata automaticamente nell&apos;intestazione di ogni documento generato.
@@ -831,7 +831,7 @@ export default function ImpostazioniPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSaveTypography} className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <form onSubmit={handleSaveTypography} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Formattazione documenti</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
@@ -858,7 +858,7 @@ export default function ImpostazioniPage() {
         </div>
       </form>
 
-      <form onSubmit={handleSaveAvvocato} className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <form onSubmit={handleSaveAvvocato} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-1 font-semibold text-neutral-900">Dati del difensore per il deposito</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Servono al prontuario di deposito nella pratica — la schermata &quot;Avvocato&quot; che SLpct chiede
@@ -901,7 +901,7 @@ export default function ImpostazioniPage() {
         </div>
       </form>
 
-      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Orari di disponibilità per il portale clienti</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Gli assistiti potranno prenotare un appuntamento online solo in questi orari.
@@ -942,7 +942,7 @@ export default function ImpostazioniPage() {
         </div>
       </div>
 
-      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-1 font-semibold text-neutral-900">Google Calendar</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Themis resta il calendario vero — colori, collegamento alla pratica, proposte dalle PEC continuano
@@ -1173,7 +1173,7 @@ export default function ImpostazioniPage() {
 
       <ImpostazioniWhatsapp />
 
-      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold text-neutral-900">Caselle PEC</h2>
           {pecAccounts.length > 0 && (
@@ -1213,7 +1213,7 @@ export default function ImpostazioniPage() {
 
         {pecDiagnosi && <p className="mb-3 text-sm text-neutral-600">{pecDiagnosi}</p>}
         {pecCartelle && (
-          <div className="mb-3 rounded-xl bg-neutral-50 p-3">
+          <div className="mb-3 rounded-2xl bg-white ring-1 ring-black/[0.04] p-3">
             <p className="mb-2 text-xs font-semibold text-neutral-700">
               Cartelle sul server · Themis ne ha archiviati {pecScaricati}
             </p>
@@ -1248,7 +1248,7 @@ export default function ImpostazioniPage() {
         )}
 
         {pecArretrato && (
-          <div className="mb-3 rounded-xl bg-neutral-50 p-3">
+          <div className="mb-3 rounded-2xl bg-white ring-1 ring-black/[0.04] p-3">
             <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-neutral-200">
               <div className="h-full w-1/3 animate-[scorri_1.2s_ease-in-out_infinite] rounded-full bg-bordeaux-700" />
             </div>
@@ -1385,7 +1385,7 @@ export default function ImpostazioniPage() {
         </form>
       </div>
 
-      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Modelli disponibili ({templates.length})</h2>
         <p className="mb-3 text-xs text-neutral-500">
           I modelli &quot;di sistema&quot; sono forniti da Themis e uguali per tutti gli studi. Puoi caricarne di tuoi:

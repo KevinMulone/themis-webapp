@@ -55,13 +55,13 @@ export default function RegistriGiustiziaPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-semibold text-neutral-900">Giustizia Civile</h1>
+        <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Giustizia Civile</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Trova rapidamente il R.G. di una pratica per verificarne lo stato sul portale del Ministero.
         </p>
       </div>
 
-      <div className="mb-4 rounded-2xl bg-neutral-50 p-4">
+      <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-4">
         <div className="relative">
           <Icon nome="cerca" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
           <input
@@ -74,9 +74,9 @@ export default function RegistriGiustiziaPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-2xl bg-neutral-50 p-6 text-sm text-neutral-500">Caricamento...</div>
+        <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-6 text-sm text-neutral-500">Caricamento...</div>
       ) : filtrate.length === 0 ? (
-        <div className="rounded-2xl bg-neutral-50 py-16 text-center">
+        <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] py-16 text-center">
           <Icon nome="cerca" className="mx-auto h-10 w-10 text-neutral-200" />
           <p className="mt-3 text-sm text-neutral-500">
             {search ? 'Nessuna pratica corrisponde alla ricerca.' : 'Nessuna pratica con R.G. compilato.'}
@@ -90,7 +90,7 @@ export default function RegistriGiustiziaPage() {
       ) : (
         <ul className="flex flex-col gap-3">
           {filtrate.map((m) => (
-            <li key={m.id} className="rounded-2xl bg-neutral-50 p-4">
+            <li key={m.id} className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0">
                   <Link href={`/pratiche/${m.id}`} className="font-medium text-neutral-900 hover:text-bordeaux-700">

@@ -145,12 +145,12 @@ const SEZIONI: Sezione[] = [
 export default function DomandeFrequentiPage() {
   return (
     <div className="mx-auto max-w-4xl p-6">
-      <h1 className="mb-1 text-xl font-semibold text-neutral-900">Domande frequenti</h1>
+      <h1 className="mb-1 text-[24px] font-semibold tracking-tight text-neutral-900">Domande frequenti</h1>
       <p className="mb-6 text-sm text-neutral-500">Come si usa Themis, area per area.</p>
 
       <div className="space-y-6">
         {SEZIONI.map((sezione) => (
-          <section key={sezione.titolo} className="rounded-2xl bg-neutral-50 p-5">
+          <section key={sezione.titolo} className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-5">
             <h2 className="mb-3 font-semibold text-neutral-900">{sezione.titolo}</h2>
             <div className="space-y-2">
               {sezione.voci.map((voce) => (

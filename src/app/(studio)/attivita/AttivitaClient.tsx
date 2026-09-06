@@ -133,7 +133,7 @@ export default function AttivitaClient() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="mb-1 text-2xl font-display font-semibold text-neutral-900">Registro attività</h1>
+      <h1 className="mb-1 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Registro attività</h1>
       <p className="mb-6 text-sm text-neutral-500">
         Tutto ciò che accade nello studio, in ordine di tempo. Lo scrive il database, non
         l&apos;applicazione: nessuno può modificarlo.
@@ -162,7 +162,7 @@ export default function AttivitaClient() {
         )}
       </div>
 
-      <div className="rounded-xl bg-neutral-50 p-6">
+      <div className="rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         {caricando ? (
           <p className="text-sm text-neutral-500">Caricamento...</p>
         ) : gruppi.length === 0 ? (

@@ -242,7 +242,7 @@ export default function PreparaDeposito({ matterId, clientId, matter, documenti,
   ];
 
   return (
-    <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+    <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
       <div className="mb-1 flex items-center gap-2">
         <Icon nome="genera" className="h-[18px] w-[18px] text-bordeaux-600" />
         <h2 className="font-semibold text-neutral-900">Prepara per il deposito</h2>

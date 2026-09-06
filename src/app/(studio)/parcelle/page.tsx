@@ -39,13 +39,13 @@ export default function ParcellePage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <h1 className="mb-1 text-2xl font-display font-semibold text-neutral-900">Calcolo parcella (parametri forensi)</h1>
+      <h1 className="mb-1 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Calcolo parcella (parametri forensi)</h1>
       <p className="mb-6 text-xs text-neutral-500">
         D.M. 55/2014, tabelle come sostituite dal D.M. 147/2022 (in vigore dal 23.10.2022).
       </p>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div className="rounded-xl bg-neutral-50 p-6">
+        <div className="rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
           <h2 className="mb-4 font-semibold text-neutral-900">Dati della prestazione</h2>
 
           <div className="mb-4">
@@ -127,7 +127,7 @@ export default function ParcellePage() {
           </div>
         </div>
 
-        <div className="rounded-xl bg-neutral-50 p-6">
+        <div className="rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
           <h2 className="mb-4 font-semibold text-neutral-900">Prospetto</h2>
           <div className="space-y-2 text-sm">
             {risultato.righe.length === 0 ? (

@@ -131,8 +131,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
           </Link>
         )}
         <LogoutButton />
-        <p className="pt-3 text-center text-[10px] text-neutral-400">Creato da Kevin M. D.</p>
-        <p className="pb-1 text-center text-[10px] text-neutral-400">Versione beta</p>
+        <p className="pt-3 text-center text-[10px] text-neutral-400">Versione beta</p>
       </div>
     </>
   );

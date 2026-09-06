@@ -67,7 +67,7 @@ export default function LetturaMessaggio({ messaggioId, onChiudi }: {
               <dd>{dati.dataInvio ? new Date(dati.dataInvio).toLocaleString('it-IT') : '—'}</dd>
             </dl>
 
-            <div className="max-h-150 overflow-y-auto rounded-xl bg-neutral-50 p-4">
+            <div className="max-h-150 overflow-y-auto rounded-2xl bg-white ring-1 ring-black/[0.04] p-4">
               {dati.corpoTesto?.trim()
                 ? <p className="whitespace-pre-wrap text-sm text-neutral-800">{dati.corpoTesto}</p>
                 : <p className="text-sm italic text-neutral-400">

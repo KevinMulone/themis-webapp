@@ -80,7 +80,7 @@ export default function DepositoPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-6">
-        <h1 className="font-display text-2xl font-semibold text-neutral-900">Deposito</h1>
+        <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Deposito</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Scegli la pratica: preparo il prontuario da copiare in SLpct e il pacchetto con atto e allegati già ordinati.
         </p>
@@ -96,7 +96,7 @@ export default function DepositoPage() {
             Cambia pratica
           </button>
 
-          <div className="mb-4 flex items-center gap-3 rounded-xl bg-neutral-50 p-4">
+          <div className="mb-4 flex items-center gap-3 rounded-2xl bg-white ring-1 ring-black/[0.04] p-4">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-bordeaux-700/[0.08] text-sm font-semibold text-bordeaux-700">
               {inizialiCliente(selezionata.clients)}
             </span>
@@ -141,7 +141,7 @@ export default function DepositoPage() {
           ) : filtrate.length === 0 ? (
             <p className="text-sm text-neutral-500">Nessuna pratica trovata.</p>
           ) : (
-            <div className="divide-y divide-neutral-100 rounded-xl bg-neutral-50">
+            <div className="divide-y divide-neutral-100 rounded-2xl bg-white ring-1 ring-black/[0.04]">
               {filtrate.map((m) => (
                 <button
                   key={m.id} type="button" onClick={() => selezionaPratica(m)}

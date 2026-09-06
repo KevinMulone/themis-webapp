@@ -30,14 +30,14 @@ function CapacitaCard({ icona, titolo, testo, onClick, azione }: {
     <button
       type="button"
       onClick={onClick}
-      className="group rounded-xl bg-neutral-50 p-5 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+      className="rialzo group rounded-[24px] bg-white p-5 text-left ring-1 ring-black/[0.04]"
     >
-      <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
+      <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-neutral-50 text-bordeaux-700">
         <Icon nome={icona} className="h-5 w-5" />
       </span>
       <h3 className="text-sm font-semibold text-neutral-900">{titolo}</h3>
       <p className="mt-1 text-xs leading-relaxed text-neutral-500">{testo}</p>
-      <span className="mt-3 flex items-center gap-1 text-xs font-medium text-violet-600">
+      <span className="mt-3 flex items-center gap-1 text-xs font-medium text-neutral-800">
         {azione}
         <Icon nome="freccia" className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
       </span>
@@ -121,7 +121,7 @@ export default function ThemisPage() {
     <div className="mx-auto max-w-5xl">
       <div className="mb-6">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-display text-2xl font-semibold text-neutral-900">Themis</h1>
+          <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Themis</h1>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-600">
             <Icon nome="stelle" className="h-3.5 w-3.5" />
             Assistente IA
@@ -133,7 +133,7 @@ export default function ThemisPage() {
         </p>
       </div>
 
-      <div className="mb-4 rounded-2xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">1. Seleziona una pratica</h2>
         <div className="relative">
           <Icon nome="pratiche" className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
@@ -210,7 +210,7 @@ export default function ThemisPage() {
             <button
               type="button"
               onClick={() => vaiA(zonaDomande)}
-              className="group flex items-center gap-3 rounded-xl bg-neutral-50 p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+              className="group flex items-center gap-3 rounded-2xl bg-white ring-1 ring-black/[0.04] p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
                 <Icon nome="matita" className="h-5 w-5" />
@@ -224,7 +224,7 @@ export default function ThemisPage() {
             <button
               type="button"
               onClick={() => { setAttoAperto(true); vaiA(zonaAtti); }}
-              className="group flex items-center gap-3 rounded-xl bg-neutral-50 p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+              className="group flex items-center gap-3 rounded-2xl bg-white ring-1 ring-black/[0.04] p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
                 <Icon nome="genera" className="h-5 w-5" />
@@ -237,7 +237,7 @@ export default function ThemisPage() {
 
             <Link
               href={`/pratiche/${matterId}`}
-              className="group flex items-center gap-3 rounded-xl bg-neutral-50 p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
+              className="group flex items-center gap-3 rounded-2xl bg-white ring-1 ring-black/[0.04] p-4 text-left transition-colors hover:border-violet-300 hover:bg-violet-50/40"
             >
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-500">
                 <Icon nome="documento" className="h-5 w-5" />
@@ -264,7 +264,7 @@ export default function ThemisPage() {
         </>
       )}
 
-      <div className="rounded-2xl bg-neutral-50 p-5">
+      <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-5">
         <div className="flex gap-4">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gold-50 text-gold-600">
             <Icon nome="lucchetto" className="h-5 w-5" />

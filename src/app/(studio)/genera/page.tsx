@@ -75,9 +75,9 @@ export default function GeneraPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-display font-semibold text-neutral-900">Genera Atto</h1>
+      <h1 className="mb-6 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Genera Atto</h1>
 
-      <div className="rounded-xl bg-neutral-50 p-6">
+      <div className="rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <div className="mb-4">
           <label className="mb-1 block text-xs text-neutral-500">Pratica</label>
           <select value={matterId} onChange={(e) => setMatterId(e.target.value)} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">

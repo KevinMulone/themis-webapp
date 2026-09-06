@@ -23,7 +23,7 @@ export default function ErroreStudio({
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-4">
-      <div className="w-full max-w-lg rounded-xl bg-neutral-50 p-8">
+      <div className="w-full max-w-lg rounded-2xl bg-white ring-1 ring-black/[0.04] p-8">
         <h1 className="mb-1 font-semibold text-red-700">Qualcosa non ha funzionato</h1>
         <p className="mb-4 text-sm text-neutral-600">
           La pagina non è riuscita a caricarsi. I tuoi dati non sono stati toccati.

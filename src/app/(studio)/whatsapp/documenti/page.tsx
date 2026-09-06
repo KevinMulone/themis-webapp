@@ -49,7 +49,7 @@ export default function ReparttoFascicoliPage() {
   return (
     <div className="mx-auto max-w-4xl p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-neutral-900">Reparto fascicoli</h1>
+        <h1 className="text-[24px] font-semibold tracking-tight text-neutral-900">Reparto fascicoli</h1>
         <button type="button" onClick={carica} className="premi text-xs text-neutral-500 hover:text-neutral-700">
           Aggiorna
         </button>
@@ -59,13 +59,13 @@ export default function ReparttoFascicoliPage() {
       </p>
 
       {!caricato ? null : gruppi.length === 0 ? (
-        <div className="rounded-2xl bg-neutral-50 p-5">
+        <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-5">
           <p className="text-sm text-neutral-500">Ancora nessun documento ricevuto su WhatsApp.</p>
         </div>
       ) : (
         <div className="space-y-4">
           {gruppi.map((g) => (
-            <div key={g.titolo} className="rounded-2xl bg-neutral-50 p-5">
+            <div key={g.titolo} className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-5">
               <p className="mb-2 font-semibold text-neutral-900">{g.titolo}</p>
               <ul className="space-y-1.5">
                 {g.documenti.map((d) => (

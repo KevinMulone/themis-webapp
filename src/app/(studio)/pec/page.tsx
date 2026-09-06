@@ -258,7 +258,7 @@ export default function PecPage() {
     <div className="mx-auto max-w-7xl">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-neutral-900">PEC</h1>
+          <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">PEC</h1>
           <p className="mt-1 max-w-2xl text-sm text-neutral-500">
             Messaggi scaricati automaticamente dalle caselle configurate in Impostazioni.
             Le ricevute di accettazione, consegna e mancata consegna sono separate.
@@ -274,7 +274,7 @@ export default function PecPage() {
       </div>
 
       {accounts.length === 0 ? (
-        <div className="rounded-2xl bg-neutral-50 py-16 text-center">
+        <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] py-16 text-center">
           <Icon nome="pec" className="mx-auto h-10 w-10 text-neutral-200" />
           <p className="mt-3 text-sm text-neutral-500">Nessuna casella PEC configurata.</p>
           <Link
@@ -290,7 +290,7 @@ export default function PecPage() {
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <button
               type="button" onClick={() => setScrivendo(true)}
-              className="flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-bordeaux-800"
+              className="flex items-center gap-2 premi rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black"
             >
               <Icon nome="matita" className="h-4 w-4" />
               Nuova PEC
@@ -336,7 +336,7 @@ export default function PecPage() {
 
           <ScadenzeProposte />
 
-          <div className="mb-4 rounded-2xl bg-neutral-50 p-4">
+          <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-4">
             <div className="flex flex-wrap items-center gap-3">
               <div className="relative min-w-60 flex-1">
                 <Icon nome="pec" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
@@ -412,7 +412,7 @@ export default function PecPage() {
             )}
           </div>
 
-          <div className="rounded-2xl bg-neutral-50">
+          <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04]">
             {loading ? (
               <p className="p-6 text-sm text-neutral-500">Caricamento...</p>
             ) : filtrati.length === 0 ? (
@@ -583,7 +583,7 @@ export default function PecPage() {
             )}
           </div>
 
-          <div className="mt-4 grid grid-cols-1 gap-6 rounded-2xl bg-neutral-50 p-6 md:grid-cols-3 md:divide-x md:divide-neutral-100">
+          <div className="mt-4 grid grid-cols-1 gap-6 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-6 md:grid-cols-3 md:divide-x md:divide-neutral-100">
             <NotaFondo
               icona="pec" tinta="bg-violet-50 text-violet-500" titolo="Caselle configurate"
               testo={`${accounts.length} ${accounts.length === 1 ? 'casella PEC attiva' : 'caselle PEC attive'}`}

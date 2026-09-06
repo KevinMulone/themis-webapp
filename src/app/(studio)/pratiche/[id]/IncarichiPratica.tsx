@@ -97,7 +97,7 @@ export default function IncarichiPratica({ matterId, studioId }: { matterId: str
   const attivi = membri.filter((m) => m.stato === 'attivo' && m.user_id);
 
   return (
-    <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+    <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
       <h2 className="mb-3 font-semibold text-neutral-900">Incarichi</h2>
 
       {incarichi.length === 0 ? (

@@ -268,12 +268,12 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     <div className="mx-auto max-w-3xl">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-display font-semibold text-neutral-900">{clientLabel(client)}</h1>
+          <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">{clientLabel(client)}</h1>
           <p className="text-sm text-neutral-500">{labelFromOptions(TIPI_PRATICA, matter.tipo_pratica)}</p>
         </div>
       </div>
 
-      <form onSubmit={handleSaveMatter} className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <form onSubmit={handleSaveMatter} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Dati pratica</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -335,7 +335,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
       </form>
 
       {matter.rg_numero && (
-        <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+        <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
           <h2 className="mb-3 font-semibold text-neutral-900">Verifica sul portale Giustizia Civile</h2>
           <p className="mb-3 text-sm text-neutral-600">
             R.G. <span className="font-semibold">{matter.rg_numero}{matter.rg_anno && `/${matter.rg_anno}`}</span>
@@ -365,7 +365,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         </div>
       )}
 
-      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold text-neutral-900">Documenti</h2>
           <label className="premi cursor-pointer rounded-full bg-neutral-100 px-3 py-1.5 text-xs hover:bg-neutral-200">
@@ -395,7 +395,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
       <IncarichiPratica matterId={id} studioId={studioId} />
 
-      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Documenti richiesti al cliente</h2>
         {richieste.length === 0 ? (
           <p className="mb-3 text-sm text-neutral-500">Nessuna richiesta inviata.</p>
@@ -435,7 +435,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
       </div>
 
       {matter.metodo_pagamento === 'gratuito_patrocinio' && (
-        <form onSubmit={handleSavePatrocinio} className="mb-4 rounded-xl bg-neutral-50 p-6">
+        <form onSubmit={handleSavePatrocinio} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-semibold text-neutral-900">Patrocinio a spese dello Stato</h2>
           </div>
@@ -489,7 +489,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         </form>
       )}
 
-      <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Scadenze legali suggerite</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Suggerimenti con riferimento normativo, da verificare sempre sul caso concreto: la sospensione
@@ -554,7 +554,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
       {matter.tipo_pratica === 'sinistro' && sinistro && (
         <>
-          <form onSubmit={handleSaveSinistro} className="mb-4 rounded-xl bg-neutral-50 p-6">
+          <form onSubmit={handleSaveSinistro} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
             <h2 className="mb-3 font-semibold text-neutral-900">Dati sinistro</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Field label="Data sinistro" name="data_sinistro" type="date" defaultValue={sinistro.data_sinistro} />
@@ -595,7 +595,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
             </div>
           </form>
 
-          <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+          <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="font-semibold text-neutral-900">Testimoni</h2>
               <button onClick={() => setAddingTestimone(true)} className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs hover:bg-neutral-200">

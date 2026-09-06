@@ -105,7 +105,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
   }
 
   return (
-    <div className="mb-4 rounded-xl bg-neutral-50 p-6">
+    <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-semibold text-neutral-900">Fai preparare un atto a Themis</h2>
         <div className="flex items-center gap-4">
@@ -150,7 +150,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
                 <label className="mb-1 block text-xs font-medium text-neutral-600">
                   Documenti da tenere presenti {scelti.length > 0 && `(${scelti.length} selezionati)`}
                 </label>
-                <div className="max-h-32 space-y-1 overflow-y-auto rounded-xl bg-neutral-50 p-2">
+                <div className="max-h-32 space-y-1 overflow-y-auto rounded-2xl bg-white ring-1 ring-black/[0.04] p-2">
                   {allegabili.map((d) => (
                     <label key={d.id} className="flex items-center gap-2 text-sm text-neutral-700">
                       <input
@@ -225,7 +225,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
                 </div>
               </div>
 
-              <div className="max-h-150 overflow-y-auto rounded-xl bg-neutral-50 p-4">
+              <div className="max-h-150 overflow-y-auto rounded-2xl bg-white ring-1 ring-black/[0.04] p-4">
                 <p className="whitespace-pre-wrap font-serif text-sm leading-relaxed text-neutral-800">
                   {esito.testo}
                 </p>
@@ -244,7 +244,7 @@ export default function RedigiAtto({ matterId, documenti, onSalvato, apertura, o
                 La responsabilità di ciò che depositi resta tua.
               </p>
 
-              <div className="mt-3 rounded-xl bg-neutral-50 p-4">
+              <div className="mt-3 rounded-2xl bg-white ring-1 ring-black/[0.04] p-4">
                 {feedback === 'iniziale' && (
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <p className="text-xs font-medium text-neutral-600">È stato generato bene?</p>
