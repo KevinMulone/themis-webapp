@@ -21,7 +21,7 @@ function Reveal({ children, className = '', delay = 0 }: {
           osservatore.disconnect();
         }
       },
-      { threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
+      { threshold: 0.16, rootMargin: '0px 0px -6% 0px' },
     );
     osservatore.observe(nodo);
     return () => osservatore.disconnect();
@@ -30,8 +30,8 @@ function Reveal({ children, className = '', delay = 0 }: {
   return (
     <div
       ref={rif}
-      className={`transition-[opacity,transform,filter] duration-[1100ms] ease-[cubic-bezier(.16,1,.3,1)] ${
-        visibile ? 'translate-y-0 opacity-100 blur-none' : 'translate-y-8 opacity-0 blur-sm'
+      className={`transition-[opacity,transform] duration-700 ease-out ${
+        visibile ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
       } ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
     >
@@ -40,178 +40,56 @@ function Reveal({ children, className = '', delay = 0 }: {
   );
 }
 
-function Chrome({ children, titolo }: { children: ReactNode; titolo: string }) {
-  return (
-    <div className="overflow-hidden rounded-[28px] border border-black/[0.06] bg-white shadow-[0_40px_80px_-40px_rgba(29,29,31,.35)]">
-      <div className="flex items-center gap-2 border-b border-black/[0.05] bg-neutral-50/90 px-4 py-2.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-        <span className="ml-2 text-[11px] font-medium tracking-tight text-neutral-400">{titolo}</span>
-      </div>
-      {children}
-    </div>
-  );
-}
+const POSTER: { titolo: string; sotto: string; tono: string }[] = [
+  { titolo: 'Pratiche', sotto: 'Fascicoli e stati', tono: 'from-[#3a1520] to-[#1a0a10]' },
+  { titolo: 'Clienti', sotto: 'Anagrafe dello studio', tono: 'from-[#1d2a3a] to-[#0c1218]' },
+  { titolo: 'PEC', sotto: 'Posta certificata', tono: 'from-[#3a1a12] to-[#140806]' },
+  { titolo: 'Themis AI', sotto: 'Domande al fascicolo', tono: 'from-[#2a1838] to-[#100814]' },
+  { titolo: 'Calendario', sotto: 'Udienze e termini', tono: 'from-[#14261c] to-[#08100c]' },
+  { titolo: 'WhatsApp', sotto: 'Chat dello studio', tono: 'from-[#14301c] to-[#08140c]' },
+  { titolo: 'Atti', sotto: 'Prime stesure', tono: 'from-[#2a2410] to-[#121008]' },
+  { titolo: 'Deposito', sotto: 'Pacchetto telematico', tono: 'from-[#1a2438] to-[#0a1018]' },
+  { titolo: 'Parcelle', sotto: 'Parametri forensi', tono: 'from-[#382418] to-[#140c08]' },
+  { titolo: 'Patrocinio', sotto: 'Spese dello Stato', tono: 'from-[#241838] to-[#100818]' },
+  { titolo: 'Sinistri', sotto: 'Dati compagnia', tono: 'from-[#381818] to-[#140808]' },
+  { titolo: 'Collaboratori', sotto: 'Un solo studio', tono: 'from-[#183038] to-[#081418]' },
+  { titolo: 'Cifratura', sotto: 'Chiave per studio', tono: 'from-[#303018] to-[#121208]' },
+  { titolo: 'Registri', sotto: 'Giustizia civile', tono: 'from-[#182038] to-[#080c18]' },
+  { titolo: 'Danno', sotto: 'Tabelle ufficiali', tono: 'from-[#381828] to-[#140810]' },
+  { titolo: 'Incarichi', sotto: 'Cosa resta da fare', tono: 'from-[#203018] to-[#0c1408]' },
+];
 
-function RotatingWord() {
-  const parole = ['le pratiche', 'la PEC', 'le udienze', 'gli atti', 'i fascicoli'];
-  const [i, setI] = useState(0);
-  useEffect(() => {
-    const riduci = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (riduci) return;
-    const t = setInterval(() => setI((n) => (n + 1) % parole.length), 2200);
-    return () => clearInterval(t);
-  }, [parole.length]);
-  return (
-    <span className="relative inline-block min-w-[11rem] text-left text-bordeaux-700">
-      {parole.map((p, idx) => (
-        <span
-          key={p}
-          className={`absolute inset-x-0 transition-all duration-700 ease-[cubic-bezier(.16,1,.3,1)] ${
-            idx === i ? 'translate-y-0 opacity-100 blur-none' : 'translate-y-3 opacity-0 blur-sm'
-          }`}
-        >
-          {p}.
-        </span>
-      ))}
-      <span className="invisible">{parole[0]}.</span>
-    </span>
-  );
-}
+const MODULI: { icona: NomeIcona; titolo: string; testo: string }[] = [
+  { icona: 'pratiche', titolo: 'Gestione pratiche', testo: 'Fascicoli, R.G., stato, controparte e assegnazione in un elenco solo.' },
+  { icona: 'clienti', titolo: 'Anagrafe clienti', testo: 'Persone e società, archivio, ricerca per nome, CF, pec e città.' },
+  { icona: 'pec', titolo: 'PEC in studio', testo: 'Casella collegata, non lette in evidenza, ricevute e termini proposti.' },
+  { icona: 'whatsapp', titolo: 'WhatsApp dello studio', testo: 'Chat, documenti in arrivo e collegamento al fascicolo giusto.' },
+  { icona: 'calendario', titolo: 'Calendario unico', testo: 'Udienze e scadenze visibili a titolare e collaboratori, anche su Google.' },
+  { icona: 'themis', titolo: 'Assistente Themis', testo: 'Domande al fascicolo con citazione della pagina. Bozze da rileggere sempre.' },
+  { icona: 'genera', titolo: 'Generazione atti', testo: 'Modelli dello studio compilati con i dati già in pratica.' },
+  { icona: 'invio', titolo: 'Deposito telematico', testo: 'Pacchetto pronto, lista di controllo, ricarica dei file firmati.' },
+  { icona: 'parcelle', titolo: 'Parcelle', testo: 'Parametri forensi sulla pratica, senza un foglio a parte.' },
+  { icona: 'calcolo', titolo: 'Calcolo del danno', testo: 'Tabelle in uso per invalidità permanente e temporanea.' },
+  { icona: 'patrocinio', titolo: 'Patrocinio a spese dello Stato', testo: 'Istanza, delibera, liquidazione e incasso sullo stesso fascicolo.' },
+  { icona: 'collaboratori', titolo: 'Collaboratori', testo: 'Inviti, ruoli e un unico spazio di lavoro per lo studio.' },
+];
 
-const SLIDES = [
+const BLOCCHI = [
   {
-    kicker: 'Dashboard',
-    titolo: 'La giornata dello studio, in un colpo d’occhio.',
-    testo: 'Scadenze, PEC non lette e incarichi aperti — senza aprire cinque programmi.',
-    mock: 'dash',
+    kicker: 'Chi siamo',
+    titolo: 'Themis è lo studio, messo in un’unica app.',
+    testo: 'Nasce dallo studio legale quotidiano: fascicoli che si perdono tra cartelle, PEC, chat e fogli. L’obiettivo non è un chatbot. È un posto solo dove lo studio lavora — e che resta aggiornato, mese dopo mese.',
   },
   {
-    kicker: 'Assistente',
-    titolo: 'Chiedi al fascicolo. Risponde con la pagina.',
-    testo: 'Themis legge solo i documenti che scegli tu. Niente precedenti inventati.',
-    mock: 'ai',
+    kicker: 'Cosa facciamo',
+    titolo: 'Tutto il lavoro del fascicolo, senza cinque programmi.',
+    testo: 'Clienti, pratiche, PEC, WhatsApp, calendario, atti, deposito, parcelle e patrocinio stanno nello stesso spazio. Ogni documento è cifrato per il tuo studio. L’assistente legge solo ciò che gli dai tu.',
   },
   {
-    kicker: 'PEC',
-    titolo: 'La posta certificata entra nel fascicolo.',
-    testo: 'Non lette in evidenza. I termini proposti sul calendario, appena arrivano.',
-    mock: 'pec',
+    kicker: 'L’obiettivo',
+    titolo: 'Un gestionale legale completo, sempre in aggiornamento.',
+    testo: 'Themis non è un prodotto chiuso. Esce, si usa, si corregge. Nuove funzioni, più velocità, più chiarezza: la stessa app, migliorata in continuazione. Chi si abbona entra in un lavoro che continua.',
   },
-  {
-    kicker: 'Calendario',
-    titolo: 'Udienze visibili a tutto lo studio.',
-    testo: 'Un’agenda sola. Il nome dell’assistito accanto a ogni voce.',
-    mock: 'cal',
-  },
-] as const;
-
-function MockSlide({ tipo }: { tipo: (typeof SLIDES)[number]['mock'] }) {
-  if (tipo === 'ai') {
-    return (
-      <div className="space-y-3 p-5">
-        <div className="ml-auto max-w-[86%] rounded-2xl rounded-br-md bg-neutral-900 px-4 py-2.5 text-[13px] text-white">
-          Da quando decorre l’invalidità del verbale?
-        </div>
-        <div className="max-w-[90%] rounded-2xl rounded-bl-md bg-neutral-50 px-4 py-2.5 text-[13px] text-neutral-700">
-          Decorrenza dalla domanda amministrativa. Invalidità riconosciuta all’80%.
-        </div>
-        <div className="text-[11px] text-neutral-400">Verbale INPS.pdf · p. 2</div>
-      </div>
-    );
-  }
-  if (tipo === 'pec') {
-    return (
-      <div className="divide-y divide-black/[0.04] p-2">
-        {[
-          ['Tribunale di Caltanissetta', 'Fissazione udienza'],
-          ['Generali Italia', 'Riscontro sinistro'],
-          ['Avv. Di Vita', 'Trasmissione ricorso'],
-        ].map(([a, b], i) => (
-          <div key={a} className="flex items-center gap-3 px-4 py-3">
-            <span className={`h-1.5 w-1.5 rounded-full ${i < 2 ? 'bg-bordeaux-700' : 'bg-transparent'}`} />
-            <div className="min-w-0">
-              <div className={`truncate text-[13px] ${i < 2 ? 'font-semibold' : 'text-neutral-500'}`}>{a}</div>
-              <div className="truncate text-[12px] text-neutral-400">{b}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  if (tipo === 'cal') {
-    const g = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
-    return (
-      <div className="p-6">
-        <div className="grid grid-cols-7 gap-2 text-center">
-          {g.map((d, i) => <span key={i} className="text-[10px] text-neutral-400">{d}</span>)}
-          {Array.from({ length: 7 }).map((_, i) => (
-            <span key={i} className={`mx-auto flex h-8 w-8 items-center justify-center rounded-full text-[13px] ${i === 2 ? 'bg-neutral-900 text-white' : ''}`}>{9 + i}</span>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="grid grid-cols-3 gap-3 p-5">
-      {[['12', 'Pratiche'], ['3', 'Udienze'], ['7', 'PEC']].map(([n, l]) => (
-        <div key={l} className="rounded-2xl bg-neutral-50 p-4">
-          <div className="text-[22px] font-semibold tracking-tight">{n}</div>
-          <div className="text-[11px] text-neutral-500">{l}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function ProductSlides() {
-  const [attiva, setAttiva] = useState(0);
-  useEffect(() => {
-    const riduci = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (riduci) return;
-    const t = setInterval(() => setAttiva((n) => (n + 1) % SLIDES.length), 5200);
-    return () => clearInterval(t);
-  }, [attiva]);
-  const s = SLIDES[attiva];
-  return (
-    <div className="mx-auto max-w-6xl">
-      <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
-        <div>
-          <p className="text-[13px] font-medium text-bordeaux-700">{s.kicker}</p>
-          <h2 className="mt-3 text-[32px] font-semibold leading-[1.12] tracking-tight sm:text-[44px]">
-            {s.titolo}
-          </h2>
-          <p className="mt-4 max-w-md text-[17px] leading-relaxed text-neutral-500">{s.testo}</p>
-          <div className="mt-8 flex gap-2">
-            {SLIDES.map((slide, i) => (
-              <button
-                key={slide.kicker}
-                type="button"
-                aria-label={slide.kicker}
-                onClick={() => setAttiva(i)}
-                className={`h-1.5 rounded-full transition-all duration-500 ${i === attiva ? 'w-8 bg-neutral-900' : 'w-3 bg-neutral-300 hover:bg-neutral-400'}`}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="fluttua">
-          <Chrome titolo={`Themis — ${s.kicker}`}>
-            <div className="min-h-[220px] bg-white">
-              <MockSlide tipo={s.mock} />
-            </div>
-          </Chrome>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const FUNZIONI: { icona: NomeIcona; titolo: string; testo: string }[] = [
-  { icona: 'pratiche', titolo: 'Gestione pratiche', testo: 'Fascicoli, scadenze e stato in un unico posto.' },
-  { icona: 'calendario', titolo: 'Calendario dello studio', testo: 'Udienze e termini visibili a tutti i collaboratori.' },
-  { icona: 'genera', titolo: 'Generazione atti', testo: 'Prime stesure nello stile del tuo studio.' },
-  { icona: 'scudo', titolo: 'Cifratura per studio', testo: 'Ogni documento è leggibile solo dal tuo studio.' },
 ];
 
 const PIANI = [
@@ -220,310 +98,72 @@ const PIANI = [
   { key: 'annuale', nome: 'Annuale', pubblico: 'Per studi strutturati', prezzo: '1.100€', periodo: '/anno', dettaglio: 'Include le future funzionalità AI.', posti: 5 },
 ] as const;
 
-export default function Home() {
+const FAQ: { d: string; r: string }[] = [
+  { d: 'Themis sostituisce lo studio o l’avvocato?', r: 'No. È lo strumento dello studio. Le decisioni, la firma e la responsabilità restano dell’avvocato.' },
+  { d: 'Cosa copre oggi?', r: 'Clienti, pratiche (compresi i sinistri), PEC, WhatsApp, calendario, assistente sul fascicolo, generazione atti, deposito, parcelle, danno biologico, patrocinio, collaboratori e registri di giustizia civile.' },
+  { d: 'L’app resterà ferma dopo l’acquisto?', r: 'No. Themis è pensata per aggiornarsi di continuo: correzioni, nuove funzioni, più chiarezza. L’abbonamento include gli aggiornamenti.' },
+  { d: 'Themis inventa sentenze o norme?', r: 'No. Dove manca un dato scrive [DA COMPLETARE]. Le bozze vanno sempre rilette prima di usarle.' },
+  { d: 'I documenti sono al sicuro?', r: 'Ogni studio ha una propria chiave di cifratura. La cifratura avviene prima dello storage e non si può disattivare.' },
+  { d: 'Posso disdire?', r: 'Sì, sul piano mensile quando vuoi. C’è anche una garanzia di rimborso entro 4 giorni: leggi la politica rimborsi.' },
+  { d: 'Serve già un account per iniziare?', r: 'Puoi registrarti e attivare con una chiave, oppure scegliere un piano da questa pagina. Dopo il pagamento la chiave arriva via email.' },
+  { d: 'Funziona per uno studio con collaboratori?', r: 'Sì. Il titolare invita i collaboratori. I posti inclusi dipendono dal piano (1, 3 o 5 oltre al titolare).' },
+];
+
+function Mosaico() {
+  const fila = [...POSTER, ...POSTER];
   return (
-    <div className="flex min-h-screen flex-col bg-[#f5f5f7] text-neutral-900">
-      <header className="vetro sticky top-0 z-40 border-b border-black/[0.06]">
-        <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-5 lg:px-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/icon.svg" alt="" width={22} height={22} className="rounded-[6px]" />
-            <span className="text-[13px] font-semibold tracking-tight">Themis</span>
-          </Link>
-          <nav className="hidden items-center gap-7 text-[12.5px] text-neutral-600 sm:flex">
-            <a href="#prodotto" className="hover:text-neutral-900">Prodotto</a>
-            <a href="#piani" className="hover:text-neutral-900">Piani</a>
-            <a href="#sicurezza" className="hover:text-neutral-900">Sicurezza</a>
-          </nav>
-          <Link
-            href="/accedi"
-            className="premi rounded-full bg-neutral-900 px-3.5 py-1.5 text-[12.5px] font-medium text-white hover:bg-black"
-          >
-            Accedi
-          </Link>
-        </div>
-      </header>
-
-      <section className="relative overflow-hidden">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              'radial-gradient(70% 55% at 50% -10%, rgba(107,29,57,.10), transparent 58%), radial-gradient(40% 40% at 90% 10%, rgba(201,147,42,.10), transparent 50%)',
-          }}
-        />
-        <div className="relative mx-auto flex max-w-4xl flex-col items-center px-6 pb-10 pt-16 text-center sm:pt-24">
-          <Reveal>
-            <span className="inline-flex items-center gap-2 rounded-full border border-black/[0.06] bg-white/70 px-3 py-1 text-[12px] font-medium text-neutral-600 shadow-sm backdrop-blur">
-              Per studi legali
-            </span>
-          </Reveal>
-          <Reveal delay={80}>
-            <h1 className="mt-6 max-w-3xl text-[44px] font-semibold leading-[1.05] tracking-tight text-neutral-900 sm:text-[72px]">
-              Lo studio.
-              <br />
-              Poi <RotatingWord />
-            </h1>
-          </Reveal>
-          <Reveal delay={160}>
-            <p className="mt-6 max-w-xl text-[18px] leading-relaxed text-neutral-500 sm:text-[21px]">
-              Un’unica app per fascicoli, posta certificata, calendario
-              e un assistente che legge solo ciò che gli dai tu.
-            </p>
-          </Reveal>
-          <Reveal delay={240}>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/registrati"
-                className="premi rounded-full bg-bordeaux-700 px-6 py-3 text-[15px] font-medium text-white shadow-[0_10px_24px_-12px_rgba(107,29,57,.7)] hover:bg-bordeaux-800"
-              >
-                Inizia ora
-              </Link>
-              <Link
-                href="/accedi"
-                className="premi rounded-full bg-white/80 px-6 py-3 text-[15px] font-medium text-neutral-800 ring-1 ring-black/[0.06] hover:bg-white"
-              >
-                Accedi
-              </Link>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div className="absolute -inset-8 rotate-[-8deg] scale-110 opacity-80">
+        <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
+          {fila.map((p, i) => (
+            <div
+              key={`${p.titolo}-${i}`}
+              className={`aspect-[2/3] rounded-sm bg-gradient-to-br ${p.tono} p-3 shadow-lg ring-1 ring-white/10`}
+            >
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{p.sotto}</div>
+              <div className="mt-2 text-[17px] font-bold leading-tight text-white">{p.titolo}</div>
             </div>
-          </Reveal>
-        </div>
-
-        <div className="relative mx-auto max-w-[100vw] overflow-hidden pb-8 pt-4">
-          <div className="nastro flex w-max gap-10 px-8 text-[13px] font-medium text-neutral-400">
-            {Array.from({ length: 2 }).flatMap((_, k) =>
-              ['Pratiche', 'PEC', 'Calendario', 'Themis AI', 'Deposito', 'Parcelle', 'WhatsApp', 'Collaboratori', 'Cifratura'].map((v) => (
-                <span key={`${k}-${v}`} className="flex items-center gap-10">
-                  {v}
-                  <span className="h-1 w-1 rounded-full bg-neutral-300" />
-                </span>
-              )),
-            )}
-          </div>
-        </div>
-      </section>
-
-      <section id="prodotto" className="px-6 py-20 lg:px-12">
-        <ProductSlides />
-      </section>
-
-      <section className="px-6 py-8 lg:px-12">
-        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {FUNZIONI.map((f, i) => (
-            <Reveal key={f.titolo} delay={i * 60}>
-              <div className="h-full rounded-[24px] bg-white p-6 ring-1 ring-black/[0.04]">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-50 text-bordeaux-700">
-                  <Icon nome={f.icona} className="h-5 w-5" />
-                </span>
-                <h3 className="mt-4 text-[16px] font-semibold tracking-tight">{f.titolo}</h3>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-neutral-500">{f.testo}</p>
-              </div>
-            </Reveal>
           ))}
         </div>
-      </section>
-
-      <VetrinaThemis />
-      <VetrinaPec />
-      <VetrinaCalendario />
-      <VetrinaPiani />
-
-      <section id="sicurezza" className="px-6 py-24 lg:px-12">
-        <div className="mx-auto max-w-3xl text-center">
-          <Reveal>
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-bordeaux-700 ring-1 ring-black/[0.05]">
-              <Icon nome="lucchetto" className="h-6 w-6" />
-            </span>
-          </Reveal>
-          <Reveal delay={80}>
-            <h2 className="mt-6 text-[34px] font-semibold tracking-tight sm:text-[48px]">
-              Ogni documento è cifrato per il tuo studio soltanto.
-            </h2>
-          </Reveal>
-          <Reveal delay={160}>
-            <p className="mx-auto mt-5 max-w-xl text-[17px] leading-relaxed text-neutral-500">
-              Ogni studio ha una propria chiave di cifratura. La cifratura avviene
-              prima che il documento tocchi lo storage, e non può essere disattivata.
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
-      <section className="px-6 pb-24 lg:px-12">
-        <Reveal className="mx-auto max-w-4xl overflow-hidden rounded-[32px] bg-neutral-900 px-8 py-16 text-center text-white sm:px-16">
-          <h2 className="text-[34px] font-semibold tracking-tight sm:text-[48px]">
-            Porta il tuo studio su Themis.
-          </h2>
-          <p className="mx-auto mt-4 max-w-md text-[17px] leading-relaxed text-white/60">
-            Pratiche, PEC, calendario e un assistente che conosce i tuoi fascicoli.
-          </p>
-          <Link
-            href="/registrati"
-            className="premi mt-8 inline-flex rounded-full bg-white px-7 py-3.5 text-[15px] font-medium text-neutral-900 hover:bg-neutral-100"
-          >
-            Registra il tuo studio
-          </Link>
-        </Reveal>
-      </section>
-
-      <footer className="border-t border-black/[0.06] px-6 py-8 lg:px-12">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-[12px] text-neutral-400 sm:flex-row">
-          <span>© {new Date().getFullYear()} Themis</span>
-          <span className="flex gap-6">
-            <Link href="/privacy" className="hover:text-neutral-600">Informativa privacy</Link>
-            <Link href="/politica-rimborsi" className="hover:text-neutral-600">Politica di rimborso</Link>
-          </span>
-        </div>
-      </footer>
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-[#141414]" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#141414] to-transparent" />
     </div>
   );
 }
 
-const CAPACITA_THEMIS: { icona: NomeIcona; titolo: string; testo: string }[] = [
-  { icona: 'documento', titolo: 'Analisi del fascicolo', testo: 'Legge i documenti della pratica che scegli tu: PDF, Word e testo.' },
-  { icona: 'matita', titolo: 'Risposte con citazione', testo: 'Risponde solo su ciò che trova negli atti, indicando documento e pagina.' },
-  { icona: 'genera', titolo: 'Bozze di atti', testo: 'Prima stesura di diffide, ricorsi e memorie, nello stile dello studio.' },
-];
-
-function VetrinaThemis() {
+function RigaFunzione({
+  kicker, titolo, testo, invertito, children,
+}: {
+  kicker: string; titolo: string; testo: string; invertito?: boolean; children: ReactNode;
+}) {
   return (
-    <section className="px-6 py-24 lg:px-12">
-      <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2">
-        <Reveal>
-          <span className="inline-flex items-center gap-2 text-[13px] font-medium text-bordeaux-700">
-            <Icon nome="themis" className="h-3.5 w-3.5" />
-            Assistente dello studio
-          </span>
-          <h2 className="mt-4 text-[36px] font-semibold leading-[1.12] tracking-tight sm:text-[48px]">
-            Chiedi al fascicolo, non a un motore di ricerca.
-          </h2>
-          <p className="mt-5 text-[17px] leading-relaxed text-neutral-500">
-            Themis legge i documenti che scegli tu, risponde citando pagina e riga, e prepara
-            una prima bozza di atti. Dove servirebbe un precedente lascia un segnaposto:
-            la responsabilità di ciò che si firma resta dell&rsquo;avvocato.
-          </p>
+    <section className="border-t-8 border-[#232323] bg-black px-6 py-16 lg:px-12 lg:py-24">
+      <div className={`mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 ${invertito ? '' : ''}`}>
+        <Reveal className={invertito ? 'lg:order-2' : ''}>
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6b1d39]">{kicker}</p>
+          <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">{titolo}</h2>
+          <p className="mt-5 text-lg leading-relaxed text-neutral-300">{testo}</p>
         </Reveal>
-
-        <Reveal delay={120}>
-          <Chrome titolo="Themis — Assistente">
-            <div className="space-y-4 bg-white p-6">
-              <div className="ml-auto max-w-[88%] rounded-[20px] rounded-br-md bg-neutral-900 px-4 py-3 text-[14px] leading-relaxed text-white">
-                Da quando decorre l&rsquo;invalidità riconosciuta nel verbale?
-              </div>
-              <div className="max-w-[92%] rounded-[20px] rounded-bl-md bg-neutral-50 px-4 py-3 text-[14px] leading-relaxed text-neutral-700">
-                Il verbale riconosce l&rsquo;80% di invalidità civile, con decorrenza dalla
-                data della domanda amministrativa.
-              </div>
-              <div className="text-[12px] text-neutral-400">
-                Verbale INPS aggravamento.pdf · pagina 2
-              </div>
-            </div>
-          </Chrome>
-        </Reveal>
-      </div>
-
-      <div className="mx-auto mt-14 grid max-w-6xl grid-cols-1 gap-3 sm:grid-cols-3">
-        {CAPACITA_THEMIS.map((c, i) => (
-          <Reveal key={c.titolo} delay={i * 70}>
-            <div className="h-full rounded-[24px] bg-white p-6 ring-1 ring-black/[0.04]">
-              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-neutral-50 text-bordeaux-700">
-                <Icon nome={c.icona} className="h-5 w-5" />
-              </span>
-              <h3 className="mt-4 text-[16px] font-semibold tracking-tight">{c.titolo}</h3>
-              <p className="mt-1.5 text-[13.5px] leading-relaxed text-neutral-500">{c.testo}</p>
-            </div>
-          </Reveal>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function VetrinaPec() {
-  return (
-    <section className="px-6 py-8 lg:px-12">
-      <div className="mx-auto grid max-w-6xl items-center gap-16 overflow-hidden rounded-[32px] bg-white px-8 py-16 ring-1 ring-black/[0.04] lg:grid-cols-2 lg:px-14">
-        <Reveal delay={80} className="order-2 lg:order-1">
-          <div className="overflow-hidden rounded-[22px] bg-neutral-50 ring-1 ring-black/[0.04]">
-            {[
-              { chi: 'Tribunale di Caltanissetta', ogg: 'Fissazione udienza — R.G. 1135/2018', letta: false },
-              { chi: 'Generali Italia S.p.A.', ogg: 'Riscontro sinistro n. I20202600051011', letta: false },
-              { chi: 'Avv. Luisa Di Vita', ogg: 'Trasmissione ricorso art. 35-bis', letta: true },
-            ].map((m) => (
-              <div key={m.chi} className="flex items-center gap-3 border-b border-black/[0.04] px-5 py-4 last:border-0">
-                <span className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${m.letta ? 'bg-transparent' : 'bg-bordeaux-700'}`} />
-                <div className="min-w-0 flex-1">
-                  <div className={`truncate text-[14px] ${m.letta ? 'font-normal text-neutral-500' : 'font-semibold text-neutral-900'}`}>
-                    {m.chi}
-                  </div>
-                  <div className="truncate text-[12.5px] text-neutral-400">{m.ogg}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-
-        <Reveal className="order-1 lg:order-2">
-          <span className="inline-flex items-center gap-2 text-[13px] font-medium text-neutral-500">
-            <Icon nome="pec" className="h-3.5 w-3.5" />
-            Posta certificata
-          </span>
-          <h2 className="mt-4 text-[36px] font-semibold leading-[1.12] tracking-tight sm:text-[44px]">
-            Le PEC arrivano dentro Themis.
-          </h2>
-          <p className="mt-5 text-[17px] leading-relaxed text-neutral-500">
-            Ricevute e inviate in tempo reale, non lette in evidenza, e le scadenze
-            proposte per il calendario appena arrivano.
-          </p>
+        <Reveal delay={80} className={invertito ? 'lg:order-1' : ''}>
+          {children}
         </Reveal>
       </div>
     </section>
   );
 }
 
-function VetrinaCalendario() {
-  const giorni = ['L', 'M', 'M', 'G', 'V', 'S', 'D'];
-  const impegno: Record<number, string> = { 1: 'bg-bordeaux-700', 3: 'bg-gold-500', 4: 'bg-bordeaux-700' };
+function Schermo({ titolo, children }: { titolo: string; children: ReactNode }) {
   return (
-    <section className="px-6 py-24 lg:px-12">
-      <div className="mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2">
-        <Reveal>
-          <span className="inline-flex items-center gap-2 text-[13px] font-medium text-neutral-500">
-            <Icon nome="calendario" className="h-3.5 w-3.5" />
-            Calendario condiviso
-          </span>
-          <h2 className="mt-4 text-[36px] font-semibold leading-[1.12] tracking-tight sm:text-[44px]">
-            Un calendario solo, visibile a tutto lo studio.
-          </h2>
-          <p className="mt-5 text-[17px] leading-relaxed text-neutral-500">
-            Udienze, termini e appuntamenti di chiunque abbia accesso allo studio,
-            con il nome dell&rsquo;assistito sempre a fianco della voce.
-          </p>
-        </Reveal>
-
-        <Reveal delay={120}>
-          <div className="rounded-[28px] bg-white p-8 ring-1 ring-black/[0.04]">
-            <div className="grid grid-cols-7 gap-2 text-center">
-              {giorni.map((g, i) => (
-                <span key={i} className="text-[11px] font-medium text-neutral-400">{g}</span>
-              ))}
-              {Array.from({ length: 7 }).map((_, i) => (
-                <div key={i} className="flex flex-col items-center gap-1.5 pt-1">
-                  <span
-                    className={`flex h-9 w-9 items-center justify-center rounded-full text-[14px] ${
-                      i === 2 ? 'bg-neutral-900 font-medium text-white' : 'text-neutral-700'
-                    }`}
-                  >
-                    {9 + i}
-                  </span>
-                  {impegno[i] && <span className={`h-1.5 w-1.5 rounded-full ${impegno[i]}`} />}
-                </div>
-              ))}
-            </div>
-          </div>
-        </Reveal>
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#181818] shadow-[0_30px_80px_-20px_rgba(0,0,0,.8)]">
+      <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-[#6b1d39]" />
+        <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+        <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
+        <span className="ml-2 text-[11px] text-white/40">{titolo}</span>
       </div>
-    </section>
+      {children}
+    </div>
   );
 }
 
@@ -553,62 +193,344 @@ function VetrinaPiani() {
   }
 
   return (
-    <section id="piani" className="px-6 py-16 lg:px-12">
-      <Reveal className="mx-auto max-w-2xl text-center">
-        <h2 className="text-[36px] font-semibold tracking-tight sm:text-[48px]">
-          Un piano per ogni studio.
-        </h2>
-        <p className="mx-auto mt-5 max-w-lg text-[17px] leading-relaxed text-neutral-500">
+    <section id="piani" className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+      <Reveal className="mx-auto max-w-3xl text-center">
+        <h2 className="text-3xl font-extrabold text-white sm:text-5xl">Un piano per ogni studio.</h2>
+        <p className="mt-4 text-lg text-neutral-400">
           Più lungo è l&rsquo;impegno, più posti per i collaboratori sono inclusi, oltre al titolare.
         </p>
       </Reveal>
-
-      <div className="mx-auto mt-14 grid max-w-5xl grid-cols-1 gap-4 sm:grid-cols-3">
-        {PIANI.map((p, i) => {
+      <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-4 sm:grid-cols-3">
+        {PIANI.map((p) => {
           const featured = p.key === 'annuale';
           return (
-            <Reveal key={p.key} delay={i * 70}>
-              <div className={`flex h-full flex-col rounded-[28px] p-7 ${
-                featured
-                  ? 'bg-neutral-900 text-white shadow-[0_30px_60px_-36px_rgba(0,0,0,.55)]'
-                  : 'bg-white ring-1 ring-black/[0.04]'
-              }`}>
-                <span className={`inline-flex w-fit items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${
-                  featured ? 'bg-white/10 text-white' : 'bg-neutral-50 text-neutral-600'
-                }`}>
-                  {p.pubblico}
-                </span>
-                <div className={`mt-4 text-[13px] ${featured ? 'text-white/55' : 'text-neutral-500'}`}>{p.nome}</div>
-                <div className="mt-1 flex items-baseline gap-1">
-                  <span className="text-[40px] font-semibold tracking-tight">{p.prezzo}</span>
-                  <span className={featured ? 'text-white/50' : 'text-neutral-400'}>{p.periodo}</span>
-                </div>
-                <p className={`mt-3 text-[14px] leading-relaxed ${featured ? 'text-white/70' : 'text-neutral-500'}`}>
-                  {p.dettaglio}
-                </p>
-                <p className={`mt-4 text-[13px] ${featured ? 'text-white/70' : 'text-neutral-600'}`}>
-                  {p.posti} {p.posti === 1 ? 'collaboratore' : 'collaboratori'} oltre al titolare
-                </p>
-                <button
-                  type="button" onClick={() => scegliPiano(p.key)} disabled={pianoInCorso !== null}
-                  className={`premi mt-auto rounded-full px-5 py-3 text-[14px] font-medium disabled:opacity-50 ${
-                    featured ? 'mt-8 bg-white text-neutral-900 hover:bg-neutral-100' : 'mt-8 bg-neutral-900 text-white hover:bg-black'
-                  }`}
-                >
-                  {pianoInCorso === p.key ? 'Attendere...' : `Scegli ${p.nome.toLowerCase()}`}
-                </button>
+            <div
+              key={p.key}
+              className={`flex flex-col rounded-xl p-7 ${featured ? 'bg-[#6b1d39] text-white' : 'bg-[#181818] text-white ring-1 ring-white/10'}`}
+            >
+              <div className="text-sm text-white/70">{p.pubblico}</div>
+              <div className="mt-3 text-lg font-semibold">{p.nome}</div>
+              <div className="mt-2 flex items-baseline gap-1">
+                <span className="text-4xl font-extrabold">{p.prezzo}</span>
+                <span className="text-white/70">{p.periodo}</span>
               </div>
-            </Reveal>
+              <p className="mt-3 text-sm text-white/80">{p.dettaglio}</p>
+              <p className="mt-3 text-sm">
+                {p.posti} {p.posti === 1 ? 'collaboratore' : 'collaboratori'} oltre al titolare
+              </p>
+              <button
+                type="button"
+                onClick={() => scegliPiano(p.key)}
+                disabled={pianoInCorso !== null}
+                className={`mt-8 rounded px-5 py-3 text-sm font-bold disabled:opacity-50 ${
+                  featured ? 'bg-white text-black hover:bg-neutral-200' : 'bg-[#6b1d39] text-white hover:bg-[#57172e]'
+                }`}
+              >
+                {pianoInCorso === p.key ? 'Attendere...' : `Scegli ${p.nome.toLowerCase()}`}
+              </button>
+            </div>
           );
         })}
       </div>
-
-      {errore && <p className="mt-6 text-center text-sm text-red-600">{errore}</p>}
-
-      <p className="mx-auto mt-8 max-w-md text-center text-[13px] text-neutral-400">
-        Hai già una chiave di attivazione?{' '}
-        <a href="/attiva" className="font-medium text-neutral-800 hover:underline">Attivala qui</a>.
+      {errore && <p className="mt-6 text-center text-sm text-red-400">{errore}</p>}
+      <p className="mx-auto mt-8 max-w-md text-center text-sm text-neutral-500">
+        Hai già una chiave?{' '}
+        <a href="/attiva" className="text-white underline">Attivala qui</a>
+        {' · '}
+        <a href="/politica-rimborsi" className="underline">Politica rimborsi</a>
       </p>
     </section>
+  );
+}
+
+function Faq() {
+  const [aperta, setAperta] = useState<number | null>(0);
+  return (
+    <section id="faq" className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+      <h2 className="text-center text-3xl font-extrabold text-white sm:text-5xl">Domande frequenti</h2>
+      <div className="mx-auto mt-10 max-w-3xl space-y-2">
+        {FAQ.map((v, i) => {
+          const open = aperta === i;
+          return (
+            <div key={v.d} className="bg-[#2d2d2d]">
+              <button
+                type="button"
+                onClick={() => setAperta(open ? null : i)}
+                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left text-lg text-white sm:text-2xl"
+              >
+                {v.d}
+                <span className="text-3xl font-light leading-none">{open ? '×' : '+'}</span>
+              </button>
+              {open && (
+                <p className="border-t border-black px-6 py-5 text-base leading-relaxed text-neutral-200 sm:text-lg">
+                  {v.r}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+export default function Home() {
+  const [email, setEmail] = useState('');
+
+  function inizia(e: React.FormEvent) {
+    e.preventDefault();
+    const q = email.trim() ? `?email=${encodeURIComponent(email.trim())}` : '';
+    window.location.href = `/registrati${q}`;
+  }
+
+  return (
+    <div className="min-h-screen bg-[#141414] text-white">
+      <header className="absolute inset-x-0 top-0 z-20">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 lg:px-8">
+          <Link href="/" className="flex items-center gap-2.5">
+            <Image src="/icon.svg" alt="" width={32} height={32} className="rounded-[6px]" />
+            <span className="text-2xl font-black tracking-tight text-[#6b1d39] sm:text-3xl">THEMIS</span>
+          </Link>
+          <div className="flex items-center gap-3">
+            <a href="#funzioni" className="hidden text-sm text-white/80 hover:underline sm:inline">Funzioni</a>
+            <a href="#piani" className="hidden text-sm text-white/80 hover:underline sm:inline">Piani</a>
+            <Link
+              href="/accedi"
+              className="rounded bg-[#6b1d39] px-4 py-1.5 text-sm font-semibold hover:bg-[#57172e]"
+            >
+              Accedi
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <section className="relative min-h-[92vh] overflow-hidden">
+        <Mosaico />
+        <div className="relative z-10 mx-auto flex min-h-[92vh] max-w-4xl flex-col items-center justify-center px-6 pb-20 pt-28 text-center">
+          <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
+            Lo studio legale,
+            <br />
+            in un solo posto.
+          </h1>
+          <p className="mt-5 text-xl font-medium sm:text-2xl">
+            Pratiche, PEC, calendario e un assistente sul fascicolo.
+          </p>
+          <p className="mt-3 max-w-xl text-base text-white/80 sm:text-lg">
+            Un&rsquo;app di gestione legale completa. Sempre in aggiornamento.
+            Inizia oggi — disdici quando vuoi.
+          </p>
+          <p className="mt-8 text-base sm:text-lg">
+            Pronto a entrare? Inserisci l&rsquo;email e crea l&rsquo;account dello studio.
+          </p>
+          <form onSubmit={inizia} className="mt-4 flex w-full max-w-xl flex-col gap-2 sm:flex-row">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Indirizzo email"
+              className="min-h-14 flex-1 rounded-sm border border-white/40 bg-black/60 px-4 text-base text-white outline-none placeholder:text-white/45 focus:border-white"
+            />
+            <button
+              type="submit"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-sm bg-[#6b1d39] px-7 text-xl font-semibold hover:bg-[#57172e]"
+            >
+              Inizia
+              <span aria-hidden>›</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <section id="chi-siamo" className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-3">
+          {BLOCCHI.map((b, i) => (
+            <Reveal key={b.kicker} delay={i * 80}>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6b1d39]">{b.kicker}</p>
+              <h2 className="mt-3 text-2xl font-extrabold leading-tight text-white sm:text-3xl">{b.titolo}</h2>
+              <p className="mt-4 leading-relaxed text-neutral-300">{b.testo}</p>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <RigaFunzione
+        kicker="Pratiche e clienti"
+        titolo="Il fascicolo, non la cartella."
+        testo="Apri una pratica, vedi il cliente, lo stato, la controparte, il R.G. I sinistri hanno i campi della compagnia. Niente fogli sparsi."
+      >
+        <Schermo titolo="Themis — Pratiche">
+          <div className="divide-y divide-white/10 p-2">
+            {['Rossi Mario · R.G. 1135/2018', 'Bianchi S.r.l. · sinistro', 'Verdi Anna · lavoro'].map((r, i) => (
+              <div key={r} className="flex items-center justify-between px-4 py-3 text-sm">
+                <span className={i === 0 ? 'font-semibold text-white' : 'text-white/70'}>{r}</span>
+                <span className="text-xs text-white/40">{i === 0 ? 'Aperta' : i === 1 ? 'In attesa' : 'Chiusa'}</span>
+              </div>
+            ))}
+          </div>
+        </Schermo>
+      </RigaFunzione>
+
+      <RigaFunzione
+        invertito
+        kicker="PEC e WhatsApp"
+        titolo="La posta e le chat restano nel fascicolo."
+        testo="La PEC si scarica da sola. Le non lette restano evidenti. WhatsApp dello studio riceve documenti e li collega al cliente. Niente caselle e telefoni sparsi."
+      >
+        <Schermo titolo="Themis — PEC">
+          <div className="divide-y divide-white/10">
+            {[
+              ['Tribunale di Caltanissetta', 'Fissazione udienza'],
+              ['Generali Italia', 'Riscontro sinistro'],
+              ['Avv. Di Vita', 'Trasmissione ricorso'],
+            ].map(([a, b], i) => (
+              <div key={a} className="flex items-center gap-3 px-5 py-3">
+                <span className={`h-1.5 w-1.5 rounded-full ${i < 2 ? 'bg-[#6b1d39]' : 'bg-transparent'}`} />
+                <div>
+                  <div className={`text-sm ${i < 2 ? 'font-semibold text-white' : 'text-white/50'}`}>{a}</div>
+                  <div className="text-xs text-white/40">{b}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Schermo>
+      </RigaFunzione>
+
+      <RigaFunzione
+        kicker="Assistente"
+        titolo="Chiedi al fascicolo. Non a un motore di ricerca."
+        testo="Themis legge i documenti che scegli tu e risponde citando pagina e riga. Prepara una prima bozza. Dove manca un dato lascia un segnaposto: a firmare sei tu."
+      >
+        <Schermo titolo="Themis — Assistente">
+          <div className="space-y-3 p-5">
+            <div className="ml-auto max-w-[88%] rounded-2xl rounded-br-md bg-[#6b1d39] px-4 py-3 text-sm">
+              Da quando decorre l&rsquo;invalidità del verbale?
+            </div>
+            <div className="max-w-[92%] rounded-2xl rounded-bl-md bg-white/10 px-4 py-3 text-sm text-neutral-100">
+              Decorrenza dalla domanda amministrativa. Invalidità riconosciuta all&rsquo;80%.
+            </div>
+            <div className="text-xs text-white/40">Verbale INPS.pdf · pagina 2</div>
+          </div>
+        </Schermo>
+      </RigaFunzione>
+
+      <RigaFunzione
+        invertito
+        kicker="Calendario e deposito"
+        titolo="Udienze visibili. Pacchetto pronto per il deposito."
+        testo="Un calendario solo per lo studio, anche su Google. Il deposito prepara i file, controlla cosa manca e accetta i documenti già firmati."
+      >
+        <Schermo titolo="Themis — Calendario">
+          <div className="grid grid-cols-7 gap-2 p-6 text-center text-sm">
+            {['L', 'M', 'M', 'G', 'V', 'S', 'D'].map((d, i) => (
+              <span key={i} className="text-white/35">{d}</span>
+            ))}
+            {Array.from({ length: 7 }).map((_, i) => (
+              <span
+                key={i}
+                className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full ${i === 2 ? 'bg-[#6b1d39] font-bold' : 'text-white/80'}`}
+              >
+                {9 + i}
+              </span>
+            ))}
+          </div>
+        </Schermo>
+      </RigaFunzione>
+
+      <section id="funzioni" className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+        <Reveal className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-extrabold text-white sm:text-5xl">Tutto quello che c&rsquo;è dentro.</h2>
+          <p className="mt-4 text-lg text-neutral-400">
+            Non un pezzo alla volta. Lo studio intero, modulo per modulo.
+          </p>
+        </Reveal>
+        <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {MODULI.map((m, i) => (
+            <Reveal key={m.titolo} delay={(i % 3) * 50}>
+              <div className="h-full rounded-md bg-[#181818] p-6 ring-1 ring-white/10">
+                <Icon nome={m.icona} className="h-6 w-6 text-[#6b1d39]" />
+                <h3 className="mt-4 text-lg font-bold">{m.titolo}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-400">{m.testo}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+        <Reveal className="mx-auto max-w-4xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6b1d39]">Sempre in aggiornamento</p>
+          <h2 className="mt-3 text-3xl font-extrabold text-white sm:text-5xl">
+            L&rsquo;app non si ferma il giorno del rilascio.
+          </h2>
+          <p className="mt-5 text-lg leading-relaxed text-neutral-300">
+            Correzioni, nuove funzioni, più chiarezza nel lavoro di ogni giorno.
+            Chi usa Themis entra in un prodotto che continua a essere scritto —
+            non in una versione chiusa da scaffale.
+          </p>
+        </Reveal>
+        <div className="mx-auto mt-12 grid max-w-4xl gap-3 sm:grid-cols-3">
+          {[
+            { n: '01', t: 'Si usa in studio', d: 'Pratiche vere, PEC vere, scadenze vere.' },
+            { n: '02', t: 'Si ascolta', d: 'Quello che manca diventa il prossimo pezzo.' },
+            { n: '03', t: 'Si pubblica di nuovo', d: 'Aggiornamenti nell’abbonamento, senza un altro acquisto.' },
+          ].map((s) => (
+            <div key={s.n} className="rounded-md bg-[#181818] p-6 ring-1 ring-white/10">
+              <div className="text-sm font-bold text-[#6b1d39]">{s.n}</div>
+              <div className="mt-2 text-lg font-bold">{s.t}</div>
+              <p className="mt-2 text-sm text-neutral-400">{s.d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="sicurezza" className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+        <Reveal className="mx-auto max-w-3xl text-center">
+          <Icon nome="lucchetto" className="mx-auto h-10 w-10 text-[#6b1d39]" />
+          <h2 className="mt-6 text-3xl font-extrabold text-white sm:text-5xl">
+            Ogni documento è cifrato per il tuo studio soltanto.
+          </h2>
+          <p className="mt-5 text-lg leading-relaxed text-neutral-300">
+            Ogni studio ha una propria chiave. La cifratura avviene prima che il file
+            tocchi lo storage. Non si può spegnere.
+          </p>
+        </Reveal>
+      </section>
+
+      <VetrinaPiani />
+      <Faq />
+
+      <section className="border-t-8 border-[#232323] bg-black px-6 py-20 text-center">
+        <h2 className="text-3xl font-extrabold sm:text-4xl">Pronto per lo studio, in un solo posto?</h2>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Link href="/registrati" className="rounded bg-[#6b1d39] px-8 py-3 text-lg font-semibold hover:bg-[#57172e]">
+            Crea l&rsquo;account
+          </Link>
+          <Link href="/accedi" className="rounded border border-white/40 px-8 py-3 text-lg font-semibold hover:bg-white/10">
+            Accedi
+          </Link>
+        </div>
+      </section>
+
+      <footer className="border-t border-white/10 bg-[#141414] px-6 py-12 text-sm text-neutral-500">
+        <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="font-black tracking-tight text-[#6b1d39]">THEMIS</div>
+            <p className="mt-2 max-w-sm">
+              Gestione legale per studi. Sempre in aggiornamento.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <a href="#chi-siamo" className="hover:underline">Chi siamo</a>
+            <a href="#funzioni" className="hover:underline">Funzioni</a>
+            <a href="#piani" className="hover:underline">Piani</a>
+            <a href="#faq" className="hover:underline">FAQ</a>
+            <a href="/privacy" className="hover:underline">Privacy</a>
+            <a href="/politica-rimborsi" className="hover:underline">Rimborsi</a>
+            <a href="/accedi" className="hover:underline">Accedi</a>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
