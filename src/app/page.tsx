@@ -350,7 +350,7 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <a href="#funzioni" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Funzioni</a>
             <a href="#piani" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Piani</a>
-            <a href="/studi" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Studi</a>
+            <a href="/studi" className="text-sm text-neutral-600 hover:underline">Studi</a>
             <Link
               href="/accedi"
               className="rounded bg-bordeaux-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
