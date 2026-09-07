@@ -5,6 +5,19 @@ import Image from 'next/image';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Icon, type NomeIcona } from '@/components/ui/Icon';
 
+/** Un link mostrato in pagina viene sempre da dati inseriti da terzi
+ *  (sponsor, studi in elenco): si accetta solo http/https, mai altri
+ *  schemi (es. javascript:) che il click eseguirebbe nel browser. */
+function urlSicuro(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    return u.protocol === 'http:' || u.protocol === 'https:' ? url : null;
+  } catch {
+    return null;
+  }
+}
+
 function Reveal({ children, className = '', delay = 0 }: {
   children: ReactNode; className?: string; delay?: number;
 }) {
@@ -245,6 +258,47 @@ function VetrinaPiani() {
   );
 }
 
+function SezioneSponsor() {
+  const [lista, setLista] = useState<{ nome: string; url: string | null; piano: string }[]>([]);
+  useEffect(() => {
+    fetch('/api/sponsor')
+      .then((r) => r.json())
+      .then((b) => setLista(b.sponsor || []))
+      .catch(() => setLista([]));
+  }, []);
+  return (
+    <section id="sponsor" className="border-t border-neutral-200 bg-white px-6 py-16 lg:px-12">
+      <div className="mx-auto max-w-5xl text-center">
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-bordeaux-700">Sponsor</p>
+        <h2 className="mt-3 text-3xl font-extrabold text-neutral-900 sm:text-4xl">Chi sostiene Themis.</h2>
+        <p className="mx-auto mt-4 max-w-xl text-neutral-500">
+          Spazio a pagamento, visibile solo dopo l&rsquo;accredito. 150 €/mese, 400 €/3 mesi, 1.200 €/anno.
+        </p>
+        {lista.length === 0 ? (
+          <p className="mt-8 text-sm text-neutral-500">Nessuno sponsor in vetrina in questo momento.</p>
+        ) : (
+          <ul className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {lista.slice(0, 6).map((s) => {
+              const url = urlSicuro(s.url);
+              return (
+                <li key={s.nome} className="rounded-md bg-neutral-50 px-4 py-6 ring-1 ring-black/[0.04]">
+                  {url ? (
+                    <a href={url} className="font-semibold text-neutral-900 hover:underline" target="_blank" rel="noreferrer">{s.nome}</a>
+                  ) : (
+                    <span className="font-semibold text-neutral-900">{s.nome}</span>
+                  )}
+                  <div className="mt-1 text-xs uppercase tracking-wide text-neutral-400">{s.piano}</div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <a href="/sponsor" className="mt-8 inline-block text-sm text-bordeaux-700 underline">Diventa sponsor</a>
+      </div>
+    </section>
+  );
+}
+
 function Faq() {
   const [aperta, setAperta] = useState<number | null>(0);
   return (
@@ -296,6 +350,7 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <a href="#funzioni" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Funzioni</a>
             <a href="#piani" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Piani</a>
+            <a href="/studi" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Studi</a>
             <Link
               href="/accedi"
               className="rounded bg-bordeaux-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
@@ -502,6 +557,7 @@ export default function Home() {
       </section>
 
       <VetrinaPiani />
+      <SezioneSponsor />
       <Faq />
 
       <section className="border-t border-neutral-200 bg-[#f5f5f7] px-6 py-20 text-center">
@@ -528,6 +584,8 @@ export default function Home() {
             <a href="#chi-siamo" className="hover:underline">Chi siamo</a>
             <a href="#funzioni" className="hover:underline">Funzioni</a>
             <a href="#piani" className="hover:underline">Piani</a>
+            <a href="/studi" className="hover:underline">Studi</a>
+            <a href="/sponsor" className="hover:underline">Sponsor</a>
             <a href="#faq" className="hover:underline">FAQ</a>
             <a href="/privacy" className="hover:underline">Privacy</a>
             <a href="/politica-rimborsi" className="hover:underline">Rimborsi</a>

@@ -6,10 +6,10 @@ export default function BrandHero({ titolo }: { titolo?: string }) {
       <Image
         src="/icon.svg"
         alt="Themis"
-        width={64}
-        height={64}
+        width={72}
+        height={72}
         priority
-        className="rounded-[18px] shadow-[0_16px_40px_-18px_rgba(107,29,57,.55)]"
+        className="rounded-[20px] shadow-[0_18px_40px_-16px_rgba(46,12,24,.65)]"
       />
       <p className="mt-5 text-[28px] font-semibold tracking-tight text-neutral-900">
         {titolo ?? 'Themis'}

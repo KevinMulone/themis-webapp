@@ -6,6 +6,7 @@ import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_PRATICA, labelFromOptions } from '@/lib/constants';
 import { leggiIcs, type ImpegnoImportato as ImpegnoLetto } from '@/lib/calendario/leggiIcs';
 import ImpostazioniWhatsapp from './ImpostazioniWhatsapp';
+import ImpostazioniElenco from './ImpostazioniElenco';
 
 type Template = { id: string; nome: string; categoria: string | null; descrizione: string | null; studio_id: string | null };
 type Settings = { font_family: string; font_size_pt: number; line_spacing: number };
@@ -807,6 +808,8 @@ export default function ImpostazioniPage() {
         )}
       </div>
       )}
+
+      {ruolo === 'titolare' && <ImpostazioniElenco />}
 
       <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Intestazione documenti</h2>

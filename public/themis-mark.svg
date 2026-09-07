@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Themis">
+  <circle cx="32" cy="32" r="30" fill="none" stroke="#c9a24a" stroke-width="1.2"/>
+  <g fill="none" stroke="#c9a24a" stroke-linecap="round">
+    <path d="M32 14 V46" stroke-width="1.8"/>
+    <path d="M18 20 H46" stroke-width="1.8"/>
+    <path d="M20 20 V30" stroke-width="1.2"/>
+    <path d="M44 20 V30" stroke-width="1.2"/>
+    <path d="M15.5 30 C18 37.5 22 37.5 24.5 30" stroke-width="1.4"/>
+    <path d="M39.5 30 C42 37.5 46 37.5 48.5 30" stroke-width="1.4"/>
+    <path d="M25 49 H39" stroke-width="1.8"/>
+  </g>
+  <circle cx="32" cy="14" r="1.5" fill="#c9a24a"/>
+</svg>
