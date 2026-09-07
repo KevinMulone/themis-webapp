@@ -40,23 +40,25 @@ function Reveal({ children, className = '', delay = 0 }: {
   );
 }
 
+/** Toni pastello sul palette dello studio (bordeaux/oro/neutri): stessa
+ *  idea del mosaico, ma leggibile su fondo chiaro invece che su nero. */
 const POSTER: { titolo: string; sotto: string; tono: string }[] = [
-  { titolo: 'Pratiche', sotto: 'Fascicoli e stati', tono: 'from-[#3a1520] to-[#1a0a10]' },
-  { titolo: 'Clienti', sotto: 'Anagrafe dello studio', tono: 'from-[#1d2a3a] to-[#0c1218]' },
-  { titolo: 'PEC', sotto: 'Posta certificata', tono: 'from-[#3a1a12] to-[#140806]' },
-  { titolo: 'Themis AI', sotto: 'Domande al fascicolo', tono: 'from-[#2a1838] to-[#100814]' },
-  { titolo: 'Calendario', sotto: 'Udienze e termini', tono: 'from-[#14261c] to-[#08100c]' },
-  { titolo: 'WhatsApp', sotto: 'Chat dello studio', tono: 'from-[#14301c] to-[#08140c]' },
-  { titolo: 'Atti', sotto: 'Prime stesure', tono: 'from-[#2a2410] to-[#121008]' },
-  { titolo: 'Deposito', sotto: 'Pacchetto telematico', tono: 'from-[#1a2438] to-[#0a1018]' },
-  { titolo: 'Parcelle', sotto: 'Parametri forensi', tono: 'from-[#382418] to-[#140c08]' },
-  { titolo: 'Patrocinio', sotto: 'Spese dello Stato', tono: 'from-[#241838] to-[#100818]' },
-  { titolo: 'Sinistri', sotto: 'Dati compagnia', tono: 'from-[#381818] to-[#140808]' },
-  { titolo: 'Collaboratori', sotto: 'Un solo studio', tono: 'from-[#183038] to-[#081418]' },
-  { titolo: 'Cifratura', sotto: 'Chiave per studio', tono: 'from-[#303018] to-[#121208]' },
-  { titolo: 'Registri', sotto: 'Giustizia civile', tono: 'from-[#182038] to-[#080c18]' },
-  { titolo: 'Danno', sotto: 'Tabelle ufficiali', tono: 'from-[#381828] to-[#140810]' },
-  { titolo: 'Incarichi', sotto: 'Cosa resta da fare', tono: 'from-[#203018] to-[#0c1408]' },
+  { titolo: 'Pratiche', sotto: 'Fascicoli e stati', tono: 'from-bordeaux-100 to-bordeaux-50' },
+  { titolo: 'Clienti', sotto: 'Anagrafe dello studio', tono: 'from-neutral-200 to-neutral-100' },
+  { titolo: 'PEC', sotto: 'Posta certificata', tono: 'from-gold-100 to-gold-50' },
+  { titolo: 'Themis AI', sotto: 'Domande al fascicolo', tono: 'from-bordeaux-200 to-bordeaux-100' },
+  { titolo: 'Calendario', sotto: 'Udienze e termini', tono: 'from-neutral-100 to-white' },
+  { titolo: 'WhatsApp', sotto: 'Chat dello studio', tono: 'from-gold-100 to-neutral-50' },
+  { titolo: 'Atti', sotto: 'Prime stesure', tono: 'from-gold-200 to-gold-100' },
+  { titolo: 'Deposito', sotto: 'Pacchetto telematico', tono: 'from-neutral-200 to-white' },
+  { titolo: 'Parcelle', sotto: 'Parametri forensi', tono: 'from-bordeaux-100 to-neutral-50' },
+  { titolo: 'Patrocinio', sotto: 'Spese dello Stato', tono: 'from-bordeaux-200 to-neutral-100' },
+  { titolo: 'Sinistri', sotto: 'Dati compagnia', tono: 'from-gold-100 to-bordeaux-50' },
+  { titolo: 'Collaboratori', sotto: 'Un solo studio', tono: 'from-neutral-100 to-neutral-50' },
+  { titolo: 'Cifratura', sotto: 'Chiave per studio', tono: 'from-gold-200 to-neutral-50' },
+  { titolo: 'Registri', sotto: 'Giustizia civile', tono: 'from-neutral-200 to-bordeaux-50' },
+  { titolo: 'Danno', sotto: 'Tabelle ufficiali', tono: 'from-bordeaux-100 to-white' },
+  { titolo: 'Incarichi', sotto: 'Cosa resta da fare', tono: 'from-gold-100 to-white' },
 ];
 
 const MODULI: { icona: NomeIcona; titolo: string; testo: string }[] = [
@@ -113,37 +115,37 @@ function Mosaico() {
   const fila = [...POSTER, ...POSTER];
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div className="absolute -inset-8 rotate-[-8deg] scale-110 opacity-80">
+      <div className="absolute -inset-8 rotate-[-8deg] scale-110 opacity-70">
         <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
           {fila.map((p, i) => (
             <div
               key={`${p.titolo}-${i}`}
-              className={`aspect-[2/3] rounded-sm bg-gradient-to-br ${p.tono} p-3 shadow-lg ring-1 ring-white/10`}
+              className={`aspect-[2/3] rounded-sm bg-gradient-to-br ${p.tono} p-3 shadow-sm ring-1 ring-black/[0.04]`}
             >
-              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/55">{p.sotto}</div>
-              <div className="mt-2 text-[17px] font-bold leading-tight text-white">{p.titolo}</div>
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">{p.sotto}</div>
+              <div className="mt-2 text-[17px] font-bold leading-tight text-neutral-800">{p.titolo}</div>
             </div>
           ))}
         </div>
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-[#141414]" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#141414] to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/60 to-[#f5f5f7]" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#f5f5f7] to-transparent" />
     </div>
   );
 }
 
 function RigaFunzione({
-  kicker, titolo, testo, invertito, children,
+  kicker, titolo, testo, invertito, alterna, children,
 }: {
-  kicker: string; titolo: string; testo: string; invertito?: boolean; children: ReactNode;
+  kicker: string; titolo: string; testo: string; invertito?: boolean; alterna?: boolean; children: ReactNode;
 }) {
   return (
-    <section className="border-t-8 border-[#232323] bg-black px-6 py-16 lg:px-12 lg:py-24">
-      <div className={`mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 ${invertito ? '' : ''}`}>
+    <section className={`border-t border-neutral-200 px-6 py-16 lg:px-12 lg:py-24 ${alterna ? 'bg-neutral-50' : 'bg-white'}`}>
+      <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
         <Reveal className={invertito ? 'lg:order-2' : ''}>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6b1d39]">{kicker}</p>
-          <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-white sm:text-5xl">{titolo}</h2>
-          <p className="mt-5 text-lg leading-relaxed text-neutral-300">{testo}</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-bordeaux-700">{kicker}</p>
+          <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-neutral-900 sm:text-5xl">{titolo}</h2>
+          <p className="mt-5 text-lg leading-relaxed text-neutral-600">{testo}</p>
         </Reveal>
         <Reveal delay={80} className={invertito ? 'lg:order-1' : ''}>
           {children}
@@ -155,12 +157,12 @@ function RigaFunzione({
 
 function Schermo({ titolo, children }: { titolo: string; children: ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/10 bg-[#181818] shadow-[0_30px_80px_-20px_rgba(0,0,0,.8)]">
-      <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-[#6b1d39]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/20" />
-        <span className="ml-2 text-[11px] text-white/40">{titolo}</span>
+    <div className="overflow-hidden rounded-xl bg-white shadow-[0_30px_80px_-40px_rgba(0,0,0,.3)] ring-1 ring-black/[0.06]">
+      <div className="flex items-center gap-2 border-b border-neutral-100 px-4 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-bordeaux-700" />
+        <span className="h-2.5 w-2.5 rounded-full bg-neutral-200" />
+        <span className="h-2.5 w-2.5 rounded-full bg-neutral-200" />
+        <span className="ml-2 text-[11px] text-neutral-400">{titolo}</span>
       </div>
       {children}
     </div>
@@ -193,10 +195,10 @@ function VetrinaPiani() {
   }
 
   return (
-    <section id="piani" className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+    <section id="piani" className="border-t border-neutral-200 bg-neutral-50 px-6 py-20 lg:px-12">
       <Reveal className="mx-auto max-w-3xl text-center">
-        <h2 className="text-3xl font-extrabold text-white sm:text-5xl">Un piano per ogni studio.</h2>
-        <p className="mt-4 text-lg text-neutral-400">
+        <h2 className="text-3xl font-extrabold text-neutral-900 sm:text-5xl">Un piano per ogni studio.</h2>
+        <p className="mt-4 text-lg text-neutral-500">
           Più lungo è l&rsquo;impegno, più posti per i collaboratori sono inclusi, oltre al titolare.
         </p>
       </Reveal>
@@ -206,15 +208,15 @@ function VetrinaPiani() {
           return (
             <div
               key={p.key}
-              className={`flex flex-col rounded-xl p-7 ${featured ? 'bg-[#6b1d39] text-white' : 'bg-[#181818] text-white ring-1 ring-white/10'}`}
+              className={`flex flex-col rounded-xl p-7 ${featured ? 'bg-bordeaux-700 text-white' : 'bg-white text-neutral-900 ring-1 ring-black/[0.06]'}`}
             >
-              <div className="text-sm text-white/70">{p.pubblico}</div>
+              <div className={featured ? 'text-sm text-white/70' : 'text-sm text-neutral-500'}>{p.pubblico}</div>
               <div className="mt-3 text-lg font-semibold">{p.nome}</div>
               <div className="mt-2 flex items-baseline gap-1">
                 <span className="text-4xl font-extrabold">{p.prezzo}</span>
-                <span className="text-white/70">{p.periodo}</span>
+                <span className={featured ? 'text-white/70' : 'text-neutral-500'}>{p.periodo}</span>
               </div>
-              <p className="mt-3 text-sm text-white/80">{p.dettaglio}</p>
+              <p className={`mt-3 text-sm ${featured ? 'text-white/80' : 'text-neutral-600'}`}>{p.dettaglio}</p>
               <p className="mt-3 text-sm">
                 {p.posti} {p.posti === 1 ? 'collaboratore' : 'collaboratori'} oltre al titolare
               </p>
@@ -223,7 +225,7 @@ function VetrinaPiani() {
                 onClick={() => scegliPiano(p.key)}
                 disabled={pianoInCorso !== null}
                 className={`mt-8 rounded px-5 py-3 text-sm font-bold disabled:opacity-50 ${
-                  featured ? 'bg-white text-black hover:bg-neutral-200' : 'bg-[#6b1d39] text-white hover:bg-[#57172e]'
+                  featured ? 'bg-white text-bordeaux-800 hover:bg-neutral-100' : 'bg-bordeaux-700 text-white hover:bg-bordeaux-800'
                 }`}
               >
                 {pianoInCorso === p.key ? 'Attendere...' : `Scegli ${p.nome.toLowerCase()}`}
@@ -232,10 +234,10 @@ function VetrinaPiani() {
           );
         })}
       </div>
-      {errore && <p className="mt-6 text-center text-sm text-red-400">{errore}</p>}
+      {errore && <p className="mt-6 text-center text-sm text-red-600">{errore}</p>}
       <p className="mx-auto mt-8 max-w-md text-center text-sm text-neutral-500">
         Hai già una chiave?{' '}
-        <a href="/attiva" className="text-white underline">Attivala qui</a>
+        <a href="/attiva" className="font-medium text-neutral-900 underline">Attivala qui</a>
         {' · '}
         <a href="/politica-rimborsi" className="underline">Politica rimborsi</a>
       </p>
@@ -246,23 +248,23 @@ function VetrinaPiani() {
 function Faq() {
   const [aperta, setAperta] = useState<number | null>(0);
   return (
-    <section id="faq" className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
-      <h2 className="text-center text-3xl font-extrabold text-white sm:text-5xl">Domande frequenti</h2>
+    <section id="faq" className="border-t border-neutral-200 bg-white px-6 py-20 lg:px-12">
+      <h2 className="text-center text-3xl font-extrabold text-neutral-900 sm:text-5xl">Domande frequenti</h2>
       <div className="mx-auto mt-10 max-w-3xl space-y-2">
         {FAQ.map((v, i) => {
           const open = aperta === i;
           return (
-            <div key={v.d} className="bg-[#2d2d2d]">
+            <div key={v.d} className="rounded-lg bg-neutral-50 ring-1 ring-black/[0.04]">
               <button
                 type="button"
                 onClick={() => setAperta(open ? null : i)}
-                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left text-lg text-white sm:text-2xl"
+                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left text-lg text-neutral-900 sm:text-2xl"
               >
                 {v.d}
-                <span className="text-3xl font-light leading-none">{open ? '×' : '+'}</span>
+                <span className="text-3xl font-light leading-none text-neutral-400">{open ? '×' : '+'}</span>
               </button>
               {open && (
-                <p className="border-t border-black px-6 py-5 text-base leading-relaxed text-neutral-200 sm:text-lg">
+                <p className="border-t border-neutral-200 px-6 py-5 text-base leading-relaxed text-neutral-600 sm:text-lg">
                   {v.r}
                 </p>
               )}
@@ -284,19 +286,19 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#141414] text-white">
+    <div className="min-h-screen bg-white text-neutral-900">
       <header className="absolute inset-x-0 top-0 z-20">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/icon.svg" alt="" width={32} height={32} className="rounded-[6px]" />
-            <span className="text-2xl font-black tracking-tight text-[#6b1d39] sm:text-3xl">THEMIS</span>
+            <span className="text-2xl font-black tracking-tight text-bordeaux-700 sm:text-3xl">THEMIS</span>
           </Link>
           <div className="flex items-center gap-3">
-            <a href="#funzioni" className="hidden text-sm text-white/80 hover:underline sm:inline">Funzioni</a>
-            <a href="#piani" className="hidden text-sm text-white/80 hover:underline sm:inline">Piani</a>
+            <a href="#funzioni" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Funzioni</a>
+            <a href="#piani" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Piani</a>
             <Link
               href="/accedi"
-              className="rounded bg-[#6b1d39] px-4 py-1.5 text-sm font-semibold hover:bg-[#57172e]"
+              className="rounded bg-bordeaux-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
             >
               Accedi
             </Link>
@@ -307,19 +309,19 @@ export default function Home() {
       <section className="relative min-h-[92vh] overflow-hidden">
         <Mosaico />
         <div className="relative z-10 mx-auto flex min-h-[92vh] max-w-4xl flex-col items-center justify-center px-6 pb-20 pt-28 text-center">
-          <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
+          <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl">
             Lo studio legale,
             <br />
             in un solo posto.
           </h1>
-          <p className="mt-5 text-xl font-medium sm:text-2xl">
+          <p className="mt-5 text-xl font-medium text-neutral-800 sm:text-2xl">
             Pratiche, PEC, calendario e un assistente sul fascicolo.
           </p>
-          <p className="mt-3 max-w-xl text-base text-white/80 sm:text-lg">
+          <p className="mt-3 max-w-xl text-base text-neutral-600 sm:text-lg">
             Un&rsquo;app di gestione legale completa. Sempre in aggiornamento.
             Inizia oggi — disdici quando vuoi.
           </p>
-          <p className="mt-8 text-base sm:text-lg">
+          <p className="mt-8 text-base text-neutral-800 sm:text-lg">
             Pronto a entrare? Inserisci l&rsquo;email e crea l&rsquo;account dello studio.
           </p>
           <form onSubmit={inizia} className="mt-4 flex w-full max-w-xl flex-col gap-2 sm:flex-row">
@@ -329,11 +331,11 @@ export default function Home() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Indirizzo email"
-              className="min-h-14 flex-1 rounded-sm border border-white/40 bg-black/60 px-4 text-base text-white outline-none placeholder:text-white/45 focus:border-white"
+              className="min-h-14 flex-1 rounded-sm border border-neutral-300 bg-white px-4 text-base text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-bordeaux-400"
             />
             <button
               type="submit"
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-sm bg-[#6b1d39] px-7 text-xl font-semibold hover:bg-[#57172e]"
+              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-sm bg-bordeaux-700 px-7 text-xl font-semibold text-white hover:bg-bordeaux-800"
             >
               Inizia
               <span aria-hidden>›</span>
@@ -342,13 +344,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="chi-siamo" className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+      <section id="chi-siamo" className="border-t border-neutral-200 bg-[#f5f5f7] px-6 py-20 lg:px-12">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-3">
           {BLOCCHI.map((b, i) => (
             <Reveal key={b.kicker} delay={i * 80}>
-              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6b1d39]">{b.kicker}</p>
-              <h2 className="mt-3 text-2xl font-extrabold leading-tight text-white sm:text-3xl">{b.titolo}</h2>
-              <p className="mt-4 leading-relaxed text-neutral-300">{b.testo}</p>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-bordeaux-700">{b.kicker}</p>
+              <h2 className="mt-3 text-2xl font-extrabold leading-tight text-neutral-900 sm:text-3xl">{b.titolo}</h2>
+              <p className="mt-4 leading-relaxed text-neutral-600">{b.testo}</p>
             </Reveal>
           ))}
         </div>
@@ -360,11 +362,11 @@ export default function Home() {
         testo="Apri una pratica, vedi il cliente, lo stato, la controparte, il R.G. I sinistri hanno i campi della compagnia. Niente fogli sparsi."
       >
         <Schermo titolo="Themis — Pratiche">
-          <div className="divide-y divide-white/10 p-2">
+          <div className="divide-y divide-neutral-100 p-2">
             {['Rossi Mario · R.G. 1135/2018', 'Bianchi S.r.l. · sinistro', 'Verdi Anna · lavoro'].map((r, i) => (
               <div key={r} className="flex items-center justify-between px-4 py-3 text-sm">
-                <span className={i === 0 ? 'font-semibold text-white' : 'text-white/70'}>{r}</span>
-                <span className="text-xs text-white/40">{i === 0 ? 'Aperta' : i === 1 ? 'In attesa' : 'Chiusa'}</span>
+                <span className={i === 0 ? 'font-semibold text-neutral-900' : 'text-neutral-500'}>{r}</span>
+                <span className="text-xs text-neutral-400">{i === 0 ? 'Aperta' : i === 1 ? 'In attesa' : 'Chiusa'}</span>
               </div>
             ))}
           </div>
@@ -373,22 +375,23 @@ export default function Home() {
 
       <RigaFunzione
         invertito
+        alterna
         kicker="PEC e WhatsApp"
         titolo="La posta e le chat restano nel fascicolo."
         testo="La PEC si scarica da sola. Le non lette restano evidenti. WhatsApp dello studio riceve documenti e li collega al cliente. Niente caselle e telefoni sparsi."
       >
         <Schermo titolo="Themis — PEC">
-          <div className="divide-y divide-white/10">
+          <div className="divide-y divide-neutral-100">
             {[
               ['Tribunale di Caltanissetta', 'Fissazione udienza'],
               ['Generali Italia', 'Riscontro sinistro'],
               ['Avv. Di Vita', 'Trasmissione ricorso'],
             ].map(([a, b], i) => (
               <div key={a} className="flex items-center gap-3 px-5 py-3">
-                <span className={`h-1.5 w-1.5 rounded-full ${i < 2 ? 'bg-[#6b1d39]' : 'bg-transparent'}`} />
+                <span className={`h-1.5 w-1.5 rounded-full ${i < 2 ? 'bg-bordeaux-700' : 'bg-transparent'}`} />
                 <div>
-                  <div className={`text-sm ${i < 2 ? 'font-semibold text-white' : 'text-white/50'}`}>{a}</div>
-                  <div className="text-xs text-white/40">{b}</div>
+                  <div className={`text-sm ${i < 2 ? 'font-semibold text-neutral-900' : 'text-neutral-400'}`}>{a}</div>
+                  <div className="text-xs text-neutral-400">{b}</div>
                 </div>
               </div>
             ))}
@@ -403,19 +406,20 @@ export default function Home() {
       >
         <Schermo titolo="Themis — Assistente">
           <div className="space-y-3 p-5">
-            <div className="ml-auto max-w-[88%] rounded-2xl rounded-br-md bg-[#6b1d39] px-4 py-3 text-sm">
+            <div className="ml-auto max-w-[88%] rounded-2xl rounded-br-md bg-bordeaux-700 px-4 py-3 text-sm text-white">
               Da quando decorre l&rsquo;invalidità del verbale?
             </div>
-            <div className="max-w-[92%] rounded-2xl rounded-bl-md bg-white/10 px-4 py-3 text-sm text-neutral-100">
+            <div className="max-w-[92%] rounded-2xl rounded-bl-md bg-neutral-100 px-4 py-3 text-sm text-neutral-700">
               Decorrenza dalla domanda amministrativa. Invalidità riconosciuta all&rsquo;80%.
             </div>
-            <div className="text-xs text-white/40">Verbale INPS.pdf · pagina 2</div>
+            <div className="text-xs text-neutral-400">Verbale INPS.pdf · pagina 2</div>
           </div>
         </Schermo>
       </RigaFunzione>
 
       <RigaFunzione
         invertito
+        alterna
         kicker="Calendario e deposito"
         titolo="Udienze visibili. Pacchetto pronto per il deposito."
         testo="Un calendario solo per lo studio, anche su Google. Il deposito prepara i file, controlla cosa manca e accetta i documenti già firmati."
@@ -423,12 +427,12 @@ export default function Home() {
         <Schermo titolo="Themis — Calendario">
           <div className="grid grid-cols-7 gap-2 p-6 text-center text-sm">
             {['L', 'M', 'M', 'G', 'V', 'S', 'D'].map((d, i) => (
-              <span key={i} className="text-white/35">{d}</span>
+              <span key={i} className="text-neutral-400">{d}</span>
             ))}
             {Array.from({ length: 7 }).map((_, i) => (
               <span
                 key={i}
-                className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full ${i === 2 ? 'bg-[#6b1d39] font-bold' : 'text-white/80'}`}
+                className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full ${i === 2 ? 'bg-bordeaux-700 font-bold text-white' : 'text-neutral-700'}`}
               >
                 {9 + i}
               </span>
@@ -437,33 +441,33 @@ export default function Home() {
         </Schermo>
       </RigaFunzione>
 
-      <section id="funzioni" className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+      <section id="funzioni" className="border-t border-neutral-200 bg-[#f5f5f7] px-6 py-20 lg:px-12">
         <Reveal className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-extrabold text-white sm:text-5xl">Tutto quello che c&rsquo;è dentro.</h2>
-          <p className="mt-4 text-lg text-neutral-400">
+          <h2 className="text-3xl font-extrabold text-neutral-900 sm:text-5xl">Tutto quello che c&rsquo;è dentro.</h2>
+          <p className="mt-4 text-lg text-neutral-500">
             Non un pezzo alla volta. Lo studio intero, modulo per modulo.
           </p>
         </Reveal>
         <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {MODULI.map((m, i) => (
             <Reveal key={m.titolo} delay={(i % 3) * 50}>
-              <div className="h-full rounded-md bg-[#181818] p-6 ring-1 ring-white/10">
-                <Icon nome={m.icona} className="h-6 w-6 text-[#6b1d39]" />
-                <h3 className="mt-4 text-lg font-bold">{m.titolo}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-neutral-400">{m.testo}</p>
+              <div className="h-full rounded-md bg-white p-6 ring-1 ring-black/[0.06]">
+                <Icon nome={m.icona} className="h-6 w-6 text-bordeaux-700" />
+                <h3 className="mt-4 text-lg font-bold text-neutral-900">{m.titolo}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-neutral-500">{m.testo}</p>
               </div>
             </Reveal>
           ))}
         </div>
       </section>
 
-      <section className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+      <section className="border-t border-neutral-200 bg-white px-6 py-20 lg:px-12">
         <Reveal className="mx-auto max-w-4xl text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-[#6b1d39]">Sempre in aggiornamento</p>
-          <h2 className="mt-3 text-3xl font-extrabold text-white sm:text-5xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-bordeaux-700">Sempre in aggiornamento</p>
+          <h2 className="mt-3 text-3xl font-extrabold text-neutral-900 sm:text-5xl">
             L&rsquo;app non si ferma il giorno del rilascio.
           </h2>
-          <p className="mt-5 text-lg leading-relaxed text-neutral-300">
+          <p className="mt-5 text-lg leading-relaxed text-neutral-600">
             Correzioni, nuove funzioni, più chiarezza nel lavoro di ogni giorno.
             Chi usa Themis entra in un prodotto che continua a essere scritto —
             non in una versione chiusa da scaffale.
@@ -475,22 +479,22 @@ export default function Home() {
             { n: '02', t: 'Si ascolta', d: 'Quello che manca diventa il prossimo pezzo.' },
             { n: '03', t: 'Si pubblica di nuovo', d: 'Aggiornamenti nell’abbonamento, senza un altro acquisto.' },
           ].map((s) => (
-            <div key={s.n} className="rounded-md bg-[#181818] p-6 ring-1 ring-white/10">
-              <div className="text-sm font-bold text-[#6b1d39]">{s.n}</div>
-              <div className="mt-2 text-lg font-bold">{s.t}</div>
-              <p className="mt-2 text-sm text-neutral-400">{s.d}</p>
+            <div key={s.n} className="rounded-md bg-neutral-50 p-6 ring-1 ring-black/[0.04]">
+              <div className="text-sm font-bold text-bordeaux-700">{s.n}</div>
+              <div className="mt-2 text-lg font-bold text-neutral-900">{s.t}</div>
+              <p className="mt-2 text-sm text-neutral-500">{s.d}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section id="sicurezza" className="border-t-8 border-[#232323] bg-black px-6 py-20 lg:px-12">
+      <section id="sicurezza" className="border-t border-neutral-200 bg-[#f5f5f7] px-6 py-20 lg:px-12">
         <Reveal className="mx-auto max-w-3xl text-center">
-          <Icon nome="lucchetto" className="mx-auto h-10 w-10 text-[#6b1d39]" />
-          <h2 className="mt-6 text-3xl font-extrabold text-white sm:text-5xl">
+          <Icon nome="lucchetto" className="mx-auto h-10 w-10 text-bordeaux-700" />
+          <h2 className="mt-6 text-3xl font-extrabold text-neutral-900 sm:text-5xl">
             Ogni documento è cifrato per il tuo studio soltanto.
           </h2>
-          <p className="mt-5 text-lg leading-relaxed text-neutral-300">
+          <p className="mt-5 text-lg leading-relaxed text-neutral-600">
             Ogni studio ha una propria chiave. La cifratura avviene prima che il file
             tocchi lo storage. Non si può spegnere.
           </p>
@@ -500,22 +504,22 @@ export default function Home() {
       <VetrinaPiani />
       <Faq />
 
-      <section className="border-t-8 border-[#232323] bg-black px-6 py-20 text-center">
-        <h2 className="text-3xl font-extrabold sm:text-4xl">Pronto per lo studio, in un solo posto?</h2>
+      <section className="border-t border-neutral-200 bg-[#f5f5f7] px-6 py-20 text-center">
+        <h2 className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">Pronto per lo studio, in un solo posto?</h2>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/registrati" className="rounded bg-[#6b1d39] px-8 py-3 text-lg font-semibold hover:bg-[#57172e]">
+          <Link href="/registrati" className="rounded bg-bordeaux-700 px-8 py-3 text-lg font-semibold text-white hover:bg-bordeaux-800">
             Crea l&rsquo;account
           </Link>
-          <Link href="/accedi" className="rounded border border-white/40 px-8 py-3 text-lg font-semibold hover:bg-white/10">
+          <Link href="/accedi" className="rounded border border-neutral-300 px-8 py-3 text-lg font-semibold text-neutral-900 hover:bg-neutral-100">
             Accedi
           </Link>
         </div>
       </section>
 
-      <footer className="border-t border-white/10 bg-[#141414] px-6 py-12 text-sm text-neutral-500">
+      <footer className="border-t border-neutral-200 bg-white px-6 py-12 text-sm text-neutral-500">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="font-black tracking-tight text-[#6b1d39]">THEMIS</div>
+            <div className="font-black tracking-tight text-bordeaux-700">THEMIS</div>
             <p className="mt-2 max-w-sm">
               Gestione legale per studi. Sempre in aggiornamento.
             </p>
