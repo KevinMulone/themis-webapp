@@ -36,7 +36,10 @@ export async function updateSession(request: NextRequest) {
     || request.nextUrl.pathname.startsWith('/politica-rimborsi')
     // L'informativa privacy deve restare raggiungibile senza login: è
     // requisito della verifica OAuth di Google, che la apre da fuori.
-    || request.nextUrl.pathname.startsWith('/privacy');
+    || request.nextUrl.pathname.startsWith('/privacy')
+    // Elenco pubblico degli studi e pagina sponsor: si visitano senza account.
+    || request.nextUrl.pathname.startsWith('/studi')
+    || request.nextUrl.pathname.startsWith('/sponsor');
   // Le route API (comprese le funzioni Python come /api/generate) gestiscono
   // da sole l'autenticazione — via cookie per quelle Next.js, via un
   // access_token nel corpo della richiesta per quelle Python, che non hanno
