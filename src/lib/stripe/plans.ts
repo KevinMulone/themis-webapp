@@ -26,13 +26,21 @@ export const POSTI_COLLABORATORI: Record<PlanKey, number> = {
  * (è la valuta in cui fattura Anthropic: vedi la nota in lib/ai/claude.ts).
  *
  * Sono il margine di Kevin: con i prezzi attuali una domanda su un
- * fascicolo di ~20 pagine costa circa 10 centesimi, quindi 5 $ valgono una
- * cinquantina di domande al mese. Da tarare guardando il consumo reale.
+ * fascicolo di ~20 pagine costa circa 10 centesimi. Da tarare guardando
+ * il consumo reale.
+ *
+ * Il mensile non include l'assistente (0): è una scelta commerciale, non
+ * un limite tecnico — differenzia il piano base da quelli più impegnativi.
+ * Questa costante è solo il valore di ripiego: il limite vero vive nella
+ * tabella limiti_assistente, regolabile da Kevin dal pannello admin senza
+ * una pubblicazione (vedi creditoStudio in lib/ai/credito.ts) — tienila
+ * allineata a quei valori quando li cambi, così un piano senza riga nella
+ * tabella si comporta comunque come ci si aspetta.
  */
 export const CREDITO_AI_MENSILE_CENT: Record<PlanKey, number> = {
-  monthly: 500,
-  semestrale: 1000,
-  annuale: 2000,
+  monthly: 0,
+  semestrale: 300,
+  annuale: 1800,
 };
 
 export function creditoAiMensileCent(plan: string | null): number {

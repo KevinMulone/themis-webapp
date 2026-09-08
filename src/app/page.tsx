@@ -108,9 +108,21 @@ const BLOCCHI = [
 ];
 
 const PIANI = [
-  { key: 'monthly', nome: 'Mensile', pubblico: 'Per piccoli studi', prezzo: '100€', periodo: '/mese', dettaglio: 'Fatturazione mensile, disdici quando vuoi.', posti: 1 },
-  { key: 'semestrale', nome: 'Semestrale', pubblico: 'Per studi in crescita', prezzo: '500€', periodo: '/6 mesi', dettaglio: 'Un mese omaggio rispetto al mensile.', posti: 3 },
-  { key: 'annuale', nome: 'Annuale', pubblico: 'Per studi strutturati', prezzo: '1.100€', periodo: '/anno', dettaglio: 'Include le future funzionalità AI.', posti: 5 },
+  {
+    key: 'monthly', nome: 'Mensile', pubblico: 'Per piccoli studi', prezzo: '100€', periodo: '/mese',
+    dettaglio: 'Fatturazione mensile, disdici quando vuoi.', posti: 1,
+    ia: 'Senza assistente Themis (IA).',
+  },
+  {
+    key: 'semestrale', nome: 'Semestrale', pubblico: 'Per studi in crescita', prezzo: '500€', periodo: '/6 mesi',
+    dettaglio: 'Un mese omaggio rispetto al mensile.', posti: 3,
+    ia: 'Assistente Themis incluso, con un limite di utilizzo mensile.',
+  },
+  {
+    key: 'annuale', nome: 'Annuale', pubblico: 'Per studi strutturati', prezzo: '1.100€', periodo: '/anno',
+    dettaglio: 'Include le future funzionalità AI.', posti: 5,
+    ia: 'Assistente Themis con il margine più ampio, più uno spazio sponsor gratuito in home.',
+  },
 ] as const;
 
 const FAQ: { d: string; r: string }[] = [
@@ -122,6 +134,7 @@ const FAQ: { d: string; r: string }[] = [
   { d: 'Posso disdire?', r: 'Sì, sul piano mensile quando vuoi. C’è anche una garanzia di rimborso entro 4 giorni: leggi la politica rimborsi.' },
   { d: 'Serve già un account per iniziare?', r: 'Puoi registrarti e attivare con una chiave, oppure scegliere un piano da questa pagina. Dopo il pagamento la chiave arriva via email.' },
   { d: 'Funziona per uno studio con collaboratori?', r: 'Sì. Il titolare invita i collaboratori. I posti inclusi dipendono dal piano (1, 3 o 5 oltre al titolare).' },
+  { d: 'L’assistente Themis (IA) è incluso in tutti i piani?', r: 'No. Il piano mensile non lo include. Il semestrale ha un limite di utilizzo mensile. L’annuale ha il margine più ampio e include anche uno spazio sponsor gratuito in home.' },
 ];
 
 function Mosaico() {
@@ -233,6 +246,7 @@ function VetrinaPiani() {
               <p className="mt-3 text-sm">
                 {p.posti} {p.posti === 1 ? 'collaboratore' : 'collaboratori'} oltre al titolare
               </p>
+              <p className={`mt-1 text-sm ${featured ? 'text-white/80' : 'text-neutral-600'}`}>{p.ia}</p>
               <button
                 type="button"
                 onClick={() => scegliPiano(p.key)}

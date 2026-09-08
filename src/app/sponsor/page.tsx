@@ -70,6 +70,10 @@ export default function SponsorPage() {
         ))}
       </div>
 
+      <p className="mx-auto mt-6 max-w-xl text-center text-sm text-neutral-500">
+        Hai il piano annuale di Themis? Lo spazio Logo è già incluso, gratis: scrivicelo nel modulo qui sotto.
+      </p>
+
       {lista.length > 0 && (
         <section className="mt-12">
           <h2 className="mb-4 text-center font-semibold">Chi c&rsquo;è ora</h2>
