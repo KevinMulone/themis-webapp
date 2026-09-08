@@ -272,6 +272,82 @@ function VetrinaPiani() {
   );
 }
 
+/** Il primo sponsor è vero (lo studio per cui è nato Themis); gli altri
+ *  spazi liberi ruotano come invito a candidarsi, finché non c'è un
+ *  secondo sponsor pagante da mostrare al loro posto. */
+type SlideCarosello =
+  | { tipo: 'sponsor'; nome: string; logo: string; indirizzo: string; mapsQuery: string }
+  | { tipo: 'invito' };
+
+const SLIDE_FUSSONE: SlideCarosello = {
+  tipo: 'sponsor',
+  nome: 'Studio Legale Fussone',
+  logo: '/sponsors/fussone-logo.png',
+  indirizzo: 'Via Babaurra 34, 93017 San Cataldo (CL)',
+  mapsQuery: 'Via Babaurra 34, 93017 San Cataldo CL',
+};
+
+const SLIDE_CAROSELLO: SlideCarosello[] = [SLIDE_FUSSONE, { tipo: 'invito' }, { tipo: 'invito' }];
+
+function SponsorCarosello() {
+  const [indice, setIndice] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setIndice((i) => (i + 1) % SLIDE_CAROSELLO.length), 6000);
+    return () => clearInterval(id);
+  }, []);
+
+  const slide = SLIDE_CAROSELLO[indice];
+
+  return (
+    <section id="sponsor" className="border-t border-neutral-200 bg-white px-6 pt-16 lg:px-12">
+      <div className="mx-auto max-w-4xl">
+        <div className="overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/[0.04]">
+          {slide.tipo === 'sponsor' ? (
+            <div className="grid sm:grid-cols-2">
+              <div className="flex flex-col items-center justify-center gap-4 p-8 text-center sm:p-10">
+                <Image src={slide.logo} alt={slide.nome} width={220} height={208} className="h-auto w-40 sm:w-48" />
+                <div>
+                  <div className="font-semibold text-neutral-900">{slide.nome}</div>
+                  <div className="mt-1 text-sm text-neutral-500">{slide.indirizzo}</div>
+                </div>
+              </div>
+              <div className="h-64 sm:h-auto sm:min-h-[280px]">
+                <iframe
+                  src={`https://www.google.com/maps?q=${encodeURIComponent(slide.mapsQuery)}&output=embed`}
+                  className="h-full w-full border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title={`Mappa: ${slide.nome}`}
+                />
+              </div>
+            </div>
+          ) : (
+            <a
+              href="/sponsor"
+              className="flex h-64 flex-col items-center justify-center gap-3 p-8 text-center transition-colors hover:bg-neutral-100 sm:h-72"
+            >
+              <span className="text-2xl font-bold text-neutral-900">Vuoi essere il prossimo sponsor?</span>
+              <span className="font-medium text-bordeaux-700 underline">Clicca qui</span>
+            </a>
+          )}
+        </div>
+        <div className="mt-4 flex justify-center gap-2">
+          {SLIDE_CAROSELLO.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setIndice(i)}
+              aria-label={`Vai alla schermata ${i + 1}`}
+              className={`h-2 w-2 rounded-full transition-colors ${i === indice ? 'bg-bordeaux-700' : 'bg-neutral-300'}`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SezioneSponsor() {
   const [lista, setLista] = useState<{ nome: string; url: string | null; piano: string }[]>([]);
   useEffect(() => {
@@ -281,7 +357,7 @@ function SezioneSponsor() {
       .catch(() => setLista([]));
   }, []);
   return (
-    <section id="sponsor" className="border-t border-neutral-200 bg-white px-6 py-16 lg:px-12">
+    <section className="bg-white px-6 pb-16 pt-10 lg:px-12">
       <div className="mx-auto max-w-5xl text-center">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-bordeaux-700">Sponsor</p>
         <h2 className="mt-3 text-3xl font-extrabold text-neutral-900 sm:text-4xl">Chi sostiene Themis.</h2>
@@ -365,6 +441,7 @@ export default function Home() {
             <a href="#funzioni" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Funzioni</a>
             <a href="#piani" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Piani</a>
             <a href="/studi" className="text-sm text-neutral-600 hover:underline">Studi</a>
+            <a href="/portale" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Accedi come assistito</a>
             <Link
               href="/accedi"
               className="rounded bg-bordeaux-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
@@ -571,6 +648,7 @@ export default function Home() {
       </section>
 
       <VetrinaPiani />
+      <SponsorCarosello />
       <SezioneSponsor />
       <Faq />
 
@@ -603,6 +681,7 @@ export default function Home() {
             <a href="#faq" className="hover:underline">FAQ</a>
             <a href="/privacy" className="hover:underline">Privacy</a>
             <a href="/politica-rimborsi" className="hover:underline">Rimborsi</a>
+            <a href="/portale" className="hover:underline">Accedi come assistito</a>
             <a href="/accedi" className="hover:underline">Accedi</a>
           </div>
         </div>
