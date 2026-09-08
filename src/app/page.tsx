@@ -272,12 +272,14 @@ function VetrinaPiani() {
   );
 }
 
-/** Il primo sponsor è vero (lo studio per cui è nato Themis); gli altri
- *  spazi liberi ruotano come invito a candidarsi, finché non c'è un
- *  secondo sponsor pagante da mostrare al loro posto. */
+/** Il primo sponsor è vero (lo studio per cui è nato Themis); resta in
+ *  vista almeno 20 secondi, molto più delle card d'invito che si
+ *  alternano al suo posto finché non c'è un secondo sponsor pagante da
+ *  mostrare. Non è un carosello con controlli: è una card sola il cui
+ *  contenuto cambia da solo, ogni tanto — senza pallini da cliccare. */
 type SlideCarosello =
-  | { tipo: 'sponsor'; nome: string; logo: string; indirizzo: string; mapsQuery: string }
-  | { tipo: 'invito' };
+  | { tipo: 'sponsor'; nome: string; logo: string; indirizzo: string; mapsQuery: string; durataMs: number }
+  | { tipo: 'invito'; durataMs: number };
 
 const SLIDE_FUSSONE: SlideCarosello = {
   tipo: 'sponsor',
@@ -285,24 +287,28 @@ const SLIDE_FUSSONE: SlideCarosello = {
   logo: '/sponsors/fussone-logo.png',
   indirizzo: 'Via Babaurra 34, 93017 San Cataldo (CL)',
   mapsQuery: 'Via Babaurra 34, 93017 San Cataldo CL',
+  durataMs: 22000,
 };
 
-const SLIDE_CAROSELLO: SlideCarosello[] = [SLIDE_FUSSONE, { tipo: 'invito' }, { tipo: 'invito' }];
+const SLIDE_CAROSELLO: SlideCarosello[] = [
+  SLIDE_FUSSONE,
+  { tipo: 'invito', durataMs: 8000 },
+  { tipo: 'invito', durataMs: 8000 },
+];
 
 function SponsorCarosello() {
   const [indice, setIndice] = useState(0);
+  const slide = SLIDE_CAROSELLO[indice];
 
   useEffect(() => {
-    const id = setInterval(() => setIndice((i) => (i + 1) % SLIDE_CAROSELLO.length), 6000);
-    return () => clearInterval(id);
-  }, []);
-
-  const slide = SLIDE_CAROSELLO[indice];
+    const id = setTimeout(() => setIndice((i) => (i + 1) % SLIDE_CAROSELLO.length), slide.durataMs);
+    return () => clearTimeout(id);
+  }, [indice, slide.durataMs]);
 
   return (
     <section id="sponsor" className="border-t border-neutral-200 bg-white px-6 pt-16 lg:px-12">
       <div className="mx-auto max-w-4xl">
-        <div className="overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/[0.04]">
+        <div key={indice} className="piano overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/[0.04]">
           {slide.tipo === 'sponsor' ? (
             <div className="grid sm:grid-cols-2">
               <div className="flex flex-col items-center justify-center gap-4 p-8 text-center sm:p-10">
@@ -331,17 +337,6 @@ function SponsorCarosello() {
               <span className="font-medium text-bordeaux-700 underline">Clicca qui</span>
             </a>
           )}
-        </div>
-        <div className="mt-4 flex justify-center gap-2">
-          {SLIDE_CAROSELLO.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setIndice(i)}
-              aria-label={`Vai alla schermata ${i + 1}`}
-              className={`h-2 w-2 rounded-full transition-colors ${i === indice ? 'bg-bordeaux-700' : 'bg-neutral-300'}`}
-            />
-          ))}
         </div>
       </div>
     </section>
