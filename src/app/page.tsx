@@ -671,6 +671,16 @@ export default function Home() {
             <p className="mt-2 max-w-sm">
               Gestione legale per studi. Sempre in aggiornamento.
             </p>
+            <a href="#sponsor" className="mt-5 flex items-center gap-2.5 text-neutral-400 hover:text-neutral-600">
+              <span className="text-xs">Nato per</span>
+              <Image
+                src="/sponsors/fussone-logo.png"
+                alt="Studio Legale Fussone"
+                width={220}
+                height={208}
+                className="h-10 w-auto"
+              />
+            </a>
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             <a href="#chi-siamo" className="hover:underline">Chi siamo</a>
