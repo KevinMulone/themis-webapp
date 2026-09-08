@@ -311,14 +311,54 @@ export default function ClientiPage() {
     setInviteModal({ ...inviteModal, email, link, error: null, copied: false });
   }
 
-  async function handleCopyInviteLink() {
-    if (!inviteModal?.link) return;
+  /**
+   * Su Safari iOS, e in genere nelle WebView mobile, navigator.clipboard
+   * fallisce o resta silenzioso più spesso che sui browser desktop
+   * (permessi negati, API assente in contesti non del tutto sicuri).
+   * document.execCommand('copy') su una textarea temporanea è più vecchio
+   * ma molto più affidabile lì: va tentato per primo, in modo sincrono
+   * nello stesso gesto di tap — un await prima lo farebbe fallire su
+   * Safari, che lega il permesso di copia al gesto dell'utente.
+   */
+  function copiaConExecCommand(testo: string): boolean {
+    const area = document.createElement('textarea');
+    area.value = testo;
+    area.style.position = 'fixed';
+    area.style.top = '0';
+    area.style.left = '0';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.focus();
+    area.select();
+    area.setSelectionRange(0, testo.length);
+    let riuscito = false;
     try {
-      await navigator.clipboard.writeText(inviteModal.link);
-      setInviteModal({ ...inviteModal, copied: true });
+      riuscito = document.execCommand('copy');
     } catch {
-      setInviteModal({ ...inviteModal, error: 'Copia non riuscita: seleziona e copia il link manualmente.' });
+      riuscito = false;
     }
+    document.body.removeChild(area);
+    return riuscito;
+  }
+
+  function handleCopyInviteLink() {
+    if (!inviteModal?.link) return;
+    const link = inviteModal.link;
+
+    if (copiaConExecCommand(link)) {
+      setInviteModal((m) => (m ? { ...m, copied: true, error: null } : m));
+      return;
+    }
+
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(link)
+        .then(() => setInviteModal((m) => (m ? { ...m, copied: true, error: null } : m)))
+        .catch(() => setInviteModal((m) => (m
+          ? { ...m, error: 'Copia non riuscita: seleziona e copia il link manualmente.' } : m)));
+      return;
+    }
+
+    setInviteModal({ ...inviteModal, error: 'Copia non riuscita: seleziona e copia il link manualmente.' });
   }
 
   const isPF = (editing?.tipo_soggetto ?? 'persona_fisica') === 'persona_fisica';
