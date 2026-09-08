@@ -483,7 +483,10 @@ export default function Home() {
             <a href="#funzioni" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Funzioni</a>
             <a href="#piani" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Piani</a>
             <a href="/studi" className="text-sm text-neutral-600 hover:underline">Studi</a>
-            <a href="/portale" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Accedi come assistito</a>
+            <a href="/portale" className="text-sm text-neutral-600 hover:underline">
+              <span className="sm:hidden">Assistiti</span>
+              <span className="hidden sm:inline">Accedi come assistito</span>
+            </a>
             <Link
               href="/accedi"
               className="rounded bg-bordeaux-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
