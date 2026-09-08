@@ -36,7 +36,7 @@ export default function AccediClient() {
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
     if (signInError) {
       setLoading(false);
-      setError('Email o password errati.');
+      setError('Email o password errate.');
       return;
     }
 

@@ -127,7 +127,7 @@ function PortalePageInner() {
     const { error: err } = await supabase.auth.signInWithPassword({
       email: form.get('email') as string, password: form.get('password') as string,
     });
-    if (err) { setError('Email o password errati'); return; }
+    if (err) { setError('Email o password errate'); return; }
     window.location.href = '/portale';
   }
 
