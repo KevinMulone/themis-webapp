@@ -421,7 +421,11 @@ function SezioneSponsor() {
             })}
           </ul>
         )}
-        <a href="/sponsor" className="mt-8 inline-block text-sm text-bordeaux-700 underline">Diventa sponsor</a>
+        <p className="mt-8 text-sm">
+          <a href="/sponsor" className="text-bordeaux-700 underline">Diventa sponsor</a>
+          {' · '}
+          <a href="/studi" className="text-bordeaux-700 underline">Elenco studi</a>
+        </p>
       </div>
     </section>
   );

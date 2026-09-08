@@ -370,7 +370,15 @@ function PortalePageInner() {
         )}
 
         {session && !portalClient && (
-          <p className="text-sm text-red-600">Account non collegato a nessuno studio. Contatta lo studio per un nuovo invito.</p>
+          <div className="rounded-xl bg-neutral-50 p-6">
+            <p className="text-sm text-red-600">Account non collegato a nessuno studio. Contatta lo studio per un nuovo invito.</p>
+            <button
+              onClick={handleLogout}
+              className="premi mt-4 rounded-full bg-neutral-100 px-4 py-2 text-sm hover:bg-neutral-200"
+            >
+              Esci e riprova con un altro account
+            </button>
+          </div>
         )}
       </div>
     </div>
