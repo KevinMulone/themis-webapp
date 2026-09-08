@@ -38,12 +38,17 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => ({}));
+  const nome_studio = String(body.nome_studio || '').trim();
   const elenco_pubblico = !!body.elenco_pubblico;
   const elenco_paese = String(body.elenco_paese || '').trim() || null;
   const elenco_via = String(body.elenco_via || '').trim() || null;
   const elenco_citta = String(body.elenco_citta || '').trim() || null;
   const elenco_cap = String(body.elenco_cap || '').trim() || null;
   const elenco_sito = String(body.elenco_sito || '').trim() || null;
+
+  if (!nome_studio) {
+    return NextResponse.json({ error: 'Il nome dello studio è obbligatorio.' }, { status: 400 });
+  }
 
   if (elenco_sito && !/^https?:\/\//i.test(elenco_sito)) {
     return NextResponse.json({ error: 'Il sito deve iniziare con http:// o https://.' }, { status: 400 });
@@ -54,6 +59,7 @@ export async function POST(request: Request) {
   }
 
   const { error } = await admin.from('studios').update({
+    nome_studio,
     elenco_pubblico,
     elenco_paese,
     elenco_via,

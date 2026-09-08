@@ -27,7 +27,7 @@ export default function ImpostazioniElenco() {
         const s = b.studio;
         if (!s) { setDati(null); return; }
         setDati({
-          nome_studio: s.nome_studio,
+          nome_studio: s.nome_studio || '',
           plan: s.plan,
           subscription_status: s.subscription_status,
           elenco_pubblico: !!s.elenco_pubblico,
@@ -82,6 +82,15 @@ export default function ImpostazioniElenco() {
             Pubblica il mio studio in elenco
           </label>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <label className="text-xs text-neutral-500 md:col-span-2">
+              Nome studio
+              <input
+                required
+                value={dati.nome_studio ?? ''}
+                onChange={(e) => setDati({ ...dati, nome_studio: e.target.value })}
+                className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+              />
+            </label>
             <label className="text-xs text-neutral-500">
               Paese
               <input value={dati.elenco_paese} onChange={(e) => setDati({ ...dati, elenco_paese: e.target.value })} className="mt-1 w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm" />
