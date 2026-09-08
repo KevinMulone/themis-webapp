@@ -357,8 +357,10 @@ function LoghiSponsorFooter() {
 
   const loghi = [
     { nome: 'Studio Legale Fussone', href: '#sponsor', logo: '/sponsors/fussone-logo.png' },
+    // Fussone è già la prima voce, fissa: se è anche a database (lo è, come
+    // sponsor fondatore) non va ripetuta qui.
     ...lista
-      .filter((s) => s.logo_url)
+      .filter((s) => s.logo_url && s.nome !== 'Studio Legale Fussone')
       .map((s) => ({ nome: s.nome, href: urlSicuro(s.url) ?? '#sponsor', logo: s.logo_url as string })),
   ];
 
