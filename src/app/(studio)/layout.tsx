@@ -34,6 +34,7 @@ const NAV = [
   { href: '/parcelle', label: 'Parcelle' },
   { href: '/patrocinio', label: 'Patrocinio Stato' },
   { href: '/registri-giustizia', label: 'Giustizia Civile' },
+  { href: '/studi', label: 'Elenco studi' },
   { href: '/domande-frequenti', label: 'Domande frequenti' },
 ];
 

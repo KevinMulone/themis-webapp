@@ -26,6 +26,7 @@ const ICONE: Record<string, NomeIcona> = {
   '/parcelle': 'parcelle',
   '/patrocinio': 'patrocinio',
   '/registri-giustizia': 'cerca',
+  '/studi': 'edificio',
   '/domande-frequenti': 'aiuto',
   '/attivita': 'attivita',
   '/collaboratori': 'collaboratori',
@@ -36,7 +37,7 @@ const GRUPPI: { titolo: string; hrefs: string[] }[] = [
   { titolo: 'Studio', hrefs: ['/dashboard', '/clienti', '/pratiche', '/themis', '/incarichi'] },
   { titolo: 'Comunicazioni', hrefs: ['/calendario', '/pec', '/whatsapp', '/whatsapp/documenti'] },
   { titolo: 'Strumenti', hrefs: ['/genera', '/deposito', '/calcolo-danno', '/parcelle', '/patrocinio', '/registri-giustizia'] },
-  { titolo: 'Account', hrefs: ['/attivita', '/collaboratori', '/impostazioni', '/domande-frequenti'] },
+  { titolo: 'Account', hrefs: ['/attivita', '/collaboratori', '/impostazioni', '/studi', '/domande-frequenti'] },
 ];
 
 export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
