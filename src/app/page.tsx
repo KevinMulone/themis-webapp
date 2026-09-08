@@ -348,6 +348,47 @@ function SponsorCarosello() {
   );
 }
 
+/** Loghi sponsor nel footer: Fussone (fisso, il primo) più chi ha un
+ *  logo tra gli sponsor paganti dal database. Chi non ha un logo non
+ *  compare qui — resta comunque nel carosello sopra, come testo. */
+function LoghiSponsorFooter() {
+  const [lista, setLista] = useState<{ nome: string; url: string | null; logo_url: string | null }[]>([]);
+  useEffect(() => {
+    fetch('/api/sponsor')
+      .then((r) => r.json())
+      .then((b) => setLista(b.sponsor || []))
+      .catch(() => setLista([]));
+  }, []);
+
+  const loghi = [
+    { nome: 'Studio Legale Fussone', href: '#sponsor', logo: '/sponsors/fussone-logo.png' },
+    ...lista
+      .filter((s) => s.logo_url)
+      .map((s) => ({ nome: s.nome, href: urlSicuro(s.url) ?? '#sponsor', logo: s.logo_url as string })),
+  ];
+
+  return (
+    <div>
+      <div className="text-xs font-semibold uppercase tracking-wide text-neutral-400">Sponsor</div>
+      <div className="mt-3 flex flex-wrap items-center gap-4">
+        {loghi.map((s) => (
+          <a
+            key={s.nome}
+            href={s.href}
+            target={s.href.startsWith('http') ? '_blank' : undefined}
+            rel={s.href.startsWith('http') ? 'noreferrer' : undefined}
+            title={s.nome}
+            className="opacity-80 grayscale transition hover:opacity-100 hover:grayscale-0"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element -- loghi da fonti esterne, fuori dai domini remoti di next/image */}
+            <img src={s.logo} alt={s.nome} className="h-9 w-auto" />
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SezioneSponsor() {
   const [lista, setLista] = useState<{ nome: string; url: string | null; piano: string }[]>([]);
   useEffect(() => {
@@ -671,16 +712,9 @@ export default function Home() {
             <p className="mt-2 max-w-sm">
               Gestione legale per studi. Sempre in aggiornamento.
             </p>
-            <a href="#sponsor" className="mt-5 flex items-center gap-2.5 text-neutral-400 hover:text-neutral-600">
-              <span className="text-xs">Nato per</span>
-              <Image
-                src="/sponsors/fussone-logo.png"
-                alt="Studio Legale Fussone"
-                width={220}
-                height={208}
-                className="h-10 w-auto"
-              />
-            </a>
+            <div className="mt-5">
+              <LoghiSponsorFooter />
+            </div>
           </div>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             <a href="#chi-siamo" className="hover:underline">Chi siamo</a>
