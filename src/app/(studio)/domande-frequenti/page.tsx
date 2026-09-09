@@ -24,7 +24,7 @@ const SEZIONI: Sezione[] = [
     voci: [
       {
         d: 'Cosa posso chiedere a Themis?',
-        r: 'Dalla pagina "Themis" puoi fare domande su un fascicolo (risponde citando i documenti da cui prende l\'informazione, così puoi controllare), farti proporre scadenze trovate nelle PEC o nei messaggi WhatsApp, e farti scrivere una prima bozza di un atto.',
+        r: 'Dalla pagina "Themis" puoi fare domande su un fascicolo (risponde citando i documenti da cui prende l\'informazione, così puoi controllare), farti proporre scadenze trovate nelle PEC, e farti scrivere una prima bozza di un atto.',
       },
       {
         d: 'Le bozze di Themis si possono usare così come sono?',
@@ -71,36 +71,11 @@ const SEZIONI: Sezione[] = [
     ],
   },
   {
-    titolo: 'WhatsApp',
-    voci: [
-      {
-        d: 'Come collego WhatsApp a Themis?',
-        r: 'Da Impostazioni → WhatsApp → "Connetti WhatsApp", poi scansiona il codice QR con il telefono. Importante: usa un numero dedicato allo studio, mai il numero personale di un avvocato — è il numero collegato, non chi lo usa, a correre il rischio in caso di blocco da parte di WhatsApp (il collegamento non passa dai canali ufficiali).',
-      },
-      {
-        d: 'I messaggi WhatsApp arrivano in automatico dentro Themis?',
-        r: 'Sì, la pagina WhatsApp funziona come una vera casella di chat: elenco delle conversazioni a sinistra, messaggi a destra, con la possibilità di rispondere scrivendo tu o facendoti proporre una bozza da Themis (tasto "IA").',
-      },
-      {
-        d: 'Cosa succede quando arriva un documento da un numero non ancora in anagrafica?',
-        r: 'Compare in cima alla pagina WhatsApp, con Themis che prova già a suggerire se è un cliente già registrato o uno nuovo (leggendo il nome del file e il testo del messaggio) — resta comunque una tua decisione da confermare, mai automatica.',
-      },
-      {
-        d: 'Dove trovo tutti i documenti ricevuti su WhatsApp?',
-        r: 'Nella pagina "Reparto fascicoli", raggruppati per cliente. Se il numero era collegato a un\'unica pratica, il documento compare anche direttamente lì.',
-      },
-    ],
-  },
-  {
-    titolo: 'Genera Atto e Deposito',
+    titolo: 'Genera Atto',
     voci: [
       {
         d: 'Come genero un atto da un modello?',
         r: 'Dalla pagina "Genera Atto", scegli il modello e la pratica: Themis compila i dati che conosce e lascia i segnaposto per quello che manca.',
-      },
-      {
-        d: 'A cosa serve la pagina Deposito?',
-        r: 'Prepara il pacchetto di documenti per il deposito telematico (come farebbe SLpct), con una lista di controllo prima di scaricarlo, e permette di ricaricare i file già firmati digitalmente.',
       },
     ],
   },
@@ -122,7 +97,7 @@ const SEZIONI: Sezione[] = [
     voci: [
       {
         d: 'I documenti sono al sicuro?',
-        r: 'Ogni documento è cifrato prima di essere salvato, con una chiave diversa per ogni studio: nemmeno un accesso diretto allo spazio di archiviazione renderebbe leggibili i file. Le credenziali (PEC, Google, WhatsApp) sono cifrate allo stesso modo e non sono mai visibili nell\'interfaccia.',
+        r: 'Ogni documento è cifrato prima di essere salvato, con una chiave diversa per ogni studio: nemmeno un accesso diretto allo spazio di archiviazione renderebbe leggibili i file. Le credenziali (PEC, Google) sono cifrate allo stesso modo e non sono mai visibili nell\'interfaccia.',
       },
       {
         d: 'I dati dei miei clienti vengono usati per addestrare l\'intelligenza artificiale?',

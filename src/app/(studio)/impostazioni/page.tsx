@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_PRATICA, labelFromOptions } from '@/lib/constants';
 import { leggiIcs, type ImpegnoImportato as ImpegnoLetto } from '@/lib/calendario/leggiIcs';
-import ImpostazioniWhatsapp from './ImpostazioniWhatsapp';
+// WhatsApp temporaneamente nascosto dall'interfaccia (funzionalità instabile).
+// import ImpostazioniWhatsapp from './ImpostazioniWhatsapp';
 import ImpostazioniElenco from './ImpostazioniElenco';
 
 type Template = { id: string; nome: string; categoria: string | null; descrizione: string | null; studio_id: string | null };
@@ -730,6 +731,20 @@ export default function ImpostazioniPage() {
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-6 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Impostazioni</h1>
 
+      <div className="mb-4 flex items-center justify-between rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+        <div>
+          <h2 className="font-semibold text-neutral-900">Guida — Come usare Themis</h2>
+          <p className="mt-1 text-sm text-neutral-500">La guida pratica alle funzionalità di Themis, in PDF.</p>
+        </div>
+        <a
+          href="/guide/come-usare-themis.pdf"
+          download="Come usare Themis.pdf"
+          className="premi shrink-0 rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
+        >
+          Scarica il PDF
+        </a>
+      </div>
+
       <form onSubmit={handleChangePassword} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Cambia password</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1173,8 +1188,6 @@ export default function ImpostazioniPage() {
           </div>
         )}
       </div>
-
-      <ImpostazioniWhatsapp />
 
       <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <div className="mb-3 flex items-center justify-between">

@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Themis — Lo studio legale in un solo posto",
-  description: "App di gestione legale completa: pratiche, PEC, calendario, WhatsApp e assistente sul fascicolo. Sempre in aggiornamento.",
+  description: "App di gestione legale completa: pratiche, PEC, calendario e assistente sul fascicolo. Sempre in aggiornamento.",
 };
 
 export const viewport: Viewport = {

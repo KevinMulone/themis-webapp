@@ -35,8 +35,8 @@ const ICONE: Record<string, NomeIcona> = {
 
 const GRUPPI: { titolo: string; hrefs: string[] }[] = [
   { titolo: 'Studio', hrefs: ['/dashboard', '/clienti', '/pratiche', '/themis', '/incarichi'] },
-  { titolo: 'Comunicazioni', hrefs: ['/calendario', '/pec', '/whatsapp', '/whatsapp/documenti'] },
-  { titolo: 'Strumenti', hrefs: ['/genera', '/deposito', '/calcolo-danno', '/parcelle', '/patrocinio', '/registri-giustizia'] },
+  { titolo: 'Comunicazioni', hrefs: ['/calendario', '/pec'] },
+  { titolo: 'Strumenti', hrefs: ['/genera', '/calcolo-danno', '/parcelle', '/patrocinio', '/registri-giustizia'] },
   { titolo: 'Account', hrefs: ['/attivita', '/collaboratori', '/impostazioni', '/studi', '/domande-frequenti'] },
 ];
 

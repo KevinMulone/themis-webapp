@@ -61,9 +61,7 @@ const POSTER: { titolo: string; sotto: string; tono: string }[] = [
   { titolo: 'PEC', sotto: 'Posta certificata', tono: 'from-gold-100 to-gold-50' },
   { titolo: 'Themis AI', sotto: 'Domande al fascicolo', tono: 'from-bordeaux-200 to-bordeaux-100' },
   { titolo: 'Calendario', sotto: 'Udienze e termini', tono: 'from-neutral-100 to-white' },
-  { titolo: 'WhatsApp', sotto: 'Chat dello studio', tono: 'from-gold-100 to-neutral-50' },
   { titolo: 'Atti', sotto: 'Prime stesure', tono: 'from-gold-200 to-gold-100' },
-  { titolo: 'Deposito', sotto: 'Pacchetto telematico', tono: 'from-neutral-200 to-white' },
   { titolo: 'Parcelle', sotto: 'Parametri forensi', tono: 'from-bordeaux-100 to-neutral-50' },
   { titolo: 'Patrocinio', sotto: 'Spese dello Stato', tono: 'from-bordeaux-200 to-neutral-100' },
   { titolo: 'Sinistri', sotto: 'Dati compagnia', tono: 'from-gold-100 to-bordeaux-50' },
@@ -78,11 +76,9 @@ const MODULI: { icona: NomeIcona; titolo: string; testo: string }[] = [
   { icona: 'pratiche', titolo: 'Gestione pratiche', testo: 'Fascicoli, R.G., stato, controparte e assegnazione in un elenco solo.' },
   { icona: 'clienti', titolo: 'Anagrafe clienti', testo: 'Persone e società, archivio, ricerca per nome, CF, pec e città.' },
   { icona: 'pec', titolo: 'PEC in studio', testo: 'Casella collegata, non lette in evidenza, ricevute e termini proposti.' },
-  { icona: 'whatsapp', titolo: 'WhatsApp dello studio', testo: 'Chat, documenti in arrivo e collegamento al fascicolo giusto.' },
   { icona: 'calendario', titolo: 'Calendario unico', testo: 'Udienze e scadenze visibili a titolare e collaboratori, anche su Google.' },
   { icona: 'themis', titolo: 'Assistente Themis', testo: 'Domande al fascicolo con citazione della pagina. Bozze da rileggere sempre.' },
   { icona: 'genera', titolo: 'Generazione atti', testo: 'Modelli dello studio compilati con i dati già in pratica.' },
-  { icona: 'invio', titolo: 'Deposito telematico', testo: 'Pacchetto pronto, lista di controllo, ricarica dei file firmati.' },
   { icona: 'parcelle', titolo: 'Parcelle', testo: 'Parametri forensi sulla pratica, senza un foglio a parte.' },
   { icona: 'calcolo', titolo: 'Calcolo del danno', testo: 'Tabelle in uso per invalidità permanente e temporanea.' },
   { icona: 'patrocinio', titolo: 'Patrocinio a spese dello Stato', testo: 'Istanza, delibera, liquidazione e incasso sullo stesso fascicolo.' },
@@ -98,7 +94,7 @@ const BLOCCHI = [
   {
     kicker: 'Cosa facciamo',
     titolo: 'Tutto il lavoro del fascicolo, senza cinque programmi.',
-    testo: 'Clienti, pratiche, PEC, WhatsApp, calendario, atti, deposito, parcelle e patrocinio stanno nello stesso spazio. Ogni documento è cifrato per il tuo studio. L’assistente legge solo ciò che gli dai tu.',
+    testo: 'Clienti, pratiche, PEC, calendario, atti, parcelle e patrocinio stanno nello stesso spazio. Ogni documento è cifrato per il tuo studio. L’assistente legge solo ciò che gli dai tu.',
   },
   {
     kicker: 'L’obiettivo',
@@ -127,7 +123,7 @@ const PIANI = [
 
 const FAQ: { d: string; r: string }[] = [
   { d: 'Themis sostituisce lo studio o l’avvocato?', r: 'No. È lo strumento dello studio. Le decisioni, la firma e la responsabilità restano dell’avvocato.' },
-  { d: 'Cosa copre oggi?', r: 'Clienti, pratiche (compresi i sinistri), PEC, WhatsApp, calendario, assistente sul fascicolo, generazione atti, deposito, parcelle, danno biologico, patrocinio, collaboratori e registri di giustizia civile.' },
+  { d: 'Cosa copre oggi?', r: 'Clienti, pratiche (compresi i sinistri), PEC, calendario, assistente sul fascicolo, generazione atti, parcelle, danno biologico, patrocinio, collaboratori e registri di giustizia civile.' },
   { d: 'L’app resterà ferma dopo l’acquisto?', r: 'No. Themis è pensata per aggiornarsi di continuo: correzioni, nuove funzioni, più chiarezza. L’abbonamento include gli aggiornamenti.' },
   { d: 'Themis inventa sentenze o norme?', r: 'No. Dove manca un dato scrive [DA COMPLETARE]. Le bozze vanno sempre rilette prima di usarle.' },
   { d: 'I documenti sono al sicuro?', r: 'Ogni studio ha una propria chiave di cifratura. La cifratura avviene prima dello storage e non si può disattivare.' },
@@ -567,9 +563,9 @@ export default function Home() {
       <RigaFunzione
         invertito
         alterna
-        kicker="PEC e WhatsApp"
-        titolo="La posta e le chat restano nel fascicolo."
-        testo="La PEC si scarica da sola. Le non lette restano evidenti. WhatsApp dello studio riceve documenti e li collega al cliente. Niente caselle e telefoni sparsi."
+        kicker="PEC"
+        titolo="La posta certificata resta nel fascicolo."
+        testo="La PEC si scarica da sola. Le non lette restano evidenti. Niente caselle sparse tra più account."
       >
         <Schermo titolo="Themis — PEC">
           <div className="divide-y divide-neutral-100">
@@ -611,9 +607,9 @@ export default function Home() {
       <RigaFunzione
         invertito
         alterna
-        kicker="Calendario e deposito"
-        titolo="Udienze visibili. Pacchetto pronto per il deposito."
-        testo="Un calendario solo per lo studio, anche su Google. Il deposito prepara i file, controlla cosa manca e accetta i documenti già firmati."
+        kicker="Calendario"
+        titolo="Udienze e scadenze, sempre visibili."
+        testo="Un calendario solo per lo studio, condiviso tra titolare e collaboratori, anche su Google."
       >
         <Schermo titolo="Themis — Calendario">
           <div className="grid grid-cols-7 gap-2 p-6 text-center text-sm">
