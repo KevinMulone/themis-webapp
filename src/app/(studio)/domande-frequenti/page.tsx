@@ -123,6 +123,20 @@ export default function DomandeFrequentiPage() {
       <h1 className="mb-1 text-[24px] font-semibold tracking-tight text-neutral-900">Domande frequenti</h1>
       <p className="mb-6 text-sm text-neutral-500">Come si usa Themis, area per area.</p>
 
+      <div className="mb-6 flex items-center justify-between rounded-[24px] bg-white ring-1 ring-black/[0.04] p-5">
+        <div>
+          <h2 className="font-semibold text-neutral-900">Guida — Come usare Themis</h2>
+          <p className="mt-1 text-sm text-neutral-500">La guida pratica alle funzionalità di Themis, in PDF.</p>
+        </div>
+        <a
+          href="/guide/come-usare-themis.pdf"
+          download="Come usare Themis.pdf"
+          className="premi shrink-0 rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800"
+        >
+          Scarica il PDF
+        </a>
+      </div>
+
       <div className="space-y-6">
         {SEZIONI.map((sezione) => (
           <section key={sezione.titolo} className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-5">
