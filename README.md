@@ -11,6 +11,12 @@ applicazione.
 Prodotto in esercizio, non un esercizio di stile: nasce dallo Studio Legale
 Fussone (San Cataldo, CL) e viene usato tutti i giorni su pratiche vere.
 
+L'interfaccia usa un sistema visivo unico bordeaux/oro: landing con anteprima
+interattiva di dashboard, fascicolo e assistente; navigazione in vetro,
+tipografia ad alta gerarchia, superfici morbide e micro-interazioni rispettose
+di `prefers-reduced-motion`. Le stesse regole sono condivise con l'area studio
+per card, campi, pulsanti e sfondo applicativo.
+
 - **Produzione:** https://themis-webapp-6ccd.vercel.app
 - **Repository:** https://github.com/KevinMulone/themis-webapp
 - **Codice:** ~24.000 righe TypeScript/TSX (181 file) + ~2.500 righe SQL

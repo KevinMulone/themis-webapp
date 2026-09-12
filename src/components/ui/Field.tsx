@@ -19,7 +19,7 @@ export const Field = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTML
       <FieldLabel required={props.required}>{label}</FieldLabel>
       <input
         ref={ref}
-        className={`w-full rounded-lg border bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 ${
+        className={`w-full rounded-xl border bg-white/90 px-3.5 py-2.5 text-sm shadow-sm outline-none transition-[border-color,box-shadow,background] focus:border-bordeaux-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(107,29,57,.09)] ${
           error ? 'border-red-400' : 'border-neutral-200'
         } ${className}`.trim()}
         {...props}

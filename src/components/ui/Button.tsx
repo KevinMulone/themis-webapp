@@ -17,9 +17,9 @@ type Size = 'sm' | 'md';
 
 const VARIANTI: Record<Variant, string> = {
   // L'azione principale della schermata: una sola per vista, di regola.
-  primary: 'bg-bordeaux-700 text-white hover:bg-bordeaux-800 disabled:opacity-40',
+  primary: 'bg-bordeaux-700 text-white shadow-[0_9px_20px_-14px_rgba(107,29,57,.8)] hover:bg-bordeaux-800 disabled:opacity-40',
   // Azioni alternative o di annullamento, accanto a una primaria.
-  secondary: 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200 disabled:opacity-40',
+  secondary: 'bg-white text-neutral-800 ring-1 ring-black/[0.08] shadow-sm hover:bg-neutral-50 disabled:opacity-40',
   // Eliminazioni e altre azioni che non si possono disfare.
   danger: 'bg-red-50 text-red-700 hover:bg-red-100 disabled:opacity-40',
   // Azioni minori dentro una lista o una barra, senza bordo.
@@ -39,7 +39,7 @@ export const Button = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<H
 }>(function Button({ variant = 'primary', size = 'md', className = '', ...props }, ref) {
   const base = variant === 'link'
     ? 'font-medium tracking-tight disabled:cursor-not-allowed'
-    : 'premi rounded-full font-medium tracking-tight disabled:cursor-not-allowed';
+    : 'premi rounded-full font-medium tracking-tight transition-[background-color,box-shadow,transform] duration-300 disabled:cursor-not-allowed';
   const misura = variant === 'link' ? '' : MISURE[size];
   return (
     <button

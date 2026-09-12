@@ -53,25 +53,6 @@ function Reveal({ children, className = '', delay = 0 }: {
   );
 }
 
-/** Toni pastello sul palette dello studio (bordeaux/oro/neutri): stessa
- *  idea del mosaico, ma leggibile su fondo chiaro invece che su nero. */
-const POSTER: { titolo: string; sotto: string; tono: string }[] = [
-  { titolo: 'Pratiche', sotto: 'Fascicoli e stati', tono: 'from-bordeaux-100 to-bordeaux-50' },
-  { titolo: 'Clienti', sotto: 'Anagrafe dello studio', tono: 'from-neutral-200 to-neutral-100' },
-  { titolo: 'PEC', sotto: 'Posta certificata', tono: 'from-gold-100 to-gold-50' },
-  { titolo: 'Themis AI', sotto: 'Domande al fascicolo', tono: 'from-bordeaux-200 to-bordeaux-100' },
-  { titolo: 'Calendario', sotto: 'Udienze e termini', tono: 'from-neutral-100 to-white' },
-  { titolo: 'Atti', sotto: 'Prime stesure', tono: 'from-gold-200 to-gold-100' },
-  { titolo: 'Parcelle', sotto: 'Parametri forensi', tono: 'from-bordeaux-100 to-neutral-50' },
-  { titolo: 'Patrocinio', sotto: 'Spese dello Stato', tono: 'from-bordeaux-200 to-neutral-100' },
-  { titolo: 'Sinistri', sotto: 'Dati compagnia', tono: 'from-gold-100 to-bordeaux-50' },
-  { titolo: 'Collaboratori', sotto: 'Un solo studio', tono: 'from-neutral-100 to-neutral-50' },
-  { titolo: 'Cifratura', sotto: 'Chiave per studio', tono: 'from-gold-200 to-neutral-50' },
-  { titolo: 'Registri', sotto: 'Giustizia civile', tono: 'from-neutral-200 to-bordeaux-50' },
-  { titolo: 'Danno', sotto: 'Tabelle ufficiali', tono: 'from-bordeaux-100 to-white' },
-  { titolo: 'Incarichi', sotto: 'Cosa resta da fare', tono: 'from-gold-100 to-white' },
-];
-
 const MODULI: { icona: NomeIcona; titolo: string; testo: string }[] = [
   { icona: 'pratiche', titolo: 'Gestione pratiche', testo: 'Fascicoli, R.G., stato, controparte e assegnazione in un elenco solo.' },
   { icona: 'clienti', titolo: 'Anagrafe clienti', testo: 'Persone e società, archivio, ricerca per nome, CF, pec e città.' },
@@ -133,25 +114,96 @@ const FAQ: { d: string; r: string }[] = [
   { d: 'L’assistente Themis (IA) è incluso in tutti i piani?', r: 'No. Il piano mensile non lo include. Il semestrale ha un limite di utilizzo mensile. L’annuale ha il margine più ampio e include anche uno spazio sponsor gratuito in home.' },
 ];
 
-function Mosaico() {
-  const fila = [...POSTER, ...POSTER];
+const VISTE_HERO = ['Panoramica', 'Fascicolo', 'Assistente'] as const;
+
+function HeroProductDemo() {
+  const [vista, setVista] = useState<(typeof VISTE_HERO)[number]>('Panoramica');
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const id = window.setInterval(() => {
+      setVista((corrente) => VISTE_HERO[(VISTE_HERO.indexOf(corrente) + 1) % VISTE_HERO.length]);
+    }, 4200);
+    return () => window.clearInterval(id);
+  }, []);
+
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-      <div className="absolute -inset-8 rotate-[-8deg] scale-110 opacity-70">
-        <div className="grid grid-cols-4 gap-3 sm:grid-cols-6 lg:grid-cols-8">
-          {fila.map((p, i) => (
-            <div
-              key={`${p.titolo}-${i}`}
-              className={`aspect-[2/3] rounded-sm bg-gradient-to-br ${p.tono} p-3 shadow-sm ring-1 ring-black/[0.04]`}
-            >
-              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-neutral-500">{p.sotto}</div>
-              <div className="mt-2 text-[17px] font-bold leading-tight text-neutral-800">{p.titolo}</div>
-            </div>
+    <div className="hero-product entra d4" aria-label="Anteprima interattiva di Themis">
+      <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3 sm:px-5">
+        <div className="flex gap-1.5" aria-hidden="true">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+        </div>
+        <div className="mx-auto flex rounded-full bg-white/[0.07] p-1 text-[11px] text-white/60 sm:text-xs">
+          {VISTE_HERO.map((nome) => (
+            <button key={nome} type="button" onClick={() => setVista(nome)} aria-pressed={vista === nome}
+              className={`rounded-full px-3 py-1.5 transition ${vista === nome ? 'bg-white text-neutral-950 shadow-sm' : 'hover:text-white'}`}>
+              {nome}
+            </button>
           ))}
         </div>
+        <span className="hidden text-[10px] font-semibold uppercase tracking-[.16em] text-white/35 sm:block">Live preview</span>
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/60 to-[#f5f5f7]" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#f5f5f7] to-transparent" />
+
+      <div className="grid min-h-[350px] grid-cols-[62px_1fr] sm:min-h-[430px] sm:grid-cols-[170px_1fr]">
+        <aside className="border-r border-white/10 bg-black/10 p-3 sm:p-5">
+          <div className="mb-7 flex items-center gap-2">
+            <Image src="/icon.svg" alt="" width={28} height={28} className="rounded-lg" />
+            <span className="hidden text-sm font-black tracking-tight text-white sm:block">THEMIS</span>
+          </div>
+          <div className="space-y-1.5">
+            {['Dashboard', 'Clienti', 'Pratiche', 'Themis', 'Calendario'].map((voce, i) => (
+              <div key={voce} className={`flex items-center gap-2 rounded-xl px-2.5 py-2 text-xs ${i === (vista === 'Panoramica' ? 0 : vista === 'Fascicolo' ? 2 : 3) ? 'bg-white/12 text-white' : 'text-white/40'}`}>
+                <span className={`h-2 w-2 rounded-full ${i === 3 ? 'bg-gold-300' : 'bg-white/25'}`} />
+                <span className="hidden sm:block">{voce}</span>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        <div className="relative overflow-hidden bg-[#f7f7f9] p-4 text-left sm:p-7">
+          <div key={vista} className="piano">
+            {vista === 'Panoramica' && (
+              <>
+                <div className="flex items-end justify-between">
+                  <div><p className="text-xs text-neutral-500">Buongiorno, Avvocato</p><h3 className="mt-1 text-xl font-bold text-neutral-900 sm:text-2xl">Il tuo studio, oggi.</h3></div>
+                  <span className="rounded-full bg-white px-3 py-1.5 text-[10px] text-neutral-500 shadow-sm">12 settembre</span>
+                </div>
+                <div className="mt-5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+                  {[['24', 'Pratiche attive'], ['3', 'Scadenze'], ['5', 'PEC non lette'], ['8', 'Incarichi']].map(([n, l], i) => (
+                    <div key={l} className="rounded-2xl bg-white p-3 shadow-[0_12px_30px_-22px_rgba(0,0,0,.35)]">
+                      <div className={`text-xl font-bold ${i === 2 ? 'text-bordeaux-700' : 'text-neutral-900'}`}>{n}</div>
+                      <div className="mt-1 text-[10px] text-neutral-500">{l}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 grid gap-3 lg:grid-cols-[1.25fr_.75fr]">
+                  <div className="rounded-2xl bg-white p-4"><p className="text-xs font-semibold text-neutral-900">Prossime attività</p>{['Udienza · Rossi / Comune', 'Deposito memoria 183', 'Richiamare cliente'].map((x, i) => <div key={x} className="mt-3 flex items-center gap-3 text-[11px] text-neutral-500"><span className="flex h-7 w-7 items-center justify-center rounded-lg bg-bordeaux-50 font-semibold text-bordeaux-700">{12 + i}</span>{x}</div>)}</div>
+                  <div className="rounded-2xl bg-bordeaux-950 p-4 text-white"><p className="text-[10px] uppercase tracking-wider text-white/50">Themis suggerisce</p><p className="mt-3 text-sm font-semibold leading-snug">Due scadenze richiedono la tua attenzione.</p><span className="mt-5 inline-block text-[11px] text-gold-300">Controlla ora →</span></div>
+                </div>
+              </>
+            )}
+            {vista === 'Fascicolo' && (
+              <>
+                <p className="text-xs font-medium text-bordeaux-700">PRATICA CIVILE</p><h3 className="mt-1 text-xl font-bold text-neutral-900 sm:text-2xl">Rossi Mario / Comune</h3>
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">{[['R.G.', '1135/2025'], ['Stato', 'In corso'], ['Responsabile', 'Avv. Bianchi']].map(([l, v]) => <div key={l} className="rounded-2xl bg-white p-4"><p className="text-[10px] text-neutral-400">{l}</p><p className="mt-1 text-sm font-semibold text-neutral-800">{v}</p></div>)}</div>
+                <div className="mt-3 rounded-2xl bg-white p-4"><p className="text-xs font-semibold text-neutral-900">Documenti recenti</p>{['Ricorso introduttivo.pdf', 'Verbale udienza.pdf', 'Memoria difensiva.docx'].map((x, i) => <div key={x} className="mt-3 flex items-center justify-between border-t border-neutral-100 pt-3 text-[11px]"><span className="text-neutral-600">{x}</span><span className="text-neutral-400">{i + 1} set</span></div>)}</div>
+              </>
+            )}
+            {vista === 'Assistente' && (
+              <>
+                <p className="text-xs text-neutral-500">Assistente sul fascicolo</p><h3 className="mt-1 text-xl font-bold text-neutral-900 sm:text-2xl">Una risposta, con la fonte.</h3>
+                <div className="mt-6 ml-auto max-w-[88%] rounded-2xl rounded-br-md bg-bordeaux-700 px-4 py-3 text-sm text-white">Qual è la prossima scadenza?</div>
+                <div className="mt-3 max-w-[92%] rounded-2xl rounded-bl-md bg-white px-4 py-3 text-sm leading-relaxed text-neutral-600 shadow-sm">Il termine per la memoria è il <strong className="text-neutral-900">18 settembre 2026</strong>. La data risulta dal verbale dell’ultima udienza.</div>
+                <div className="mt-2 text-[10px] text-neutral-400">Verbale udienza.pdf · pagina 2</div>
+                <div className="mt-6 flex items-center gap-2 rounded-2xl border border-neutral-200 bg-white p-2 pl-4 text-xs text-neutral-400"><span className="flex-1">Chiedi qualcosa al fascicolo…</span><span className="flex h-8 w-8 items-center justify-center rounded-full bg-bordeaux-700 text-white">↑</span></div>
+              </>
+            )}
+          </div>
+          <div className="pointer-events-none absolute -bottom-20 -right-20 h-52 w-52 rounded-full bg-bordeaux-200/35 blur-3xl" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -162,12 +214,12 @@ function RigaFunzione({
   kicker: string; titolo: string; testo: string; invertito?: boolean; alterna?: boolean; children: ReactNode;
 }) {
   return (
-    <section className={`border-t border-neutral-200 px-6 py-16 lg:px-12 lg:py-24 ${alterna ? 'bg-neutral-50' : 'bg-white'}`}>
-      <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
+    <section className={`px-6 py-20 lg:px-12 lg:py-32 ${alterna ? 'bg-[#f5f5f7]' : 'bg-white'}`}>
+      <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-2 lg:gap-20">
         <Reveal className={invertito ? 'lg:order-2' : ''}>
-          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-bordeaux-700">{kicker}</p>
-          <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-neutral-900 sm:text-5xl">{titolo}</h2>
-          <p className="mt-5 text-lg leading-relaxed text-neutral-600">{testo}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-bordeaux-700">{kicker}</p>
+          <h2 className="mt-4 text-4xl font-bold leading-[1.04] tracking-[-.04em] text-neutral-900 sm:text-6xl">{titolo}</h2>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-neutral-600 sm:text-xl">{testo}</p>
         </Reveal>
         <Reveal delay={80} className={invertito ? 'lg:order-1' : ''}>
           {children}
@@ -179,7 +231,7 @@ function RigaFunzione({
 
 function Schermo({ titolo, children }: { titolo: string; children: ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-xl bg-white shadow-[0_30px_80px_-40px_rgba(0,0,0,.3)] ring-1 ring-black/[0.06]">
+    <div className="product-window rialzo overflow-hidden rounded-[26px] bg-white">
       <div className="flex items-center gap-2 border-b border-neutral-100 px-4 py-2.5">
         <span className="h-2.5 w-2.5 rounded-full bg-bordeaux-700" />
         <span className="h-2.5 w-2.5 rounded-full bg-neutral-200" />
@@ -217,21 +269,23 @@ function VetrinaPiani() {
   }
 
   return (
-    <section id="piani" className="border-t border-neutral-200 bg-neutral-50 px-6 py-20 lg:px-12">
+    <section id="piani" className="bg-[#f5f5f7] px-6 py-24 lg:px-12 lg:py-32">
       <Reveal className="mx-auto max-w-3xl text-center">
-        <h2 className="text-3xl font-extrabold text-neutral-900 sm:text-5xl">Un piano per ogni studio.</h2>
+        <p className="text-xs font-semibold uppercase tracking-[.2em] text-bordeaux-700">Piani trasparenti</p>
+        <h2 className="mt-4 text-4xl font-bold tracking-[-.04em] text-neutral-900 sm:text-6xl">Un piano per ogni studio.</h2>
         <p className="mt-4 text-lg text-neutral-500">
           Più lungo è l&rsquo;impegno, più posti per i collaboratori sono inclusi, oltre al titolare.
         </p>
       </Reveal>
-      <div className="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mx-auto mt-14 grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-3">
         {PIANI.map((p) => {
           const featured = p.key === 'annuale';
           return (
             <div
               key={p.key}
-              className={`flex flex-col rounded-xl p-7 ${featured ? 'bg-bordeaux-700 text-white' : 'bg-white text-neutral-900 ring-1 ring-black/[0.06]'}`}
+              className={`rialzo relative flex flex-col overflow-hidden rounded-[28px] p-7 ${featured ? 'bg-gradient-to-br from-bordeaux-700 to-bordeaux-950 text-white shadow-[0_28px_70px_-36px_rgba(69,18,36,.72)]' : 'bg-white text-neutral-900 shadow-[0_20px_50px_-38px_rgba(0,0,0,.25)] ring-1 ring-black/[0.05]'}`}
             >
+              {featured && <span className="absolute right-4 top-4 rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-white/80">Più completo</span>}
               <div className={featured ? 'text-sm text-white/70' : 'text-sm text-neutral-500'}>{p.pubblico}</div>
               <div className="mt-3 text-lg font-semibold">{p.nome}</div>
               <div className="mt-2 flex items-baseline gap-1">
@@ -247,7 +301,7 @@ function VetrinaPiani() {
                 type="button"
                 onClick={() => scegliPiano(p.key)}
                 disabled={pianoInCorso !== null}
-                className={`mt-8 rounded px-5 py-3 text-sm font-bold disabled:opacity-50 ${
+                className={`premi mt-8 rounded-full px-5 py-3 text-sm font-bold shadow-sm disabled:opacity-50 ${
                   featured ? 'bg-white text-bordeaux-800 hover:bg-neutral-100' : 'bg-bordeaux-700 text-white hover:bg-bordeaux-800'
                 }`}
               >
@@ -302,9 +356,9 @@ function SponsorCarosello() {
   }, [indice, slide.durataMs]);
 
   return (
-    <section id="sponsor" className="border-t border-neutral-200 bg-white px-6 pt-16 lg:px-12">
+    <section id="sponsor" className="bg-white px-6 pt-20 lg:px-12">
       <div className="mx-auto max-w-4xl">
-        <div key={indice} className="piano overflow-hidden rounded-2xl bg-neutral-50 ring-1 ring-black/[0.04]">
+        <div key={indice} className="piano overflow-hidden rounded-[28px] bg-neutral-50 shadow-[0_24px_60px_-42px_rgba(0,0,0,.3)] ring-1 ring-black/[0.04]">
           {slide.tipo === 'sponsor' ? (
             <div className="grid sm:grid-cols-2">
               <div className="flex flex-col items-center justify-center gap-4 p-8 text-center sm:p-10">
@@ -391,7 +445,7 @@ function SezioneSponsor() {
       .catch(() => setLista([]));
   }, []);
   return (
-    <section className="bg-white px-6 pb-16 pt-10 lg:px-12">
+    <section className="bg-white px-6 pb-24 pt-12 lg:px-12">
       <div className="mx-auto max-w-5xl text-center">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-bordeaux-700">Sponsor</p>
         <h2 className="mt-3 text-3xl font-extrabold text-neutral-900 sm:text-4xl">Chi sostiene Themis.</h2>
@@ -405,7 +459,7 @@ function SezioneSponsor() {
             {lista.slice(0, 6).map((s) => {
               const url = urlSicuro(s.url);
               return (
-                <li key={s.nome} className="rounded-md bg-neutral-50 px-4 py-6 ring-1 ring-black/[0.04]">
+                <li key={s.nome} className="rialzo rounded-2xl bg-neutral-50 px-4 py-6 ring-1 ring-black/[0.04]">
                   {url ? (
                     <a href={url} className="font-semibold text-neutral-900 hover:underline" target="_blank" rel="noreferrer">{s.nome}</a>
                   ) : (
@@ -430,17 +484,17 @@ function SezioneSponsor() {
 function Faq() {
   const [aperta, setAperta] = useState<number | null>(0);
   return (
-    <section id="faq" className="border-t border-neutral-200 bg-white px-6 py-20 lg:px-12">
-      <h2 className="text-center text-3xl font-extrabold text-neutral-900 sm:text-5xl">Domande frequenti</h2>
+    <section id="faq" className="bg-[#f5f5f7] px-6 py-24 lg:px-12 lg:py-32">
+      <h2 className="text-center text-4xl font-bold tracking-[-.04em] text-neutral-900 sm:text-6xl">Domande frequenti</h2>
       <div className="mx-auto mt-10 max-w-3xl space-y-2">
         {FAQ.map((v, i) => {
           const open = aperta === i;
           return (
-            <div key={v.d} className="rounded-lg bg-neutral-50 ring-1 ring-black/[0.04]">
+            <div key={v.d} className="overflow-hidden rounded-2xl bg-white shadow-[0_14px_35px_-30px_rgba(0,0,0,.28)] ring-1 ring-black/[0.04]">
               <button
                 type="button"
                 onClick={() => setAperta(open ? null : i)}
-                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left text-lg text-neutral-900 sm:text-2xl"
+                className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left text-lg font-medium text-neutral-900 transition hover:bg-neutral-50 sm:text-xl"
               >
                 {v.d}
                 <span className="text-3xl font-light leading-none text-neutral-400">{open ? '×' : '+'}</span>
@@ -468,73 +522,66 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900">
-      <header className="absolute inset-x-0 top-0 z-20">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 lg:px-8">
+    <div className="min-h-screen overflow-hidden bg-white text-neutral-900">
+      <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-5">
+        <div className="vetro mx-auto flex max-w-6xl items-center justify-between rounded-2xl border border-white/70 px-4 py-3 shadow-[0_12px_36px_-24px_rgba(0,0,0,.35)] lg:px-5">
           <Link href="/" className="flex items-center gap-2.5">
             <Image src="/icon.svg" alt="" width={32} height={32} className="rounded-[6px]" />
-            <span className="text-2xl font-black tracking-tight text-bordeaux-700 sm:text-3xl">THEMIS</span>
+            <span className="text-xl font-black tracking-[-.04em] text-bordeaux-700 sm:text-2xl">THEMIS</span>
           </Link>
           <div className="flex items-center gap-3">
             <a href="#funzioni" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Funzioni</a>
             <a href="#piani" className="hidden text-sm text-neutral-600 hover:underline sm:inline">Piani</a>
-            <a href="/studi" className="text-sm text-neutral-600 hover:underline">Studi</a>
+            <a href="/studi" className="hidden text-sm text-neutral-600 hover:text-neutral-900 md:inline">Studi</a>
             <a href="/portale" className="text-sm text-neutral-600 hover:underline">
               <span className="sm:hidden">Assistiti</span>
               <span className="hidden sm:inline">Accedi come assistito</span>
             </a>
-            <Link
-              href="/accedi"
-              className="rounded bg-bordeaux-700 px-4 py-1.5 text-sm font-semibold text-white hover:bg-bordeaux-800"
-            >
+            <Link href="/accedi" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-bordeaux-800">
               Accedi
             </Link>
           </div>
         </div>
       </header>
 
-      <section className="relative min-h-[92vh] overflow-hidden">
-        <Mosaico />
-        <div className="relative z-10 mx-auto flex min-h-[92vh] max-w-4xl flex-col items-center justify-center px-6 pb-20 pt-28 text-center">
-          <h1 className="text-4xl font-extrabold leading-[1.08] tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl">
-            Lo studio legale,
-            <br />
-            in un solo posto.
+      <section className="landing-hero relative overflow-hidden px-5 pb-20 pt-36 sm:pt-44 lg:pb-32">
+        <div className="ambient-orb ambient-orb-one" aria-hidden="true" />
+        <div className="ambient-orb ambient-orb-two" aria-hidden="true" />
+        <div className="relative z-10 mx-auto max-w-6xl text-center">
+          <div className="entra mx-auto inline-flex items-center gap-2 rounded-full border border-bordeaux-200/70 bg-white/70 px-4 py-2 text-xs font-semibold text-bordeaux-800 shadow-sm backdrop-blur-xl">
+            <span className="h-1.5 w-1.5 rounded-full bg-gold-400 respiro" /> Il gestionale pensato per lo studio legale
+          </div>
+          <h1 className="entra d1 mx-auto mt-7 max-w-5xl text-5xl font-bold leading-[.98] tracking-[-.055em] text-neutral-950 sm:text-7xl lg:text-[92px]">
+            Il tuo studio.<br /><span className="hero-gradient-text">Finalmente, tutto insieme.</span>
           </h1>
-          <p className="mt-5 text-xl font-medium text-neutral-800 sm:text-2xl">
-            Pratiche, PEC, calendario e un assistente sul fascicolo.
-          </p>
-          <p className="mt-3 max-w-xl text-base text-neutral-600 sm:text-lg">
-            Un&rsquo;app di gestione legale completa. Sempre in aggiornamento.
-            Inizia oggi — disdici quando vuoi.
-          </p>
-          <p className="mt-8 text-base text-neutral-800 sm:text-lg">
-            Pronto a entrare? Inserisci l&rsquo;email e crea l&rsquo;account dello studio.
-          </p>
-          <form onSubmit={inizia} className="mt-4 flex w-full max-w-xl flex-col gap-2 sm:flex-row">
+          <p className="entra d2 mx-auto mt-7 max-w-2xl text-lg leading-relaxed text-neutral-600 sm:text-2xl">Pratiche, clienti, scadenze e documenti. Con un assistente che conosce il fascicolo e cita sempre le fonti.</p>
+          <form onSubmit={inizia} className="entra d3 mx-auto mt-9 flex w-full max-w-xl flex-col gap-2 rounded-[22px] bg-white/75 p-2 shadow-[0_22px_60px_-28px_rgba(69,18,36,.3)] ring-1 ring-black/[0.06] backdrop-blur-xl sm:flex-row">
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Indirizzo email"
-              className="min-h-14 flex-1 rounded-sm border border-neutral-300 bg-white px-4 text-base text-neutral-900 outline-none placeholder:text-neutral-400 focus:border-bordeaux-400"
+              aria-label="Indirizzo email"
+              className="min-h-12 flex-1 rounded-2xl border-0 bg-transparent px-4 text-base text-neutral-900 outline-none placeholder:text-neutral-400 focus:ring-0"
             />
             <button
               type="submit"
-              className="inline-flex min-h-14 items-center justify-center gap-2 rounded-sm bg-bordeaux-700 px-7 text-xl font-semibold text-white hover:bg-bordeaux-800"
+              className="shine-button premi inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-bordeaux-700 px-7 text-base font-semibold text-white hover:bg-bordeaux-800"
             >
               Inizia
               <span aria-hidden>›</span>
             </button>
           </form>
+          <p className="entra d3 mt-4 text-xs text-neutral-500">Configurazione guidata · Aggiornamenti inclusi · Disdici quando vuoi</p>
+          <div className="mt-14 sm:mt-20"><HeroProductDemo /></div>
         </div>
       </section>
 
-      <section id="chi-siamo" className="border-t border-neutral-200 bg-[#f5f5f7] px-6 py-20 lg:px-12">
+      <section id="chi-siamo" className="bg-[#f5f5f7] px-6 py-24 lg:px-12 lg:py-32">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-3">
           {BLOCCHI.map((b, i) => (
-            <Reveal key={b.kicker} delay={i * 80}>
+            <Reveal key={b.kicker} delay={i * 80} className="h-full rounded-[28px] bg-white p-7 shadow-[0_20px_50px_-36px_rgba(0,0,0,.28)] ring-1 ring-black/[0.04] sm:p-8">
               <p className="text-sm font-semibold uppercase tracking-[0.16em] text-bordeaux-700">{b.kicker}</p>
               <h2 className="mt-3 text-2xl font-extrabold leading-tight text-neutral-900 sm:text-3xl">{b.titolo}</h2>
               <p className="mt-4 leading-relaxed text-neutral-600">{b.testo}</p>
@@ -628,9 +675,9 @@ export default function Home() {
         </Schermo>
       </RigaFunzione>
 
-      <section id="funzioni" className="border-t border-neutral-200 bg-[#f5f5f7] px-6 py-20 lg:px-12">
+      <section id="funzioni" className="bg-[#f5f5f7] px-6 py-24 lg:px-12 lg:py-32">
         <Reveal className="mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl font-extrabold text-neutral-900 sm:text-5xl">Tutto quello che c&rsquo;è dentro.</h2>
+          <h2 className="text-4xl font-bold tracking-[-.04em] text-neutral-900 sm:text-6xl">Tutto quello che c&rsquo;è dentro.</h2>
           <p className="mt-4 text-lg text-neutral-500">
             Non un pezzo alla volta. Lo studio intero, modulo per modulo.
           </p>
@@ -638,7 +685,7 @@ export default function Home() {
         <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {MODULI.map((m, i) => (
             <Reveal key={m.titolo} delay={(i % 3) * 50}>
-              <div className="h-full rounded-md bg-white p-6 ring-1 ring-black/[0.06]">
+              <div className="rialzo h-full rounded-[24px] bg-white p-6 shadow-[0_18px_40px_-34px_rgba(0,0,0,.3)] ring-1 ring-black/[0.05]">
                 <Icon nome={m.icona} className="h-6 w-6 text-bordeaux-700" />
                 <h3 className="mt-4 text-lg font-bold text-neutral-900">{m.titolo}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-neutral-500">{m.testo}</p>
@@ -648,10 +695,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-t border-neutral-200 bg-white px-6 py-20 lg:px-12">
+      <section className="bg-white px-6 py-24 lg:px-12 lg:py-32">
         <Reveal className="mx-auto max-w-4xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.16em] text-bordeaux-700">Sempre in aggiornamento</p>
-          <h2 className="mt-3 text-3xl font-extrabold text-neutral-900 sm:text-5xl">
+          <h2 className="mt-4 text-4xl font-bold tracking-[-.04em] text-neutral-900 sm:text-6xl">
             L&rsquo;app non si ferma il giorno del rilascio.
           </h2>
           <p className="mt-5 text-lg leading-relaxed text-neutral-600">
@@ -666,7 +713,7 @@ export default function Home() {
             { n: '02', t: 'Si ascolta', d: 'Quello che manca diventa il prossimo pezzo.' },
             { n: '03', t: 'Si pubblica di nuovo', d: 'Aggiornamenti nell’abbonamento, senza un altro acquisto.' },
           ].map((s) => (
-            <div key={s.n} className="rounded-md bg-neutral-50 p-6 ring-1 ring-black/[0.04]">
+            <div key={s.n} className="rialzo rounded-[24px] bg-neutral-50 p-6 ring-1 ring-black/[0.04]">
               <div className="text-sm font-bold text-bordeaux-700">{s.n}</div>
               <div className="mt-2 text-lg font-bold text-neutral-900">{s.t}</div>
               <p className="mt-2 text-sm text-neutral-500">{s.d}</p>
@@ -675,13 +722,13 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="sicurezza" className="border-t border-neutral-200 bg-[#f5f5f7] px-6 py-20 lg:px-12">
+      <section id="sicurezza" className="relative overflow-hidden bg-bordeaux-950 px-6 py-24 text-white lg:px-12 lg:py-32">
         <Reveal className="mx-auto max-w-3xl text-center">
-          <Icon nome="lucchetto" className="mx-auto h-10 w-10 text-bordeaux-700" />
-          <h2 className="mt-6 text-3xl font-extrabold text-neutral-900 sm:text-5xl">
+          <Icon nome="lucchetto" className="mx-auto h-10 w-10 text-gold-300" />
+          <h2 className="mt-6 text-4xl font-bold tracking-[-.04em] text-white sm:text-6xl">
             Ogni documento è cifrato per il tuo studio soltanto.
           </h2>
-          <p className="mt-5 text-lg leading-relaxed text-neutral-600">
+          <p className="mt-6 text-lg leading-relaxed text-white/65 sm:text-xl">
             Ogni studio ha una propria chiave. La cifratura avviene prima che il file
             tocchi lo storage. Non si può spegnere.
           </p>
@@ -693,13 +740,13 @@ export default function Home() {
       <SezioneSponsor />
       <Faq />
 
-      <section className="border-t border-neutral-200 bg-[#f5f5f7] px-6 py-20 text-center">
-        <h2 className="text-3xl font-extrabold text-neutral-900 sm:text-4xl">Pronto per lo studio, in un solo posto?</h2>
+      <section className="bg-white px-6 py-24 text-center lg:py-32">
+        <h2 className="mx-auto max-w-3xl text-4xl font-bold tracking-[-.04em] text-neutral-900 sm:text-6xl">Pronto per lo studio, in un solo posto?</h2>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/registrati" className="rounded bg-bordeaux-700 px-8 py-3 text-lg font-semibold text-white hover:bg-bordeaux-800">
+          <Link href="/registrati" className="shine-button premi rounded-full bg-bordeaux-700 px-8 py-3 text-lg font-semibold text-white hover:bg-bordeaux-800">
             Crea l&rsquo;account
           </Link>
-          <Link href="/accedi" className="rounded border border-neutral-300 px-8 py-3 text-lg font-semibold text-neutral-900 hover:bg-neutral-100">
+          <Link href="/accedi" className="premi rounded-full border border-neutral-200 bg-neutral-50 px-8 py-3 text-lg font-semibold text-neutral-900 hover:bg-neutral-100">
             Accedi
           </Link>
         </div>
