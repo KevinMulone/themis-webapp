@@ -145,7 +145,7 @@ export default function NotificheCampanella() {
         ref={bottone}
         onClick={() => { misura(); setAperto(!aperto); if (!aperto) load(); }}
         aria-label="Notifiche"
-        className="relative rounded-md p-2 text-neutral-500 hover:bg-gold-100 hover:text-bordeaux-800"
+        className="premi relative rounded-full p-2 text-neutral-500 transition hover:bg-gold-100 hover:text-bordeaux-800"
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
@@ -163,20 +163,20 @@ export default function NotificheCampanella() {
         <div
           ref={pannello}
           style={{ top: posizione.top, left: posizione.left }}
-          className="fixed z-50 w-80 max-w-[calc(100vw-1rem)] rounded-xl bg-white shadow-lg"
+          className="fixed z-50 w-80 max-w-[calc(100vw-1rem)] overflow-hidden rounded-[22px] bg-white/95 shadow-[0_28px_75px_-35px_rgba(0,0,0,.6)] ring-1 ring-black/[0.08] backdrop-blur-xl"
         >
           <div className="flex items-center justify-between border-b border-neutral-100 px-3 py-2">
             <div className="flex gap-1 text-xs">
               <button
                 onClick={() => setScheda('mie')}
-                className={`rounded px-2 py-1 ${scheda === 'mie' ? 'bg-gold-100 font-medium text-bordeaux-800' : 'text-neutral-500'}`}
+                className={`rounded-full px-2.5 py-1.5 ${scheda === 'mie' ? 'bg-bordeaux-50 font-medium text-bordeaux-800' : 'text-neutral-500'}`}
               >
                 Per me{nonLette > 0 ? ` (${nonLette})` : ''}
               </button>
               {ruolo === 'titolare' && (
                 <button
                   onClick={() => setScheda('studio')}
-                  className={`rounded px-2 py-1 ${scheda === 'studio' ? 'bg-gold-100 font-medium text-bordeaux-800' : 'text-neutral-500'}`}
+                  className={`rounded-full px-2.5 py-1.5 ${scheda === 'studio' ? 'bg-bordeaux-50 font-medium text-bordeaux-800' : 'text-neutral-500'}`}
                 >
                   Studio
                 </button>
