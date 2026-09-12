@@ -946,18 +946,28 @@ cliente/pratica/documento non ha mai funzionato**, senza che l'interfaccia
 lo segnalasse chiaramente. Corretto leggendo i campi da `to_jsonb(old)`,
 che su una chiave assente restituisce `NULL` invece di un errore.
 
-**La versione dei documenti (colonna aggiunta dalla 037) non era quella
+**La versione dei documenti mostrata nel fascicolo non era quella
 dichiarata.** Doveva essere "quante volte è già stato caricato un file con
-questo nome in questa pratica" — calcolata in
-`src/app/api/documenti/upload/route.ts` con un conteggio lato client prima
-dell'insert. Verificato caricando file con nomi mai visti nella stessa
-pratica: la versione cresceva comunque (2, poi 3) invece di restare 1 —
-un contatore di fatto per pratica, non per nome file — oltre a restare
-comunque soggetta a race condition fra upload concorrenti anche se il
-conteggio fosse stato giusto. Spostato il calcolo in un trigger
-`BEFORE INSERT` sul database, con un advisory lock sulla coppia
-pratica+nome file: sempre corretto, atomico anche in concorrenza,
-indipendente da chi chiama l'insert.
+questo nome in questa pratica". Due problemi distinti, trovati in sequenza:
+
+- Il calcolo in `src/app/api/documenti/upload/route.ts` (un conteggio lato
+  client prima dell'insert, filtrato per nome file) restava comunque
+  soggetto a race condition fra upload concorrenti — corretto spostandolo in
+  un trigger `BEFORE INSERT` sul database, con un advisory lock sulla
+  coppia pratica+nome file: sempre atomico, indipendente da chi chiama
+  l'insert.
+- Applicato quel fix, il numero mostrato nel fascicolo **restava comunque
+  sbagliato** (2, poi 3, invece di tornare a 1 per un nome nuovo).
+  Verificato **direttamente sul database** che i valori scritti dal trigger
+  erano corretti — il bug non era lì. La causa reale era in
+  `src/app/(studio)/pratiche/[id]/page.tsx`: la query che carica i documenti
+  del fascicolo non selezionava nemmeno la colonna `versione`, e
+  l'interfaccia mostrava `documenti.length - indice` (la posizione nella
+  lista ordinata per data) spacciandola per il numero di versione. Corretto
+  leggendo il campo reale dal database, con un'unica avvertenza: se lo
+  studio non ha ancora applicato la 037 la colonna non c'è, e in quel caso
+  l'indicazione di versione viene omessa invece di mostrare un numero
+  inventato.
 
 ---
 

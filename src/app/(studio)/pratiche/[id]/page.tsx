@@ -40,7 +40,7 @@ type Testimone = {
   id: string; sinistro_id: string; nome: string | null; cognome: string | null;
   contatti: string | null; dichiarazione: string | null; note: string | null;
 };
-type Documento = { id: string; nome_file: string; data_generazione: string };
+type Documento = { id: string; nome_file: string; data_generazione: string; versione: number | null };
 type RichiestaDocumento = {
   id: string; titolo: string; note: string | null; stato: string; documento_id: string | null;
 };
@@ -82,8 +82,14 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const [modificheNonSalvate, setModificheNonSalvate] = useState(false);
 
   async function loadDocumenti() {
-    const { data } = await supabase.from('documenti').select('id, nome_file, data_generazione').eq('matter_id', id).order('data_generazione', { ascending: false });
-    setDocumenti(data || []);
+    const conVersione = await supabase.from('documenti')
+      .select('id, nome_file, data_generazione, versione').eq('matter_id', id).order('data_generazione', { ascending: false });
+    // Studi che non hanno ancora applicato la migrazione 037 non hanno la
+    // colonna versione: la pagina resta comunque utilizzabile senza quel dato.
+    if (!conVersione.error) { setDocumenti(conVersione.data || []); return; }
+    const senzaVersione = await supabase.from('documenti')
+      .select('id, nome_file, data_generazione').eq('matter_id', id).order('data_generazione', { ascending: false });
+    setDocumenti((senzaVersione.data || []).map((d) => ({ ...d, versione: null })));
   }
 
   async function loadRichieste() {
@@ -407,12 +413,13 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           <p className="text-sm text-neutral-500">Nessun documento caricato per questa pratica.</p>
         ) : (
           <ul className="divide-y divide-neutral-100 text-sm">
-            {documenti.map((d, indice) => (
+            {documenti.map((d) => (
               <li key={d.id} className="flex items-center justify-between py-2">
                 <span className="min-w-0">
                   <span className="block truncate font-medium text-neutral-800">{d.nome_file}</span>
                   <span className="block text-[11px] text-neutral-400">
-                    {new Date(d.data_generazione).toLocaleString('it-IT')} · versione {documenti.length - indice}
+                    {new Date(d.data_generazione).toLocaleString('it-IT')}
+                    {d.versione ? ` · versione ${d.versione}` : ''}
                   </span>
                 </span>
                 <a href={`/api/documenti/${d.id}/download`} className="text-xs font-semibold text-bordeaux-700 hover:underline">
