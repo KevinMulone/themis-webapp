@@ -271,6 +271,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     <div ref={paginaRef} className="mx-auto max-w-3xl">
       <div className="mb-4 flex items-center justify-between">
         <div>
+          <p className="module-eyebrow">Dettaglio pratica</p>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">{clientLabel(client)}</h1>
           <p className="text-sm text-neutral-500">{labelFromOptions(TIPI_PRATICA, matter.tipo_pratica)}</p>
         </div>

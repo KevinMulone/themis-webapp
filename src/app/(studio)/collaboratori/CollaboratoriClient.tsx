@@ -185,6 +185,7 @@ export default function CollaboratoriClient() {
     <div className="mx-auto max-w-5xl">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
+          <p className="module-eyebrow">Squadra dello studio</p>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Collaboratori</h1>
           <p className="mt-1 text-sm text-neutral-500">Gestisci il tuo team e i permessi di accesso</p>
         </div>

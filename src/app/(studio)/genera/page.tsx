@@ -75,9 +75,11 @@ export default function GeneraPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Genera Atto</h1>
+      <p className="module-eyebrow">Automazione documentale</p>
+      <h1 className="mb-2 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Genera Atto</h1>
+      <p className="mb-6 text-sm text-neutral-500">Trasforma i dati del fascicolo in un documento pronto da rifinire.</p>
 
-      <div className="rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <div className="module-panel rounded-[26px] bg-white/90 p-6 ring-1 ring-black/[0.04]">
         <div className="mb-4">
           <label className="mb-1 block text-xs text-neutral-500">Pratica</label>
           <select value={matterId} onChange={(e) => setMatterId(e.target.value)} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">

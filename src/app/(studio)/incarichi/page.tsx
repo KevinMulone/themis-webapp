@@ -96,6 +96,7 @@ export default function IncarichiPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-6">
+        <p className="module-eyebrow">Flusso di lavoro</p>
         <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">
           {tuttiLoStudio ? 'Incarichi dello studio' : 'I miei incarichi'}
         </h1>
@@ -147,7 +148,7 @@ export default function IncarichiPage() {
         )}
       </div>
 
-      <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04]">
+      <div className="module-panel overflow-hidden rounded-[26px] bg-white/90 ring-1 ring-black/[0.04]">
         {caricando ? (
           <p className="p-6 text-sm text-neutral-500">Caricamento...</p>
         ) : visibili.length === 0 ? (

@@ -120,7 +120,8 @@ const SEZIONI: Sezione[] = [
 export default function DomandeFrequentiPage() {
   return (
     <div className="mx-auto max-w-4xl p-6">
-      <h1 className="mb-1 text-[24px] font-semibold tracking-tight text-neutral-900">Domande frequenti</h1>
+      <p className="module-eyebrow">Centro assistenza</p>
+      <h1 className="mb-2 text-[24px] font-semibold tracking-tight text-neutral-900">Domande frequenti</h1>
       <p className="mb-6 text-sm text-neutral-500">Come si usa Themis, area per area.</p>
 
       <div className="mb-6 flex items-center justify-between rounded-[24px] bg-white ring-1 ring-black/[0.04] p-5">

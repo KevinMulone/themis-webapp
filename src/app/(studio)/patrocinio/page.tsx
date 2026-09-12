@@ -68,7 +68,8 @@ export default function PatrocinioPage() {
   }
 
   return (
-    <div>
+    <div className="mx-auto max-w-7xl">
+      <p className="module-eyebrow">Monitoraggio liquidazioni</p>
       <h1 className="mb-1 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Patrocinio a spese dello Stato</h1>
       <p className="mb-6 text-xs text-neutral-500">
         Tutte le pratiche con pagamento a carico dello Stato, con lo stato di avanzamento di ciascuna.
@@ -81,7 +82,7 @@ export default function PatrocinioPage() {
           Nessuna pratica con metodo di pagamento "Gratuito patrocinio".
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-black/[0.04]">
+        <div className="module-panel overflow-x-auto rounded-[26px] bg-white/90 ring-1 ring-black/[0.04]">
           <table className="w-full min-w-[720px] text-sm">
             <thead className="bg-neutral-50 text-left text-xs uppercase text-neutral-500">
               <tr>
