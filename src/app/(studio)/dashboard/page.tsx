@@ -35,12 +35,18 @@ function primoCliente(c: ClienteRef | ClienteRef[] | null): ClienteRef | null {
  * nel codice.
  */
 const TINTE = {
-  rosa: 'bg-rose-50 text-rose-500',
-  ambra: 'bg-amber-50 text-amber-500',
-  viola: 'bg-violet-50 text-violet-500',
-  verde: 'bg-emerald-50 text-emerald-500',
-  blu: 'bg-sky-50 text-sky-500',
-  bordeaux: 'bg-bordeaux-50 text-bordeaux-600',
+  rosa: 'bg-rose-50 text-rose-500 ring-rose-100',
+  ambra: 'bg-amber-50 text-amber-500 ring-amber-100',
+  viola: 'bg-violet-50 text-violet-500 ring-violet-100',
+  verde: 'bg-emerald-50 text-emerald-500 ring-emerald-100',
+  blu: 'bg-sky-50 text-sky-500 ring-sky-100',
+  bordeaux: 'bg-bordeaux-50 text-bordeaux-600 ring-bordeaux-100',
+} as const;
+
+const ACCENTI = {
+  rosa: 'from-rose-400/70 to-rose-200/20', ambra: 'from-amber-400/70 to-amber-200/20',
+  viola: 'from-violet-400/70 to-violet-200/20', verde: 'from-emerald-400/70 to-emerald-200/20',
+  blu: 'from-sky-400/70 to-sky-200/20', bordeaux: 'from-bordeaux-500/80 to-bordeaux-200/20',
 } as const;
 
 /**
@@ -60,18 +66,21 @@ function Tessera({ href, icona, tinta, valore, titolo, sottotitolo, allerta = fa
     <HoverLift tilt className="h-full">
     <Link
       href={href}
-      className="group flex h-full flex-col rounded-[22px] bg-white p-5 ring-1 ring-black/[0.04]"
+      className="metric-card group relative flex h-full min-h-[190px] flex-col overflow-hidden rounded-[26px] bg-white/90 p-5 ring-1 ring-black/[0.045] backdrop-blur-sm"
     >
-      <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-xl ${TINTE[tinta]}`}>
+      <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${ACCENTI[tinta]}`} aria-hidden="true" />
+      <div className={`mb-5 flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ${TINTE[tinta]} transition-transform duration-500 group-hover:scale-110 group-hover:rotate-[-3deg]`}>
         <Icon nome={icona} className="h-5 w-5" />
       </div>
-      <div className={`text-3xl font-bold ${allerta ? 'text-amber-600' : 'text-neutral-900'}`}>
+      <div className={`text-[34px] font-semibold leading-none tracking-[-.04em] ${allerta ? 'text-bordeaux-700' : 'text-neutral-950'}`}>
         {valore}
       </div>
-      <div className="mt-1 text-sm font-medium text-neutral-700">{titolo}</div>
+      <div className="mt-2 text-sm font-semibold leading-tight text-neutral-700">{titolo}</div>
       <div className="mt-auto flex items-end justify-between gap-2 pt-2">
         <span className="text-xs text-neutral-400">{sottotitolo}</span>
-        <Icon nome="freccia" className="h-4 w-4 text-neutral-300 group-hover:text-bordeaux-600" />
+        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-neutral-50 transition-all group-hover:translate-x-0.5 group-hover:bg-bordeaux-50">
+          <Icon nome="freccia" className="h-3.5 w-3.5 text-neutral-300 group-hover:text-bordeaux-600" />
+        </span>
       </div>
     </Link>
     </HoverLift>
@@ -83,14 +92,14 @@ function TestataSezione({ icona, titolo, href, azione }: {
   icona: NomeIcona; titolo: string; href: string; azione: string;
 }) {
   return (
-    <div className="mb-4 flex items-center justify-between gap-3">
-      <h2 className="flex items-center gap-2 font-semibold text-neutral-900">
-        <Icon nome={icona} className="h-[18px] w-[18px] text-bordeaux-600" />
+    <div className="mb-5 flex items-center justify-between gap-3">
+      <h2 className="flex items-center gap-3 text-lg font-semibold tracking-[-.02em] text-neutral-900">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-bordeaux-50 text-bordeaux-600"><Icon nome={icona} className="h-[17px] w-[17px]" /></span>
         {titolo}
       </h2>
       <Link
         href={href}
-        className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-200 hover:text-bordeaux-700"
+        className="premi rounded-full bg-neutral-50 px-3.5 py-2 text-xs font-medium text-neutral-600 ring-1 ring-black/[0.04] transition-colors hover:bg-bordeaux-50 hover:text-bordeaux-700"
       >
         {azione}
       </Link>
@@ -103,9 +112,9 @@ function AzioneRapida({ href, icona, testo }: { href: string; icona: NomeIcona; 
   return (
     <Link
       href={href}
-      className="premi flex items-center gap-2.5 rounded-2xl bg-white px-4 py-3 text-sm font-medium text-neutral-700 ring-1 ring-black/[0.04] transition-colors hover:bg-neutral-50 hover:text-bordeaux-700"
+      className="premi group flex items-center gap-3 rounded-2xl bg-white/10 px-4 py-3.5 text-sm font-medium text-white/85 ring-1 ring-white/10 transition hover:bg-white/15 hover:text-white"
     >
-      <Icon nome={icona} className="h-[18px] w-[18px] text-bordeaux-600" />
+      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-gold-300 transition-transform group-hover:scale-105"><Icon nome={icona} className="h-[17px] w-[17px]" /></span>
       {testo}
     </Link>
   );
@@ -176,22 +185,23 @@ export default async function DashboardPage() {
   const onboardingCompletati = onboarding.filter((passo) => passo.fatto).length;
 
   return (
-    <div className="mx-auto max-w-7xl">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+    <div className="mx-auto max-w-[1480px]">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
         <div>
-          <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Dashboard</h1>
-          <p className="mt-1 text-[15px] text-neutral-500">
+          <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[.18em] text-bordeaux-700"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,.1)]" /> Studio operativo</div>
+          <h1 className="font-display text-[36px] font-semibold tracking-[-.045em] text-neutral-950 sm:text-[44px]">Dashboard</h1>
+          <p className="mt-1 text-[15px] text-neutral-500 sm:text-base">
             Bentornato, ecco cosa sta succedendo oggi.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <span className="flex items-center gap-2 rounded-full bg-white px-3.5 py-2 text-sm text-neutral-600 ring-1 ring-black/[0.04]">
+          <span className="flex items-center gap-2 rounded-full bg-white/80 px-4 py-2.5 text-sm text-neutral-600 shadow-sm ring-1 ring-black/[0.04] backdrop-blur-sm">
             <Icon nome="calendario" className="h-4 w-4 text-neutral-400" />
             {oggiEsteso}
           </span>
           <Link
             href="/pratiche"
-            className="premi flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-black"
+            className="shine-button premi flex items-center gap-2 rounded-full bg-bordeaux-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-bordeaux-800"
           >
             <Icon nome="piu" className="h-4 w-4" />
             Nuova pratica
@@ -228,7 +238,11 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
+      <section className="mb-3 flex items-end justify-between">
+        <div><h2 className="text-lg font-semibold tracking-[-.02em] text-neutral-900">Panoramica operativa</h2><p className="mt-0.5 text-xs text-neutral-400">I numeri che richiedono la tua attenzione.</p></div>
+        <span className="hidden items-center gap-1.5 text-xs text-neutral-400 sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 respiro" /> aggiornato ora</span>
+      </section>
+      <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 xl:grid-cols-6">
         <Tessera
           href="/clienti" icona="clienti" tinta="rosa"
           valore={clientsCount ?? 0} titolo="Clienti" sottotitolo="Totali"
@@ -258,8 +272,8 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-[24px] bg-white p-6 ring-1 ring-black/[0.04]">
+      <div className="mt-7 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div className="dashboard-panel rounded-[28px] bg-white/90 p-5 sm:p-6">
           <TestataSezione icona="orologio" titolo="Prossime scadenze" href="/calendario" azione="Vedi calendario" />
           {scadenze.length === 0 ? (
             <div className="py-10 text-center">
@@ -270,15 +284,15 @@ export default async function DashboardPage() {
           ) : (
             <ul className="divide-y divide-neutral-100 text-sm">
               {scadenze.map((ev) => (
-                <li key={ev.id} className="flex items-center justify-between gap-3 py-3">
+                <li key={ev.id} className="riga-reattiva -mx-2 flex items-center justify-between gap-3 rounded-xl px-2 py-3 hover:bg-neutral-50">
                   <div className="min-w-0">
-                    <div className="truncate font-medium text-neutral-800">{ev.titolo}</div>
+                    <div className="truncate font-semibold text-neutral-800">{ev.titolo}</div>
                     <div className="text-xs text-neutral-400">
                       {labelFromOptions(TIPI_EVENTO, ev.tipo)} · {formatDateIt(ev.data)}
                       {ev.ora_inizio && ` ${ev.ora_inizio.slice(0, 5)}`}
                     </div>
                   </div>
-                  <span className="shrink-0 whitespace-nowrap rounded-full bg-neutral-100 px-2.5 py-1 text-xs font-medium text-neutral-600">
+                  <span className="shrink-0 whitespace-nowrap rounded-full bg-bordeaux-50 px-2.5 py-1 text-xs font-medium text-bordeaux-700 ring-1 ring-bordeaux-100">
                     {giorniA(ev.data, oggi)}
                   </span>
                 </li>
@@ -287,7 +301,7 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="rounded-[24px] bg-white p-6 ring-1 ring-black/[0.04]">
+        <div className="dashboard-panel rounded-[28px] bg-white/90 p-5 sm:p-6">
           <TestataSezione icona="pratiche" titolo="Pratiche recenti" href="/pratiche" azione="Vedi tutte" />
           {pratiche.length === 0 ? (
             <div className="py-10 text-center">
@@ -300,9 +314,9 @@ export default async function DashboardPage() {
                 <li key={m.id}>
                   <Link
                     href={`/pratiche/${m.id}`}
-                    className="riga-reattiva group flex items-center gap-3 py-3 transition-colors hover:text-bordeaux-700"
+                    className="riga-reattiva group -mx-2 flex items-center gap-3 rounded-xl px-2 py-3 transition-colors hover:bg-neutral-50 hover:text-bordeaux-700"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-bordeaux-50 text-bordeaux-600">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bordeaux-50 text-bordeaux-600 ring-1 ring-bordeaux-100">
                       <Icon nome="documento" className="h-[18px] w-[18px]" />
                     </span>
                     <span className="min-w-0 flex-1">
@@ -325,8 +339,9 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-[24px] bg-white p-6 ring-1 ring-black/[0.04]">
-        <h2 className="mb-4 font-semibold tracking-tight text-neutral-900">Azioni rapide</h2>
+      <div className="relative mt-6 overflow-hidden rounded-[28px] bg-gradient-to-br from-bordeaux-800 to-bordeaux-950 p-6 text-white shadow-[0_28px_70px_-44px_rgba(69,18,36,.7)]">
+        <div className="pointer-events-none absolute -right-16 -top-24 h-64 w-64 rounded-full bg-gold-300/10 blur-2xl" />
+        <div className="relative mb-5 flex flex-wrap items-end justify-between gap-2"><div><p className="text-[10px] font-semibold uppercase tracking-[.18em] text-gold-300">Scorciatoie</p><h2 className="mt-1 text-lg font-semibold tracking-tight text-white">Cosa vuoi fare adesso?</h2></div><p className="text-xs text-white/45">Arriva alla funzione in un solo clic.</p></div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <AzioneRapida href="/clienti" icona="clienti" testo="Nuovo cliente" />
           <AzioneRapida href="/pratiche" icona="pratiche" testo="Nuova pratica" />

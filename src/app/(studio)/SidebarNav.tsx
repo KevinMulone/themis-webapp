@@ -111,11 +111,11 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
 
   const navContent = (
     <>
-      <div className="flex items-center gap-2.5 px-3 pb-5 pt-2">
-        <Image src="/icon.svg" alt="" width={28} height={28} className="rounded-[8px] shadow-sm" />
+      <div className="mx-2 mt-1 flex items-center gap-3 rounded-2xl bg-white/45 px-3 py-3 ring-1 ring-white/70">
+        <Image src="/icon.svg" alt="" width={34} height={34} className="rounded-[10px] shadow-[0_8px_20px_-12px_rgba(69,18,36,.8)]" />
         <div className="min-w-0 flex-1">
-          <h1 className="text-[14px] font-semibold tracking-tight text-neutral-900">Themis</h1>
-          <p className="truncate text-[11px] text-neutral-500">{nomeStudio}</p>
+          <h1 className="text-[15px] font-bold tracking-[-.025em] text-neutral-950">Themis</h1>
+          <p className="mt-0.5 truncate text-[11px] text-neutral-500">{nomeStudio}</p>
         </div>
         <NotificheCampanella />
       </div>
@@ -123,17 +123,17 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
       <button
         type="button"
         onClick={() => setRicercaAperta(true)}
-        className="mx-2 mb-4 flex items-center gap-2 rounded-xl bg-white/70 px-3 py-2.5 text-left text-xs text-neutral-500 ring-1 ring-black/[0.05] transition hover:bg-white"
+        className="group mx-2 mb-5 mt-3 flex items-center gap-2.5 rounded-2xl bg-white/75 px-3 py-3 text-left text-xs text-neutral-500 shadow-[0_12px_30px_-25px_rgba(0,0,0,.35)] ring-1 ring-black/[0.045] transition hover:bg-white"
       >
-        <Icon nome="cerca" className="h-4 w-4" />
+        <Icon nome="cerca" className="h-4 w-4 transition group-hover:text-bordeaux-600" />
         <span className="flex-1">Cerca nello studio</span>
         <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-[10px] text-neutral-400">⌘K</kbd>
       </button>
 
-      <nav className="flex flex-1 flex-col gap-4 overflow-y-auto px-2 pb-3">
+      <nav className="sidebar-scroll flex flex-1 flex-col gap-5 overflow-y-auto px-2 pb-3">
         {sezioni.map((sezione, idx) => (
           <div key={`${sezione.titolo}-${idx}`}>
-            <p className="px-2.5 pb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+            <p className="px-3 pb-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-neutral-400">
               {sezione.titolo}
             </p>
             <div className="flex flex-col gap-px">
@@ -145,16 +145,17 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
                     href={item.href}
                     onClick={() => setOpen(false)}
                     aria-current={attiva ? 'page' : undefined}
-                    className={`premi flex items-center gap-2.5 rounded-[10px] px-2.5 py-[7px] text-[13px] tracking-tight ${
+                    className={`premi group relative flex items-center gap-2.5 overflow-hidden rounded-xl px-3 py-2 text-[13px] tracking-tight transition ${
                       attiva
-                        ? 'bg-white font-medium text-neutral-900 shadow-[0_1px_2px_rgba(0,0,0,.06)] ring-1 ring-black/[0.04]'
-                        : 'text-neutral-600 hover:bg-white/60'
+                        ? 'bg-white font-semibold text-neutral-950 shadow-[0_10px_28px_-22px_rgba(69,18,36,.45)] ring-1 ring-black/[0.045]'
+                        : 'text-neutral-600 hover:bg-white/55 hover:text-neutral-900'
                     }`}
                   >
+                    {attiva && <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-bordeaux-600" aria-hidden="true" />}
                     {ICONE[item.href] && (
                       <Icon
                         nome={ICONE[item.href]}
-                        className={`h-4 w-4 shrink-0 ${attiva ? 'text-bordeaux-700' : 'text-neutral-400'}`}
+                        className={`h-4 w-4 shrink-0 transition-transform duration-300 group-hover:scale-110 ${attiva ? 'text-bordeaux-700' : 'text-neutral-400'}`}
                       />
                     )}
                     <span className="flex-1 truncate">{item.label}</span>
@@ -180,7 +181,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
           <Link
             href="/impostazioni"
             onClick={() => setOpen(false)}
-            className="mb-2 block rounded-2xl bg-white/70 p-3 ring-1 ring-black/[0.04]"
+            className="rialzo mb-2 block rounded-2xl bg-gradient-to-br from-white/90 to-gold-50/50 p-3.5 shadow-[0_14px_32px_-26px_rgba(69,18,36,.3)] ring-1 ring-black/[0.04]"
           >
             <div className="flex items-center gap-2 text-[12px] font-medium text-neutral-800">
               <Icon nome="abbonamento" className="h-3.5 w-3.5 text-gold-600" />
@@ -190,7 +191,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
           </Link>
         )}
         <LogoutButton />
-        <p className="pt-3 text-center text-[10px] text-neutral-400">Versione beta</p>
+        <p className="pt-3 text-center text-[9px] font-medium uppercase tracking-[.14em] text-neutral-400">Themis · Versione beta</p>
       </div>
     </>
   );
@@ -222,13 +223,13 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/25 backdrop-blur-[2px]" onClick={() => setOpen(false)} aria-hidden="true" />
-          <aside className="vetro absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col border-r border-black/[0.06] py-2">
+          <aside className="vetro absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col border-r border-white/70 py-2 shadow-2xl">
             {navContent}
           </aside>
         </div>
       )}
 
-      <aside className="hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:flex-shrink-0 lg:flex-col lg:border-r lg:border-black/[0.05] lg:bg-transparent lg:py-2">
+      <aside className="vetro hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[276px] lg:flex-shrink-0 lg:flex-col lg:border-r lg:border-white/70 lg:py-2 lg:shadow-[16px_0_55px_-48px_rgba(45,12,24,.38)]">
         {navContent}
       </aside>
 
@@ -238,7 +239,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
             role="dialog"
             aria-modal="true"
             aria-label="Ricerca globale"
-            className="w-full max-w-2xl overflow-hidden rounded-[24px] bg-white shadow-2xl ring-1 ring-black/10"
+            className="w-full max-w-2xl overflow-hidden rounded-[28px] bg-white/95 shadow-[0_40px_100px_-45px_rgba(0,0,0,.65)] ring-1 ring-black/10 backdrop-blur-xl"
             onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="flex items-center gap-3 border-b border-neutral-100 px-5 py-4">
