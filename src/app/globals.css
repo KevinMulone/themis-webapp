@@ -82,6 +82,87 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+*:focus-visible {
+  outline: 3px solid rgba(107, 29, 57, .22);
+  outline-offset: 3px;
+}
+
+.landing-hero {
+  background:
+    linear-gradient(rgba(255,255,255,.82), rgba(255,255,255,.96)),
+    radial-gradient(circle at 50% 0%, rgba(243,220,142,.42), transparent 42%),
+    #fff;
+}
+
+.landing-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: .34;
+  background-image: linear-gradient(rgba(107,29,57,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(107,29,57,.045) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent 72%);
+}
+
+.hero-gradient-text {
+  background: linear-gradient(100deg, #6b1d39 8%, #a5741f 52%, #451224 92%);
+  background-size: 180% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-shift 8s var(--dolce) infinite alternate;
+}
+
+.ambient-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(4px);
+  pointer-events: none;
+  opacity: .6;
+}
+.ambient-orb-one { width: 34rem; height: 34rem; left: -18rem; top: 18rem; background: radial-gradient(circle, rgba(107,29,57,.13), transparent 68%); }
+.ambient-orb-two { width: 32rem; height: 32rem; right: -15rem; top: 6rem; background: radial-gradient(circle, rgba(224,179,74,.16), transparent 68%); }
+
+.hero-product {
+  overflow: hidden;
+  border-radius: 30px;
+  background: linear-gradient(145deg, #32101e, #14080d 76%);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 55px 120px -55px rgba(69,18,36,.72), 0 2px 0 rgba(255,255,255,.12) inset;
+  text-align: left;
+  transform: perspective(1400px) rotateX(1.4deg);
+  transform-origin: center bottom;
+}
+
+.product-window {
+  border: 1px solid rgba(255,255,255,.8);
+  outline: 1px solid rgba(0,0,0,.055);
+  box-shadow: 0 40px 90px -46px rgba(45,12,24,.42), 0 1px 0 white inset;
+}
+
+.shine-button {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 24px -14px rgba(107,29,57,.75), 0 1px 0 rgba(255,255,255,.22) inset;
+}
+.shine-button::after {
+  content: '';
+  position: absolute;
+  inset: -60% auto -60% -30%;
+  width: 22%;
+  transform: rotate(20deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.34), transparent);
+  animation: button-shine 5s ease-in-out infinite;
+}
+
+.app-shell {
+  background:
+    radial-gradient(48rem 30rem at 10% -6%, rgba(107,29,57,.075), transparent 68%),
+    radial-gradient(42rem 26rem at 100% 8%, rgba(201,147,42,.07), transparent 70%),
+    #f5f5f7;
+}
+
 h1 { letter-spacing: -0.03em; }
 h2 { letter-spacing: -0.024em; }
 h3, .font-display { letter-spacing: -0.02em; }
@@ -108,7 +189,7 @@ h3, .font-display { letter-spacing: -0.02em; }
   background: #fff;
   border: 1px solid var(--hairline);
   border-radius: 24px;
-  box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 18px 40px -28px rgba(0,0,0,.18);
+  box-shadow: 0 1px 0 rgba(255,255,255,.8) inset, 0 22px 55px -38px rgba(45,12,24,.24);
 }
 
 .campo {
@@ -207,6 +288,9 @@ h3, .font-display { letter-spacing: -0.02em; }
   100% { opacity: 0; transform: translateY(-8px); filter: blur(6px); }
 }
 
+@keyframes gradient-shift { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }
+@keyframes button-shine { 0%, 72% { left: -35%; } 100% { left: 125%; } }
+
 .fluttua { animation: fluttua 6s var(--dolce) infinite; }
 .nastro { animation: nastro 32s linear infinite; }
 .pannello {
@@ -236,7 +320,7 @@ h3, .font-display { letter-spacing: -0.02em; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .entra, .piano, .traccia, .respiro, .conta, .fluttua, .nastro {
+  .entra, .piano, .traccia, .respiro, .conta, .fluttua, .nastro, .hero-gradient-text, .shine-button::after {
     animation: none;
     opacity: 1;
     transform: none;
@@ -244,4 +328,5 @@ h3, .font-display { letter-spacing: -0.02em; }
   }
   .rialzo, .premi, .riga-reattiva { transition: none; }
   .riga-reattiva:active { transform: none; }
+  .hero-product { transform: none; }
 }

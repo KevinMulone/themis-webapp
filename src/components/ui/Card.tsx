@@ -8,7 +8,7 @@
 export function Card({ className = '', children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`mb-4 rounded-2xl bg-neutral-50 p-6 ${className}`.trim()}
+      className={`mb-4 rounded-3xl border border-white/80 bg-white/90 p-6 shadow-[0_22px_55px_-40px_rgba(45,12,24,.28)] ring-1 ring-black/[0.035] backdrop-blur-sm ${className}`.trim()}
       {...props}
     >
       {children}
