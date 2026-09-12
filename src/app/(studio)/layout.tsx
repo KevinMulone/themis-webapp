@@ -98,7 +98,7 @@ export default async function StudioLayout({ children }: { children: React.React
           nomeStudio={ctx.nomeStudio ?? ''}
           abbonamentoLabel={giorniRimanenti(ctx.subscriptionExpiresAt)}
         />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-8 xl:p-10">
+        <main className="studio-page relative flex-1 overflow-y-auto p-4 lg:p-8 xl:p-10">
           <SincronizzazionePec />
           {children}
         </main>

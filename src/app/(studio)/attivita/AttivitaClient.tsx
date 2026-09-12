@@ -133,7 +133,8 @@ export default function AttivitaClient() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="mb-1 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Registro attività</h1>
+      <p className="module-eyebrow">Controllo dello studio</p>
+      <h1 className="mb-2 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Registro attività</h1>
       <p className="mb-6 text-sm text-neutral-500">
         Tutto ciò che accade nello studio, in ordine di tempo. Lo scrive il database, non
         l&apos;applicazione: nessuno può modificarlo.

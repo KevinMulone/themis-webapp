@@ -376,19 +376,20 @@ export default function ClientiPage() {
     <div className="mx-auto max-w-7xl">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
+          <p className="module-eyebrow">Anagrafiche</p>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Clienti</h1>
           <p className="mt-1 text-sm text-neutral-500">Gestisci e consulta tutti i tuoi clienti.</p>
         </div>
         <button
           onClick={() => setEditing({ ...EMPTY })}
-          className="flex items-center gap-2 premi rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-black"
+          className="shine-button flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-bordeaux-800"
         >
           <Icon nome="piu" className="h-4 w-4" />
           Nuovo cliente
         </button>
       </div>
 
-      <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-4">
+      <div className="module-toolbar mb-5 rounded-[26px] bg-white/90 p-4 ring-1 ring-black/[0.04]">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative min-w-60 flex-1">
             <Icon nome="clienti" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
@@ -516,7 +517,7 @@ export default function ClientiPage() {
           )}
         </div>
       ) : (
-        <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04]">
+        <div className="module-panel overflow-hidden rounded-[26px] bg-white/90 ring-1 ring-black/[0.04]">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[880px] text-sm">
               <thead className="border-b border-neutral-100 text-left">

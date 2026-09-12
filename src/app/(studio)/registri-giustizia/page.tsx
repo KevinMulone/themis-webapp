@@ -55,13 +55,14 @@ export default function RegistriGiustiziaPage() {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-6">
+        <p className="module-eyebrow">Consultazione registri</p>
         <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Giustizia Civile</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Trova rapidamente il R.G. di una pratica per verificarne lo stato sul portale del Ministero.
         </p>
       </div>
 
-      <div className="mb-4 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-4">
+      <div className="module-toolbar mb-5 rounded-[26px] bg-white/90 p-4 ring-1 ring-black/[0.04]">
         <div className="relative">
           <Icon nome="cerca" className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-neutral-400" />
           <input
@@ -90,7 +91,7 @@ export default function RegistriGiustiziaPage() {
       ) : (
         <ul className="flex flex-col gap-3">
           {filtrate.map((m) => (
-            <li key={m.id} className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-4">
+            <li key={m.id} className="module-panel rialzo rounded-[24px] bg-white/90 p-4 ring-1 ring-black/[0.04]">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="min-w-0">
                   <Link href={`/pratiche/${m.id}`} className="font-medium text-neutral-900 hover:text-bordeaux-700">

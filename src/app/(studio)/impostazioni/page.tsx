@@ -729,6 +729,7 @@ export default function ImpostazioniPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
+      <p className="module-eyebrow">Configurazione</p>
       <h1 className="mb-6 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Impostazioni</h1>
 
       <div className="mb-4 flex items-center justify-between rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">

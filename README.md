@@ -15,7 +15,9 @@ L'interfaccia usa un sistema visivo unico bordeaux/oro: landing con anteprima
 interattiva di dashboard, fascicolo e assistente; navigazione in vetro,
 tipografia ad alta gerarchia, superfici morbide e micro-interazioni rispettose
 di `prefers-reduced-motion`. Le stesse regole sono condivise con l'area studio
-per card, campi, pulsanti e sfondo applicativo.
+per card, campi, pulsanti e sfondo applicativo. Clienti, pratiche, dettaglio
+fascicolo, Themis, incarichi, calendario, PEC e strumenti usano inoltre
+intestazioni, toolbar, tabelle, stati vuoti e pannelli coerenti fra loro.
 
 - **Produzione:** https://themis-webapp-6ccd.vercel.app
 - **Repository:** https://github.com/KevinMulone/themis-webapp

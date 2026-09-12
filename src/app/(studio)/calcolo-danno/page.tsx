@@ -66,7 +66,8 @@ export default function CalcoloDannoPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <h1 className="mb-1 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Calcolo del danno biologico</h1>
+      <p className="module-eyebrow">Strumenti di calcolo</p>
+      <h1 className="mb-2 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Calcolo del danno biologico</h1>
       <p className="mb-4 text-xs text-neutral-500">
         Le tabelle di legge (art. 139 e Tabella Unica Nazionale ex art. 138 Cod. Ass.) sono vincolanti per i
         sinistri da circolazione di veicoli a motore e natanti. Le Tabelle di Milano restano il riferimento per i
