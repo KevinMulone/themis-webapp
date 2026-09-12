@@ -8,6 +8,7 @@ import { leggiIcs, type ImpegnoImportato as ImpegnoLetto } from '@/lib/calendari
 // WhatsApp temporaneamente nascosto dall'interfaccia (funzionalità instabile).
 // import ImpostazioniWhatsapp from './ImpostazioniWhatsapp';
 import ImpostazioniElenco from './ImpostazioniElenco';
+import MfaSetup from './MfaSetup';
 
 type Template = { id: string; nome: string; categoria: string | null; descrizione: string | null; studio_id: string | null };
 type Settings = { font_family: string; font_size_pt: number; line_spacing: number };
@@ -728,9 +729,17 @@ export default function ImpostazioniPage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="mx-auto max-w-5xl">
       <p className="module-eyebrow">Configurazione</p>
       <h1 className="mb-6 font-display text-[28px] font-semibold tracking-tight text-neutral-900">Impostazioni</h1>
+
+      <nav aria-label="Sezioni impostazioni" className="sticky top-3 z-20 mb-5 flex gap-1 overflow-x-auto rounded-2xl border border-white/70 bg-white/90 p-1.5 shadow-lg shadow-black/[0.04] backdrop-blur-xl">
+        {[
+          ['sicurezza', 'Sicurezza'], ['abbonamento', 'Abbonamento'], ['documenti', 'Documenti'],
+          ['deposito', 'Deposito'], ['portale', 'Portale'], ['calendario', 'Calendario'],
+          ['pec', 'PEC'], ['modelli', 'Modelli'],
+        ].map(([id, label]) => <a key={id} href={`#${id}`} className="shrink-0 rounded-xl px-3.5 py-2 text-xs font-semibold text-neutral-600 hover:bg-bordeaux-50 hover:text-bordeaux-700">{label}</a>)}
+      </nav>
 
       <div className="mb-4 flex items-center justify-between rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <div>
@@ -746,7 +755,7 @@ export default function ImpostazioniPage() {
         </a>
       </div>
 
-      <form onSubmit={handleChangePassword} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <form id="sicurezza" onSubmit={handleChangePassword} className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Cambia password</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -758,6 +767,16 @@ export default function ImpostazioniPage() {
             <input name="confirm_password" type="password" autoComplete="new-password" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
           </div>
         </div>
+        {ruolo === 'titolare' && (
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 pt-4">
+            <div>
+              <p className="text-sm font-semibold text-neutral-800">Backup dei dati dello studio</p>
+              <p className="mt-0.5 max-w-xl text-xs text-neutral-500">Scarica anagrafiche, pratiche, calendario, incarichi e registri in un archivio ZIP. I file cifrati e le credenziali non vengono esportati.</p>
+            </div>
+            <a href="/api/studio/export" download className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm font-semibold text-neutral-700 hover:bg-neutral-200">Esporta backup</a>
+          </div>
+        )}
+        <MfaSetup />
         {passwordMsg && (
           <p className={`mt-3 text-sm ${passwordMsg.type === 'ok' ? 'text-green-700' : 'text-red-600'}`}>{passwordMsg.text}</p>
         )}
@@ -769,7 +788,7 @@ export default function ImpostazioniPage() {
       </form>
 
       {ruolo === 'titolare' && (
-      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <div id="abbonamento" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Abbonamento</h2>
         {abbonamento?.stripe_customer_id ? (
           <>
@@ -827,7 +846,7 @@ export default function ImpostazioniPage() {
 
       {ruolo === 'titolare' && <ImpostazioniElenco />}
 
-      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <div id="documenti" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Intestazione documenti</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Immagine (logo e dati dello studio) usata automaticamente nell&apos;intestazione di ogni documento generato.
@@ -877,7 +896,7 @@ export default function ImpostazioniPage() {
         </div>
       </form>
 
-      <form onSubmit={handleSaveAvvocato} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <form id="deposito" onSubmit={handleSaveAvvocato} className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-1 font-semibold text-neutral-900">Dati del difensore per il deposito</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Servono al prontuario di deposito nella pratica — la schermata &quot;Avvocato&quot; che SLpct chiede
@@ -920,7 +939,7 @@ export default function ImpostazioniPage() {
         </div>
       </form>
 
-      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <div id="portale" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Orari di disponibilità per il portale clienti</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Gli assistiti potranno prenotare un appuntamento online solo in questi orari.
@@ -961,7 +980,7 @@ export default function ImpostazioniPage() {
         </div>
       </div>
 
-      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <div id="calendario" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-1 font-semibold text-neutral-900">Google Calendar</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Themis resta il calendario vero — colori, collegamento alla pratica, proposte dalle PEC continuano
@@ -1182,15 +1201,15 @@ export default function ImpostazioniPage() {
               </div>
               {googleImportoMsg && <p className="mt-2 text-xs text-neutral-500">{googleImportoMsg}</p>}
               <p className="mt-2 text-[11px] text-neutral-400">
-                Ogni impegno importato arriva come tipo &quot;Attività&quot;: Google non distingue un&apos;udienza
-                da un appuntamento, quella scelta resta tua.
+                Themis riconosce automaticamente udienze, termini e appuntamenti quando il titolo è chiaro;
+                gli eventi dubbi restano &quot;Attività&quot; e possono essere riclassificati.
               </p>
             </div>
           </div>
         )}
       </div>
 
-      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <div id="pec" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold text-neutral-900">Caselle PEC</h2>
           {pecAccounts.length > 0 && (
@@ -1402,7 +1421,7 @@ export default function ImpostazioniPage() {
         </form>
       </div>
 
-      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <div id="modelli" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Modelli disponibili ({templates.length})</h2>
         <p className="mb-3 text-xs text-neutral-500">
           I modelli &quot;di sistema&quot; sono forniti da Themis e uguali per tutti gli studi. Puoi caricarne di tuoi:

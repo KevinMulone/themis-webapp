@@ -37,26 +37,35 @@ export async function GET(request: Request) {
   const like = `%${q}%`;
   const supabase = await createClient();
 
-  const [clienti, pratiche, documenti, pec] = await Promise.all([
-    supabase.from('clients')
-      .select('id, tipo_soggetto, nome, cognome, ragione_sociale, codice_fiscale, partita_iva')
-      .eq('studio_id', ctx.studioId).eq('archiviato', false)
-      .or(`nome.ilike.${like},cognome.ilike.${like},ragione_sociale.ilike.${like},codice_fiscale.ilike.${like},partita_iva.ilike.${like}`)
-      .limit(6),
+  // Prima si cercano i clienti: i loro id permettono di trovare anche le
+  // pratiche collegate quando l'utente digita il nome dell'assistito.
+  // PostgREST non consente un OR affidabile fra colonne della tabella e
+  // colonne della relazione annidata nella stessa query.
+  const clienti = await supabase.from('clients')
+    .select('id, tipo_soggetto, nome, cognome, ragione_sociale, codice_fiscale, partita_iva')
+    .eq('studio_id', ctx.studioId).eq('archiviato', false)
+    .or(`nome.ilike.${like},cognome.ilike.${like},ragione_sociale.ilike.${like},codice_fiscale.ilike.${like},partita_iva.ilike.${like}`)
+    .limit(8);
+  const clientIds = (clienti.data ?? []).map((c) => c.id);
+  const filtroPratiche = [
+    `rg_numero.ilike.${like}`,
+    `numero_riferimento.ilike.${like}`,
+    `controparte_nome.ilike.${like}`,
+    ...(clientIds.length ? [`client_id.in.(${clientIds.join(',')})`] : []),
+  ].join(',');
+
+  const [pratiche, documenti, pec] = await Promise.all([
     supabase.from('matters')
       .select('id, tipo_pratica, rg_numero, rg_anno, numero_riferimento, controparte_nome, clients(tipo_soggetto, nome, cognome, ragione_sociale)')
       .eq('studio_id', ctx.studioId).neq('stato', 'archiviata')
-      .or(`rg_numero.ilike.${like},numero_riferimento.ilike.${like},controparte_nome.ilike.${like}`)
-      .limit(6),
+      .or(filtroPratiche).limit(8),
     supabase.from('documenti')
       .select('id, nome_file, matter_id')
-      .eq('studio_id', ctx.studioId)
-      .ilike('nome_file', like).limit(6),
+      .eq('studio_id', ctx.studioId).ilike('nome_file', like).limit(8),
     supabase.from('pec_messaggi')
       .select('id, oggetto, mittente, matter_id')
-      .eq('studio_id', ctx.studioId)
-      .or(`oggetto.ilike.${like},mittente.ilike.${like}`)
-      .limit(6),
+      .eq('studio_id', ctx.studioId).or(`oggetto.ilike.${like},mittente.ilike.${like}`)
+      .limit(8),
   ]);
 
   const risultati: RisultatoRicerca[] = [];

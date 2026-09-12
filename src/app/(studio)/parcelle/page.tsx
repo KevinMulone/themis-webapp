@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { TABELLE, calcolaCompensi } from '@/lib/parametriForensi';
+import SalvaCalcoloPratica from '@/components/SalvaCalcoloPratica';
 
 function euro(n: number): string {
   return n.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
@@ -176,6 +177,11 @@ export default function ParcellePage() {
             Valore stimato sui parametri medi di legge, non vincolante: il giudice (o l&apos;accordo con il
             cliente) può discostarsene entro i limiti di legge. Non sostituisce la nota spese né la fattura.
           </p>
+          <SalvaCalcoloPratica
+            tipo="parcella" titolo={`Parcella · ${tabella.nome}`}
+            input={{ tabellaId, valore, fasiSelezionate, variazionePct, includiRimborsoForfettario, includiCpa, includiIva }}
+            risultato={risultato}
+          />
         </div>
       </div>
     </div>

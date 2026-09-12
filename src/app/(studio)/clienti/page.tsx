@@ -9,6 +9,7 @@ import { TIPI_SOGGETTO, TIPI_PRATICA, labelFromOptions, clientLabel } from '@/li
 import { Icon, type NomeIcona } from '@/components/ui/Icon';
 import HoverLift from '@/components/motion/HoverLift';
 import { explodeNode } from '@/lib/motion/explode';
+import { normalizzaCodice, trovaPossibiliDuplicati, validaAnagrafica } from '@/lib/anagrafiche';
 
 type Client = {
   id: string;
@@ -102,6 +103,9 @@ export default function ClientiPage() {
   const [search, setSearch] = useState('');
   const [mostraArchiviati, setMostraArchiviati] = useState(false);
   const [editing, setEditing] = useState<Partial<Client> | null>(null);
+  const [saveError, setSaveError] = useState('');
+  const [conflitti, setConflitti] = useState<Client[]>([]);
+  const [confermaDuplicato, setConfermaDuplicato] = useState(false);
   const [loading, setLoading] = useState(true);
   const [inviteModal, setInviteModal] = useState<{
     client: Partial<Client>; email: string; link: string | null; error: string | null; copied: boolean;
@@ -195,6 +199,9 @@ export default function ClientiPage() {
 
   function openEdit(c: Partial<Client>) {
     setEditing(c);
+    setSaveError('');
+    setConflitti([]);
+    setConfermaDuplicato(false);
     setClientDocs([]);
     if (c.id) loadClientDocs(c.id);
   }
@@ -259,15 +266,37 @@ export default function ClientiPage() {
 
   async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setSaveError('');
     const form = new FormData(e.currentTarget);
     const payload: Record<string, unknown> = {};
-    form.forEach((value, key) => { payload[key] = value === '' ? null : value; });
-
-    if (editing?.id) {
-      await supabase.from('clients').update(payload).eq('id', editing.id);
-    } else {
-      await supabase.from('clients').insert({ ...payload, studio_id: studioId });
+    form.forEach((value, key) => { payload[key] = typeof value === 'string' && value.trim() === '' ? null : value; });
+    if (payload.codice_fiscale) payload.codice_fiscale = normalizzaCodice(payload.codice_fiscale);
+    if (payload.partita_iva) payload.partita_iva = normalizzaCodice(payload.partita_iva);
+    for (const campo of ['email', 'pec'] as const) {
+      if (payload[campo]) payload[campo] = String(payload[campo]).trim().toLowerCase();
     }
+
+    const candidato = { ...payload, id: editing?.id } as Partial<Client>;
+    const errori = validaAnagrafica(candidato);
+    if (errori.length) {
+      setSaveError(errori.map((errore) => errore.messaggio).join(' '));
+      return;
+    }
+
+    const possibili = trovaPossibiliDuplicati(candidato, clients) as Client[];
+    if (possibili.length && !confermaDuplicato) {
+      setConflitti(possibili);
+      setSaveError('Possibile duplicato o conflitto d’interessi: controlla le anagrafiche indicate prima di continuare.');
+      return;
+    }
+
+    let error = null;
+    if (editing?.id) {
+      ({ error } = await supabase.from('clients').update(payload).eq('id', editing.id));
+    } else {
+      ({ error } = await supabase.from('clients').insert({ ...payload, studio_id: studioId }));
+    }
+    if (error) { setSaveError(error.message); return; }
     setEditing(null);
     load();
   }
@@ -381,7 +410,7 @@ export default function ClientiPage() {
           <p className="mt-1 text-sm text-neutral-500">Gestisci e consulta tutti i tuoi clienti.</p>
         </div>
         <button
-          onClick={() => setEditing({ ...EMPTY })}
+          onClick={() => openEdit({ ...EMPTY })}
           className="shine-button flex items-center gap-2 premi rounded-full bg-bordeaux-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-bordeaux-800"
         >
           <Icon nome="piu" className="h-4 w-4" />
@@ -509,7 +538,7 @@ export default function ClientiPage() {
           </p>
           {!search && !filtroTipo && !mostraArchiviati && (
             <button
-              onClick={() => setEditing({ ...EMPTY })}
+              onClick={() => openEdit({ ...EMPTY })}
               className="mt-3 text-sm font-medium text-bordeaux-700 hover:underline"
             >
               Aggiungi il primo cliente
@@ -630,7 +659,7 @@ export default function ClientiPage() {
             <h2 className="mb-4 text-lg font-bold text-neutral-900">
               {editing.id ? 'Modifica cliente' : 'Nuovo cliente'}
             </h2>
-            <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-3" noValidate>
               <div className="col-span-2">
                 <label className="mb-1 block text-xs text-neutral-500">Tipo soggetto</label>
                 <select
@@ -644,16 +673,16 @@ export default function ClientiPage() {
               </div>
               {isPF ? (
                 <>
-                  <Field label="Nome" name="nome" defaultValue={editing.nome} />
-                  <Field label="Cognome" name="cognome" defaultValue={editing.cognome} />
-                  <Field label="Codice fiscale" name="codice_fiscale" defaultValue={editing.codice_fiscale} />
+                  <Field label="Nome" name="nome" defaultValue={editing.nome} required />
+                  <Field label="Cognome" name="cognome" defaultValue={editing.cognome} required />
+                  <Field label="Codice fiscale" name="codice_fiscale" defaultValue={editing.codice_fiscale} maxLength={16} autoCapitalize="characters" />
                   <Field label="Data di nascita" name="data_nascita" type="date" defaultValue={editing.data_nascita} />
                   <Field label="Luogo di nascita" name="luogo_nascita" defaultValue={editing.luogo_nascita} />
                 </>
               ) : (
                 <>
-                  <Field label="Ragione sociale" name="ragione_sociale" defaultValue={editing.ragione_sociale} full />
-                  <Field label="Partita IVA" name="partita_iva" defaultValue={editing.partita_iva} />
+                  <Field label="Ragione sociale" name="ragione_sociale" defaultValue={editing.ragione_sociale} full required />
+                  <Field label="Partita IVA" name="partita_iva" defaultValue={editing.partita_iva} inputMode="numeric" maxLength={11} />
                 </>
               )}
               <Field label="Indirizzo" name="indirizzo" defaultValue={editing.indirizzo} full />
@@ -661,9 +690,9 @@ export default function ClientiPage() {
                 key={editing.id ?? 'nuovo'}
                 citta={editing.citta} provincia={editing.provincia} cap={editing.cap}
               />
-              <Field label="Telefono" name="telefono" defaultValue={editing.telefono} />
-              <Field label="Email" name="email" defaultValue={editing.email} />
-              <Field label="PEC" name="pec" defaultValue={editing.pec} />
+              <Field label="Telefono" name="telefono" defaultValue={editing.telefono} type="tel" autoComplete="tel" />
+              <Field label="Email" name="email" defaultValue={editing.email} type="email" autoComplete="email" />
+              <Field label="PEC" name="pec" defaultValue={editing.pec} type="email" autoComplete="email" />
               <div className="col-span-2">
                 <label className="mb-1 block text-xs text-neutral-500">Note</label>
                 <textarea
@@ -672,6 +701,23 @@ export default function ClientiPage() {
                   className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
                 />
               </div>
+              {saveError && (
+                <div role="alert" className="col-span-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                  <p className="font-semibold">Controllo anagrafica</p>
+                  <p className="mt-1">{saveError}</p>
+                  {conflitti.length > 0 && (
+                    <>
+                      <ul className="mt-2 list-disc space-y-1 pl-5">
+                        {conflitti.map((c) => <li key={c.id}>{clientLabel(c)} · {c.codice_fiscale || c.partita_iva || c.email || c.pec || 'dati coincidenti'}</li>)}
+                      </ul>
+                      <label className="mt-3 flex items-start gap-2 text-xs">
+                        <input type="checkbox" checked={confermaDuplicato} onChange={(e) => setConfermaDuplicato(e.target.checked)} />
+                        Ho verificato identità e conflitto d’interessi; desidero salvare comunque.
+                      </label>
+                    </>
+                  )}
+                </div>
+              )}
               {editing.id && (
                 <div className="col-span-2 border-t border-neutral-200 pt-4">
                   <p className="mb-2 text-xs font-semibold text-neutral-500">
@@ -820,9 +866,9 @@ export default function ClientiPage() {
   );
 }
 
-function Field({ label, name, defaultValue, type = 'text', full = false }: {
+function Field({ label, name, defaultValue, type = 'text', full = false, ...inputProps }: {
   label: string; name: string; defaultValue?: string | null; type?: string; full?: boolean;
-}) {
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'name' | 'defaultValue' | 'type'>) {
   return (
     <div className={full ? 'col-span-2' : ''}>
       <label className="mb-1 block text-xs text-neutral-500">{label}</label>
@@ -830,6 +876,7 @@ function Field({ label, name, defaultValue, type = 'text', full = false }: {
         type={type}
         name={name}
         defaultValue={defaultValue ?? ''}
+        {...inputProps}
         className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
       />
     </div>

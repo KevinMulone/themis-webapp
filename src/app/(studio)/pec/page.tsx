@@ -274,7 +274,13 @@ export default function PecPage() {
         </Link>
       </div>
 
-      {accounts.length === 0 ? (
+      {loading ? (
+        <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-8" aria-live="polite">
+          <div className="h-5 w-48 animate-pulse rounded-full bg-neutral-100" />
+          <div className="mt-4 h-16 animate-pulse rounded-2xl bg-neutral-50" />
+          <p className="mt-3 text-sm text-neutral-500">Caricamento delle caselle e dei messaggi…</p>
+        </div>
+      ) : accounts.length === 0 ? (
         <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] py-16 text-center">
           <Icon nome="pec" className="mx-auto h-10 w-10 text-neutral-200" />
           <p className="mt-3 text-sm text-neutral-500">Nessuna casella PEC configurata.</p>
@@ -414,9 +420,7 @@ export default function PecPage() {
           </div>
 
           <div className="module-panel overflow-hidden rounded-[26px] bg-white/90 ring-1 ring-black/[0.04]">
-            {loading ? (
-              <p className="p-6 text-sm text-neutral-500">Caricamento...</p>
-            ) : filtrati.length === 0 ? (
+            {filtrati.length === 0 ? (
               <div className="py-16 text-center">
                 <Icon nome="pec" className="mx-auto h-10 w-10 text-neutral-200" />
                 <p className="mt-3 text-sm text-neutral-500">

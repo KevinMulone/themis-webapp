@@ -17,6 +17,8 @@ export default function AccediClient() {
   const [mostraPassword, setMostraPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [factorId, setFactorId] = useState('');
+  const [codiceMfa, setCodiceMfa] = useState('');
 
   const [modalitaRecupero, setModalitaRecupero] = useState(false);
   const [recuperoEmail, setRecuperoEmail] = useState('');
@@ -26,7 +28,26 @@ export default function AccediClient() {
   useEffect(() => {
     const remembered = localStorage.getItem(REMEMBER_KEY);
     if (remembered) setEmail(remembered);
+    const supabase = createClient();
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!data.session) return;
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const verificato = factors?.totp?.find((f) => f.status === 'verified');
+      if (verificato) setFactorId(verificato.id);
+    });
   }, []);
+
+  async function completaAccesso() {
+    const supabase = createClient();
+    const { data: contesto, error: contestoError } = await supabase.rpc('contesto_studio').maybeSingle();
+    if (contestoError) { setLoading(false); setError('Accesso riuscito, ma non riesco a caricare lo studio. Riprova tra un momento.'); return; }
+    const studio = contesto as { plan: string | null; subscription_status: string | null; subscription_expires_at: string | null } | null;
+    setLoading(false);
+    if (!studio || studio.plan === null) { router.push('/attiva'); router.refresh(); return; }
+    if (studio.subscription_status !== 'active') { setError('Abbonamento non attivo. Contatta lo studio per riattivarlo.'); return; }
+    if (studio.subscription_expires_at && studio.subscription_expires_at < oggiIso()) { setError(`Abbonamento scaduto il ${studio.subscription_expires_at}.`); return; }
+    router.push('/dashboard'); router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,35 +64,17 @@ export default function AccediClient() {
     if (rememberMe) localStorage.setItem(REMEMBER_KEY, email);
     else localStorage.removeItem(REMEMBER_KEY);
 
-    const { data: contesto, error: contestoError } = await supabase.rpc('contesto_studio').maybeSingle();
-    if (contestoError) {
-      setLoading(false);
-      setError('Accesso riuscito, ma non riesco a caricare lo studio. Riprova tra un momento.');
-      return;
-    }
-    const studio = contesto as {
-      plan: string | null;
-      subscription_status: string | null;
-      subscription_expires_at: string | null;
-    } | null;
+    const { data: factors } = await supabase.auth.mfa.listFactors();
+    const verificato = factors?.totp?.find((f) => f.status === 'verified');
+    if (verificato) { setFactorId(verificato.id); setLoading(false); return; }
+    await completaAccesso();
+  }
 
-    setLoading(false);
-
-    if (!studio || studio.plan === null) {
-      router.push('/attiva');
-      router.refresh();
-      return;
-    }
-    if (studio.subscription_status !== 'active') {
-      setError('Abbonamento non attivo. Contatta lo studio per riattivarlo.');
-      return;
-    }
-    if (studio.subscription_expires_at && studio.subscription_expires_at < oggiIso()) {
-      setError(`Abbonamento scaduto il ${studio.subscription_expires_at}.`);
-      return;
-    }
-    router.push('/dashboard');
-    router.refresh();
+  async function verificaMfa(e: React.FormEvent) {
+    e.preventDefault(); setLoading(true); setError('');
+    const { error } = await createClient().auth.mfa.challengeAndVerify({ factorId, code: codiceMfa });
+    if (error) { setLoading(false); setError('Codice non valido o scaduto.'); return; }
+    await completaAccesso();
   }
 
   function apriRecupero() {
@@ -128,6 +131,10 @@ export default function AccediClient() {
         </div>
       </div>
     );
+  }
+
+  if (factorId) {
+    return <div className="pagina-auth"><div className="scheda-auth entra"><BrandHero titolo="Verifica accesso"/><p className="mb-7 text-center text-[15px] text-neutral-500">Inserisci il codice della tua app di autenticazione.</p><form onSubmit={verificaMfa} className="flex flex-col gap-3"><input autoFocus value={codiceMfa} onChange={(e) => setCodiceMfa(e.target.value.replace(/\D/g, '').slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="Codice a 6 cifre" className="campo text-center tracking-[.3em]"/>{error && <p className="text-sm text-red-600">{error}</p>}<button disabled={loading || codiceMfa.length !== 6} className="premi mt-2 rounded-full bg-neutral-900 py-3 text-[15px] font-medium text-white disabled:opacity-50">{loading ? 'Verifica…' : 'Verifica e accedi'}</button></form></div></div>;
   }
 
   return (

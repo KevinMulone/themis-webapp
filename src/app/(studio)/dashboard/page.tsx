@@ -262,7 +262,7 @@ export default async function DashboardPage() {
         />
         <Tessera
           href="/pec" icona="pec" tinta="blu"
-          valore={pecCount ?? 0} titolo="Messaggi PEC" sottotitolo="Non letti"
+          valore={pecCount ?? 0} titolo="Messaggi PEC" sottotitolo="Non letti · tutti i periodi"
           allerta={(pecCount ?? 0) > 0}
         />
         <Tessera

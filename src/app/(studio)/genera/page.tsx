@@ -24,6 +24,7 @@ export default function GeneraPage() {
   const [result, setResult] = useState<{ documento_id: string; nome_file: string } | null>(null);
   const [error, setError] = useState('');
   const [difensori, setDifensori] = useState<string[]>([]);
+  const [mostraAnteprima, setMostraAnteprima] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -50,10 +51,17 @@ export default function GeneraPage() {
     })();
   }, [templateId]);
 
+  useEffect(() => { setMostraAnteprima(false); }, [matterId, templateId, manualValues, outputFilename]);
+
+  const obbligatoriMancanti = placeholders.filter((p) => p.obbligatorio && !manualValues[p.placeholder_key]?.trim());
+  const pronto = Boolean(matterId && templateId && outputFilename.trim() && obbligatoriMancanti.length === 0);
+  const praticaSelezionata = matters.find((m) => m.id === matterId);
+  const modelloSelezionato = templates.find((t) => t.id === templateId);
+
   async function handleGenerate() {
     setError('');
     setResult(null);
-    if (!matterId || !templateId) { setError('Seleziona una pratica e un modello'); return; }
+    if (!pronto) { setError('Completa pratica, modello, nome file e campi obbligatori.'); return; }
     setGenerating(true);
     const { data: { session } } = await supabase.auth.getSession();
     const res = await fetch('/api/generate', {
@@ -97,6 +105,7 @@ export default function GeneraPage() {
             className="mb-2 w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
           />
           <select value={templateId} onChange={(e) => setTemplateId(e.target.value)} size={8} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white">
+            <option value="" disabled>Seleziona un modello…</option>
             {templates
               .filter((t) => {
                 const q = templateSearch.trim().toLowerCase();
@@ -155,15 +164,33 @@ export default function GeneraPage() {
           <input value={outputFilename} onChange={(e) => setOutputFilename(e.target.value)} className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
         </div>
 
-        {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
+        {error && <p role="alert" className="mb-3 text-sm text-red-600">{error}</p>}
+
+        {mostraAnteprima && pronto && (
+          <div className="mb-4 rounded-2xl border border-bordeaux-100 bg-bordeaux-50/60 p-4 text-sm">
+            <p className="font-semibold text-bordeaux-900">Controllo prima della generazione</p>
+            <dl className="mt-3 grid grid-cols-1 gap-2 text-xs sm:grid-cols-2">
+              <div><dt className="text-neutral-500">Pratica</dt><dd className="font-medium text-neutral-800">{clientLabel(praticaSelezionata?.clients)} · {praticaSelezionata ? labelFromOptions(TIPI_PRATICA, praticaSelezionata.tipo_pratica) : ''}</dd></div>
+              <div><dt className="text-neutral-500">Modello</dt><dd className="font-medium text-neutral-800">{modelloSelezionato?.nome}</dd></div>
+              <div><dt className="text-neutral-500">Nome del file</dt><dd className="font-medium text-neutral-800">{outputFilename}</dd></div>
+              <div><dt className="text-neutral-500">Campi manuali</dt><dd className="font-medium text-neutral-800">{placeholders.length ? `${placeholders.length} controllati` : 'Nessuno'}</dd></div>
+            </dl>
+            <p className="mt-3 text-[11px] leading-relaxed text-neutral-600">Il documento verrà salvato nel fascicolo selezionato. Controlla sempre il testo finale prima della firma o del deposito.</p>
+          </div>
+        )}
 
         <button
-          onClick={handleGenerate}
-          disabled={generating}
+          onClick={() => mostraAnteprima ? handleGenerate() : setMostraAnteprima(true)}
+          disabled={generating || !pronto}
           className="w-full premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
         >
-          {generating ? 'Generazione...' : 'Genera'}
+          {generating ? 'Generazione...' : mostraAnteprima ? 'Conferma e genera' : 'Controlla e continua'}
         </button>
+        {!pronto && (
+          <p className="mt-2 text-center text-xs text-neutral-500">
+            {!matterId ? 'Seleziona una pratica.' : !templateId ? 'Seleziona un modello.' : obbligatoriMancanti.length ? `Completa ${obbligatoriMancanti.length} campi obbligatori.` : 'Inserisci il nome del file.'}
+          </p>
+        )}
 
         {result && (
           <div className="mt-4 rounded-xl bg-green-50 p-3 text-sm">

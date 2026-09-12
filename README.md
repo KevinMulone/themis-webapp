@@ -280,7 +280,11 @@ documenti e PEC, mantenendo l'isolamento RLS dello studio.
 **Clienti** — anagrafica persone fisiche e giuridiche, ricerca su
 nome/CF/P.IVA/email/telefono, filtri, ordinamento, paginazione, export CSV
 (con BOM UTF-8 per Excel), archiviazione morbida ed eliminazione definitiva,
-documenti generati per cliente, **invito al portale clienti**.
+documenti generati per cliente, **invito al portale clienti**. Codice
+fiscale e partita IVA vengono validati con la cifra di controllo ufficiale;
+al salvataggio, un controllo sui duplicati confronta CF/P.IVA/PEC/email/nome
+con le anagrafiche già presenti e chiede una conferma esplicita prima di
+salvare comunque (utile anche come primo controllo di conflitto d'interessi).
 
 **Pratiche** — elenco con ricerca multi-termine, filtri per stato e materia
 (11 tipi: ATP invalidità, sinistro, ricorso INPS, causa civile, successione,
@@ -292,20 +296,34 @@ riga dei dati sinistro.
 - dati pratica (stato, responsabile, controparte, compagnia, tribunale,
   sezione, R.G., giudice, date, metodo pagamento)
 - verifica sul **portale Giustizia Civile** con link precompilato
-- documenti (caricamento e download, sempre cifrati)
-- **Chiedi a Themis** — domande sul fascicolo con citazione di documento e pagina
+- **parti e professionisti collegati** (controparte, avvocato di
+  controparte, consulenti, testimoni) oltre al cliente principale
+- **controlli professionali**: conflitto d'interessi, adeguata verifica,
+  privacy, mandato — ognuno con esito (da verificare/positivo/negativo) e
+  nota, storico mai sovrascritto
+- documenti (caricamento e download, sempre cifrati) con **numero di
+  versione**, hash SHA-256 e chi li ha caricati
+- **Chiedi a Themis** — domande sul fascicolo con citazione di documento e
+  pagina; la conversazione **resta salvata nel fascicolo** e si ricarica
+  riaprendo la pagina
 - **Fai preparare un atto a Themis** — bozza con `.docx` scaricabile
+- **calcoli salvati nel fascicolo** — uno scenario di Calcolo Danno o
+  Parcelle può essere salvato con uno snapshot immutabile di dati e risultato
 - incarichi con storico
 - documenti richiesti al cliente (visibili nel portale)
 - patrocinio a spese dello Stato (istanza → decreto → fattura → incasso)
 - **scadenze legali suggerite** con sospensione feriale e riferimento normativo
 - dati sinistro e testimoni (solo per le pratiche di tipo sinistro)
+- avviso di modifiche non salvate se si prova a lasciare la pagina
 
 **Calendario** — viste giorno/settimana/mese, legenda cliccabile per famiglie
 di eventi, griglia costruita sulle fasce di apertura dello studio,
 prenotazioni dal portale clienti da accettare o rifiutare, mini-calendario e
 prossimi eventi, scadenze imminenti. Ogni evento creato viene copiato su
-Google in background, se collegato.
+Google in background, se collegato. Gli eventi importati da Google Calendar
+o da un file ICS vengono classificati automaticamente (udienza, termine
+processuale, scadenza, appuntamento) solo quando il titolo contiene indizi
+inequivocabili — nei casi dubbi restano "altro" e si riclassificano a mano.
 
 **PEC** — schede Ricevute / Inviate / Attestazioni con contatori, selettore
 del periodo mese per mese, ricerca, filtro "solo non lette", ordinamento,
@@ -353,11 +371,12 @@ portale del Ministero.
 passaggio, riapertura. Storico scritto dai trigger del database.
 
 **Impostazioni** — guida "Come usare Themis" scaricabile in PDF (presente
-anche in Domande frequenti), password, abbonamento e rimborso, scheda per
-l'elenco pubblico studi, carta intestata, tipografia dei documenti, dati del
-difensore, orari per il portale, Google Calendar (OAuth + ICS + import),
-caselle PEC, modelli. La sezione WhatsApp è nascosta insieme al resto della
-funzionalità (§12).
+anche in Domande frequenti), password, **verifica in due passaggi (2FA)**,
+**backup dei dati dello studio** (solo titolare), abbonamento e rimborso,
+scheda per l'elenco pubblico studi, carta intestata, tipografia dei
+documenti, dati del difensore, orari per il portale, Google Calendar (OAuth
++ ICS + import), caselle PEC, modelli. La sezione WhatsApp è nascosta insieme
+al resto della funzionalità (§12).
 
 **Collaboratori** e **Registro attività** — solo titolare.
 
@@ -433,8 +452,9 @@ un file numerato e poi si esegue.
 | Area | Tabelle |
 |---|---|
 | Studio e accessi | `studios`, `studio_membri`, `studio_settings`, `issued_licenses` |
-| Anagrafiche e pratiche | `clients`, `matters`, `sinistri`, `testimoni`, `patrocini_spese_stato` |
-| Documenti | `documenti`, `templates`, `template_placeholders`, `document_requests` |
+| Anagrafiche e pratiche | `clients`, `matters`, `sinistri`, `testimoni`, `patrocini_spese_stato`, `matter_parti`, `verifiche_cliente`, `calcoli_pratica` |
+| Documenti | `documenti` (con `versione`, `documento_padre_id`, `categoria`, `tags`, `hash_sha256`, `caricato_da`, `dimensione_bytes` dalla 037), `templates`, `template_placeholders`, `document_requests` |
+| IA — cronologia | `themis_conversazioni`, `themis_messaggi` |
 | Calendario | `eventi`, `appointments`, `availability_rules`, `google_calendar_account`, `google_calendar_credenziali` |
 | PEC | `pec_account`, `pec_credenziali`, `pec_cartelle`, `pec_messaggi`, `pec_proposte` |
 | WhatsApp | `whatsapp_account`, `whatsapp_messaggi`, `whatsapp_proposte`, `whatsapp_bozza_feedback` |
@@ -501,6 +521,38 @@ una leggibile per l'interfaccia, una segreta.
 
 **Notifiche e storico non sono falsificabili dal browser:** sulle rispettive
 tabelle non esiste permesso di INSERT, li scrivono solo i trigger.
+
+### Verifica in due passaggi (TOTP)
+
+Attivabile da Impostazioni → Sicurezza, usa il supporto MFA nativo di
+Supabase Auth (`supabase.auth.mfa.*`, TOTP compatibile con Google
+Authenticator, Microsoft Authenticator, 1Password) — nessuna libreria di
+crittografia scritta in casa, la verifica del codice avviene lato Supabase,
+non nel browser.
+
+L'enforcement è a due livelli, non solo alla schermata di login:
+
+- **Login**: dopo email+password, se esiste un fattore TOTP verificato la
+  UI chiede il codice a 6 cifre prima di completare l'accesso
+  (`AccediClient.tsx`).
+- **Middleware e `contestoStudio()`**: entrambi confrontano
+  `getAuthenticatorAssuranceLevel()` — se l'account richiede `aal2` ma la
+  sessione corrente è ferma ad `aal1` (es. un cookie di sessione precedente
+  all'attivazione della 2FA), la richiesta viene rimandata al login invece
+  di procedere. Senza questo doppio controllo, una sessione già aperta
+  prima di attivare la 2FA continuerebbe a funzionare senza mai chiedere il
+  secondo fattore.
+
+### Backup dei dati dello studio
+
+Da Impostazioni → Sicurezza (solo titolare), `/api/studio/export` genera uno
+`.zip` con un file JSON per tabella (clienti, pratiche, parti, verifiche,
+sinistri, testimoni, calendario, incarichi e storico, documenti — solo
+metadati, patrocini, calcoli salvati, conversazioni Themis), più un
+`manifest.json` con conteggi e avvisi. Ogni tabella è filtrata per
+`studio_id` esplicitamente nella query, non solo per RLS. **Non include** i
+file binari cifrati né le credenziali PEC/Google — lo dichiara lo stesso
+manifest.
 
 ### La falla di `portal_invites` (chiusa il 31.08.2026)
 
@@ -745,6 +797,8 @@ database, perché `supabase/migrations/README.md` era rimasto indietro):
 | 012, 013 (IA e tetti) | ✅ applicate — il README delle migrazioni le dà ancora per non applicate |
 | 014–025, 027–035 | ✅ applicate (tabelle e colonne presenti) |
 | **026** (dati del difensore per il deposito) | ❌ **non applicata** — vedi §12 |
+| **036** (doppia notifica PEC) | ⚠️ da applicare — vedi §12.10 |
+| **037** (parti pratica, verifiche, versioni documentali, conversazioni Themis, pianificazione, calcoli salvati) | ⚠️ da applicare prima del deploy che la usa — il codice degrada con un avviso se non è ancora applicata |
 
 ---
 
@@ -850,6 +904,28 @@ Themis" in PDF (`public/guide/come-usare-themis.pdf`, generata senza alcun
 riferimento a WhatsApp o Deposito), scaricabile da Impostazioni e da Domande
 frequenti — va rigenerata e aggiornata quando le due funzionalità
 rientreranno nell'interfaccia.
+
+### 11. Studio operativo v2 (12.09.2026) — richiede la migrazione 037
+
+Rilascio che aggiunge: verifica in due passaggi (§7), backup dati
+esportabile (§7), conversazioni Themis persistenti nel fascicolo, controlli
+professionali (conflitto d'interessi, adeguata verifica, privacy, mandato),
+parti e professionisti collegati alla pratica, calcoli di danno/parcella
+salvabili nel fascicolo, versioning dei documenti, validazione formale di
+CF/P.IVA con controllo duplicati, classificazione automatica prudente degli
+eventi importati da calendario esterno.
+
+**Ordine di deploy obbligatorio** (diversamente da una migrazione qualunque,
+qui l'ordine conta): prima `037_studio_operativo_v2.sql` su Supabase, poi il
+deploy del codice. Il codice tollera comunque l'ordine inverso per una
+finestra breve — l'upload documenti e i form di parti/verifiche/calcoli
+rilevano l'errore Postgres di colonna/tabella mancante e degradano con un
+avviso invece di rompersi — ma non è la sequenza pensata.
+
+Funzioni esplicitamente **non** presentate come operative in questo
+rilascio: firma elettronica qualificata, conservazione a norma, fatturazione
+elettronica, notifiche push. Richiedono un fornitore esterno scelto e
+configurato a parte.
 
 ---
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { contestoStudio } from '@/lib/studio/contesto';
+import { classificaEvento } from '@/lib/calendario/classifica';
 
 export const runtime = 'nodejs';
 
@@ -88,12 +89,11 @@ export async function POST(request: Request) {
 
     const note = testoBreve(i.note, 4000);
     const tuttoIlGiorno = i.all_day === true;
+    const titolo = testoBreve(i.titolo, 300) ?? '(senza titolo)';
     righe.push({
       studio_id: contesto.studioId,
-      titolo: testoBreve(i.titolo, 300) ?? '(senza titolo)',
-      // Google non distingue un'udienza da un pranzo: entrano tutti come
-      // "Attività", e il tipo giusto si mette dopo, sui pochi che contano.
-      tipo: 'altro',
+      titolo,
+      tipo: classificaEvento(titolo, note),
       data,
       ora_inizio: tuttoIlGiorno ? null : oraValida(i.ora_inizio),
       ora_fine: tuttoIlGiorno ? null : oraValida(i.ora_fine),

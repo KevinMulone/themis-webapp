@@ -54,5 +54,15 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (user && !isAuthRoute && !isPublicRoute && !isApiRoute) {
+    const { data: livello } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (livello?.nextLevel === 'aal2' && livello.currentLevel !== 'aal2') {
+      const url = request.nextUrl.clone();
+      url.pathname = '/accedi';
+      url.search = '?mfa=richiesta';
+      return NextResponse.redirect(url);
+    }
+  }
+
   return response;
 }
