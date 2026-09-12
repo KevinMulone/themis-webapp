@@ -9,6 +9,7 @@ import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
 import IncarichiPratica from './IncarichiPratica';
 import ChiediAlFascicolo from './ChiediAlFascicolo';
 import RedigiAtto from './RedigiAtto';
+import ControlliPratica from './ControlliPratica';
 import {
   TIPI_PRATICA, STATI_PRATICA, TIPI_SINISTRO, STATI_NEGOZIAZIONE, METODI_PAGAMENTO,
   labelFromOptions, clientLabel,
@@ -78,6 +79,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   const [savedPatrocinio, setSavedPatrocinio] = useState(false);
   const [patrocinioError, setPatrocinioError] = useState('');
   const [copiatoRg, setCopiatoRg] = useState(false);
+  const [modificheNonSalvate, setModificheNonSalvate] = useState(false);
 
   async function loadDocumenti() {
     const { data } = await supabase.from('documenti').select('id, nome_file, data_generazione').eq('matter_id', id).order('data_generazione', { ascending: false });
@@ -156,6 +158,14 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
   useEffect(() => { load(); }, [id]);
   useAggiornamentoLive(['document_requests'], loadRichieste);
+  useEffect(() => {
+    const avvisa = (evento: BeforeUnloadEvent) => {
+      if (!modificheNonSalvate) return;
+      evento.preventDefault();
+    };
+    window.addEventListener('beforeunload', avvisa);
+    return () => window.removeEventListener('beforeunload', avvisa);
+  }, [modificheNonSalvate]);
 
   async function handleSaveMatter(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -163,6 +173,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     const payload: Record<string, unknown> = {};
     form.forEach((value, key) => { payload[key] = value === '' ? null : value; });
     await supabase.from('matters').update(payload).eq('id', id);
+    setModificheNonSalvate(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     load();
@@ -176,6 +187,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
     form.forEach((value, key) => { payload[key] = value === '' ? null : value; });
     if (payload.testimoni_presenti !== undefined) payload.testimoni_presenti = payload.testimoni_presenti === 'true';
     await supabase.from('sinistri').update(payload).eq('id', sinistro.id);
+    setModificheNonSalvate(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
     load();
@@ -268,7 +280,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   if (!matter) return <p className="text-sm text-neutral-500">Caricamento...</p>;
 
   return (
-    <div ref={paginaRef} className="mx-auto max-w-3xl">
+    <div ref={paginaRef} className="mx-auto max-w-5xl">
       <div className="mb-4 flex items-center justify-between">
         <div>
           <p className="module-eyebrow">Dettaglio pratica</p>
@@ -277,7 +289,19 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      <form onSubmit={handleSaveMatter} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <nav aria-label="Sezioni della pratica" className="sticky top-3 z-20 mb-5 flex gap-1 overflow-x-auto rounded-2xl border border-white/70 bg-white/90 p-1.5 shadow-lg shadow-black/[0.04] backdrop-blur-xl">
+        {[
+          ['dati-pratica', 'Panoramica'], ['controlli-pratica', 'Parti e controlli'], ['documenti-pratica', 'Documenti'], ['themis-pratica', 'Themis'],
+          ['incarichi-pratica', 'Attività'], ['richieste-pratica', 'Cliente'], ['scadenze-pratica', 'Scadenze'],
+        ].map(([href, label]) => (
+          <a key={href} href={`#${href}`} className="shrink-0 rounded-xl px-3.5 py-2 text-xs font-semibold text-neutral-600 transition hover:bg-bordeaux-50 hover:text-bordeaux-700">
+            {label}
+          </a>
+        ))}
+        {modificheNonSalvate && <span className="ml-auto shrink-0 self-center rounded-full bg-amber-100 px-3 py-1 text-[11px] font-semibold text-amber-800">Modifiche da salvare</span>}
+      </nav>
+
+      <form id="dati-pratica" onSubmit={handleSaveMatter} onChange={() => setModificheNonSalvate(true)} className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Dati pratica</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -338,6 +362,8 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         </div>
       </form>
 
+      <ControlliPratica studioId={studioId} matterId={id} clientId={matter.client_id} />
+
       {matter.rg_numero && (
         <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
           <h2 className="mb-3 font-semibold text-neutral-900">Verifica sul portale Giustizia Civile</h2>
@@ -369,7 +395,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         </div>
       )}
 
-      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <div id="documenti-pratica" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold text-neutral-900">Documenti</h2>
           <label className="premi cursor-pointer rounded-full bg-neutral-100 px-3 py-1.5 text-xs hover:bg-neutral-200">
@@ -381,9 +407,14 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
           <p className="text-sm text-neutral-500">Nessun documento caricato per questa pratica.</p>
         ) : (
           <ul className="divide-y divide-neutral-100 text-sm">
-            {documenti.map((d) => (
+            {documenti.map((d, indice) => (
               <li key={d.id} className="flex items-center justify-between py-2">
-                <span>{d.nome_file}</span>
+                <span className="min-w-0">
+                  <span className="block truncate font-medium text-neutral-800">{d.nome_file}</span>
+                  <span className="block text-[11px] text-neutral-400">
+                    {new Date(d.data_generazione).toLocaleString('it-IT')} · versione {documenti.length - indice}
+                  </span>
+                </span>
                 <a href={`/api/documenti/${d.id}/download`} className="text-xs font-semibold text-bordeaux-700 hover:underline">
                   Scarica
                 </a>
@@ -393,13 +424,17 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         )}
       </div>
 
-      <ChiediAlFascicolo matterId={id} documenti={documenti} />
+      <div id="themis-pratica" className="scroll-mt-24">
+        <ChiediAlFascicolo matterId={id} documenti={documenti} />
+      </div>
 
       <RedigiAtto matterId={id} documenti={documenti} onSalvato={loadDocumenti} />
 
-      <IncarichiPratica matterId={id} studioId={studioId} />
+      <div id="incarichi-pratica" className="scroll-mt-24">
+        <IncarichiPratica matterId={id} studioId={studioId} />
+      </div>
 
-      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <div id="richieste-pratica" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Documenti richiesti al cliente</h2>
         {richieste.length === 0 ? (
           <p className="mb-3 text-sm text-neutral-500">Nessuna richiesta inviata.</p>
@@ -493,7 +528,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
         </form>
       )}
 
-      <div className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+      <div id="scadenze-pratica" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Scadenze legali suggerite</h2>
         <p className="mb-3 text-xs text-neutral-500">
           Suggerimenti con riferimento normativo, da verificare sempre sul caso concreto: la sospensione
@@ -558,7 +593,7 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
 
       {matter.tipo_pratica === 'sinistro' && sinistro && (
         <>
-          <form onSubmit={handleSaveSinistro} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
+          <form onSubmit={handleSaveSinistro} onChange={() => setModificheNonSalvate(true)} className="mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
             <h2 className="mb-3 font-semibold text-neutral-900">Dati sinistro</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Field label="Data sinistro" name="data_sinistro" type="date" defaultValue={sinistro.data_sinistro} />

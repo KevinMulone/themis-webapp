@@ -7,6 +7,7 @@ import {
   PERSONALIZZAZIONE_MAX_MICROPERMANENTE, PERSONALIZZAZIONE_MAX_MACROPERMANENTE,
   type ItpTranche, type TipoMorale,
 } from '@/lib/dannoCircolazione';
+import SalvaCalcoloPratica from '@/components/SalvaCalcoloPratica';
 
 type Modalita = 'milano' | 'micropermanente' | 'macropermanente';
 
@@ -188,6 +189,7 @@ function CalcolatoreMilano() {
           Valore estimativo, non sostituisce la liquidazione giudiziale. Verificare sempre l&apos;edizione delle Tabelle di
           Milano in vigore al momento dell&apos;uso.
         </p>
+        <SalvaCalcoloPratica tipo="danno" titolo="Danno biologico · Tabelle di Milano" input={{ eta, punti, ittGiorni, itp: itp.righe, speseMediche, personalizzazione }} risultato={risultato} disabled={!risultato} />
       </div>
     </div>
   );
@@ -290,6 +292,7 @@ function CalcolatoreMicropermanente() {
           Valori aggiornati D.M. 20.7.2026 (G.U. n. 173/2026), in vigore da aprile 2026. Verificare sempre l&apos;ultimo
           decreto di aggiornamento ISTAT in vigore al momento dell&apos;uso.
         </p>
+        <SalvaCalcoloPratica tipo="danno" titolo="Danno biologico · art. 139 CdA" input={{ eta, punti, ittGiorni, itp: itp.righe, speseMediche, personalizzazione }} risultato={risultato} disabled={!risultato} />
       </div>
     </div>
   );
@@ -418,6 +421,7 @@ function CalcolatoreMacropermanente() {
           bollato IVASS; valore del punto e ITT aggiornati con D.M. 20.7.2026. Verificare sempre il testo ufficiale
           in vigore al momento dell&apos;uso.
         </p>
+        <SalvaCalcoloPratica tipo="danno" titolo="Danno biologico · TUN art. 138 CdA" input={{ eta, punti, tipoMorale, ittGiorni, itp: itp.righe, incrementoMorale, speseMediche, personalizzazione }} risultato={risultato} disabled={!risultato} />
       </div>
     </div>
   );

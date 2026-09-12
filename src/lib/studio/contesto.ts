@@ -33,6 +33,8 @@ export async function contestoStudio(): Promise<ContestoStudio | null> {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
   if (!user) return null;
+  const { data: livello } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (livello?.nextLevel === 'aal2' && livello.currentLevel !== 'aal2') return null;
 
   const { data } = await supabase.rpc('contesto_studio').maybeSingle();
   const riga = data as RigaContesto | null;

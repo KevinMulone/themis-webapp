@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { contestoStudio } from '@/lib/studio/contesto';
 import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
 import { encryptBuffer } from '@/lib/crypto/docEncryption';
+import { createHash } from 'node:crypto';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -19,6 +20,7 @@ export async function POST(request: Request) {
   if (!matter) return NextResponse.json({ error: 'Pratica non trovata' }, { status: 404 });
 
   const buffer = Buffer.from(await file.arrayBuffer());
+  const hashSha256 = createHash('sha256').update(buffer).digest('hex');
   const documentoId = crypto.randomUUID();
   const ext = file.name.includes('.') ? file.name.slice(file.name.lastIndexOf('.')) : '';
   const storagePath = `documenti/${studioId}/${documentoId}${ext}.enc`;
@@ -29,9 +31,20 @@ export async function POST(request: Request) {
   );
   if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
 
-  const { error: dbError } = await supabase.from('documenti').insert({
+  const { count: versioniPrecedenti } = await supabase.from('documenti')
+    .select('id', { count: 'exact', head: true }).eq('matter_id', matterId).eq('nome_file', file.name);
+  const recordBase = {
     id: documentoId, studio_id: studioId, matter_id: matterId, nome_file: file.name, storage_path: storagePath,
+  };
+  let { error: dbError } = await supabase.from('documenti').insert({
+    ...recordBase, versione: (versioniPrecedenti ?? 0) + 1, hash_sha256: hashSha256,
+    dimensione_bytes: file.size, caricato_da: contesto.userId,
   });
+  // Il deploy può precedere di pochi minuti la migrazione 037: in quel
+  // caso il caricamento continua a funzionare con lo schema precedente.
+  if (dbError?.code === 'PGRST204' || dbError?.code === '42703') {
+    ({ error: dbError } = await supabase.from('documenti').insert(recordBase));
+  }
   if (dbError) return NextResponse.json({ error: dbError.message }, { status: 400 });
 
   return NextResponse.json({ ok: true, documento_id: documentoId });

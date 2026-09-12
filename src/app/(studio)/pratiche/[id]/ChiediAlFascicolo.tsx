@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import CreditoBarra, { type Credito } from './CreditoBarra';
 
-type Documento = { id: string; nome_file: string };
+type Documento = { id: string; nome_file: string; data_generazione?: string };
 type Citazione = { documento: string | null; testo: string | null; pagina: number | null };
 type Messaggio = {
   ruolo: 'utente' | 'themis';
@@ -27,6 +27,8 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
   const [inCorso, setInCorso] = useState(false);
   const [credito, setCredito] = useState<Credito | null>(null);
   const [errore, setErrore] = useState('');
+  const [conversazioneId, setConversazioneId] = useState<string | null>(null);
+  const [storicoDisponibile, setStoricoDisponibile] = useState<boolean | null>(null);
   const fondo = useRef<HTMLDivElement>(null);
 
   const allegabili = documenti.filter((d) => leggibile(d.nome_file));
@@ -34,6 +36,40 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
   useEffect(() => {
     if (messaggi.length) fondo.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messaggi, inCorso]);
+
+  useEffect(() => {
+    let attivo = true;
+    fetch(`/api/themis/conversazioni?matterId=${encodeURIComponent(matterId)}`)
+      .then((res) => res.json())
+      .then((body) => {
+        if (!attivo) return;
+        setStoricoDisponibile(body.disponibile !== false);
+        if (body.conversazione?.id) setConversazioneId(body.conversazione.id);
+        if (Array.isArray(body.messaggi)) setMessaggi(body.messaggi);
+      })
+      .catch(() => attivo && setStoricoDisponibile(false));
+    return () => { attivo = false; };
+  }, [matterId]);
+
+  async function persisti(messaggio: Messaggio, idCorrente: string | null): Promise<string | null> {
+    try {
+      const res = await fetch('/api/themis/conversazioni', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          matterId, conversazioneId: idCorrente, ruolo: messaggio.ruolo,
+          testo: messaggio.testo, citazioni: messaggio.citazioni ?? [],
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) { setStoricoDisponibile(false); return idCorrente; }
+      setStoricoDisponibile(true);
+      setConversazioneId(body.conversazioneId);
+      return body.conversazioneId;
+    } catch {
+      setStoricoDisponibile(false);
+      return idCorrente;
+    }
+  }
 
   async function handleChiedi(e: React.FormEvent) {
     e.preventDefault();
@@ -43,10 +79,12 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
     // Lo storico che si manda è quello PRIMA di questa domanda: la
     // domanda nuova viaggia a parte, ed è il server a incastrarla in fondo.
     const storico = messaggi.map((m) => ({ ruolo: m.ruolo, testo: m.testo }));
-    setMessaggi([...messaggi, { ruolo: 'utente', testo }]);
+    const messaggioUtente: Messaggio = { ruolo: 'utente', testo };
+    setMessaggi([...messaggi, messaggioUtente]);
     setDomanda('');
     setErrore('');
     setInCorso(true);
+    const idPersistente = await persisti(messaggioUtente, conversazioneId);
 
     const res = await fetch('/api/themis/domanda', {
       method: 'POST',
@@ -57,9 +95,9 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
     setInCorso(false);
 
     if (!res.ok) { setErrore(body.error || 'Richiesta non riuscita'); return; }
-    setMessaggi((precedenti) => [...precedenti, {
-      ruolo: 'themis', testo: body.testo, citazioni: body.citazioni || [],
-    }]);
+    const risposta: Messaggio = { ruolo: 'themis', testo: body.testo, citazioni: body.citazioni || [] };
+    setMessaggi((precedenti) => [...precedenti, risposta]);
+    await persisti(risposta, idPersistente);
     setCredito(body.credito || null);
   }
 
@@ -98,7 +136,10 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
                       e.target.checked ? [...scelti, d.id] : scelti.filter((x) => x !== d.id),
                     )}
                   />
-                  <span className="truncate">{d.nome_file}</span>
+                  <span className="min-w-0 truncate">
+                    {d.nome_file}
+                    {d.data_generazione && <span className="ml-2 text-[10px] text-neutral-400">{new Date(d.data_generazione).toLocaleDateString('it-IT')}</span>}
+                  </span>
                 </label>
               ))}
             </div>
@@ -160,7 +201,7 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
           {messaggi.length > 0 ? (
             <button
               type="button"
-              onClick={() => { setMessaggi([]); setErrore(''); }}
+              onClick={() => { setMessaggi([]); setErrore(''); setConversazioneId(null); }}
               className="text-xs text-neutral-400 hover:text-neutral-600 hover:underline"
             >
               Nuova conversazione
@@ -173,6 +214,8 @@ export default function ChiediAlFascicolo({ matterId, documenti }: {
             {inCorso ? 'Sto leggendo...' : 'Chiedi a Themis'}
           </button>
         </div>
+        {storicoDisponibile === true && <p className="text-[11px] text-emerald-700">Conversazione salvata nel fascicolo.</p>}
+        {storicoDisponibile === false && <p className="text-[11px] text-amber-700">La conversazione resta visibile in questa sessione; applica la migrazione 037 per salvarla nel fascicolo.</p>}
       </form>
 
       {messaggi.length > 0 && (

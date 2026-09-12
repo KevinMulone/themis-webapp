@@ -57,23 +57,29 @@ function Suggerimento({ href, icona, titolo, testo }: {
 
 export default function IncarichiPage() {
   const supabase = createClient();
-  const { userId, ruolo } = useStudio();
+  const { userId, ruolo, studioId } = useStudio();
   const [incarichi, setIncarichi] = useState<Incarico[]>([]);
   const [membri, setMembri] = useState<Membro[]>([]);
   const [scheda, setScheda] = useState<'aperti' | 'completati'>('aperti');
   const [tuttiLoStudio, setTuttiLoStudio] = useState(false);
   const [caricando, setCaricando] = useState(true);
+  const [pratiche, setPratiche] = useState<MatterRef[]>([]);
+  const [nuovoIncarico, setNuovoIncarico] = useState(false);
+  const [ricerca, setRicerca] = useState('');
+  const [filtroResponsabile, setFiltroResponsabile] = useState('');
 
   const load = useCallback(async () => {
-    const [{ data: inc }, { data: m }] = await Promise.all([
+    const [{ data: inc }, { data: m }, { data: p }] = await Promise.all([
       supabase.from('incarichi')
         .select('id, titolo, descrizione, stato, priorita, scadenza, assegnato_a, matter_id, matters(id, tipo_pratica, clients(tipo_soggetto, nome, cognome, ragione_sociale))')
         .order('scadenza', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: false }),
       supabase.from('studio_membri').select('user_id, nome, email').eq('stato', 'attivo'),
+      supabase.from('matters').select('id, tipo_pratica, clients(tipo_soggetto, nome, cognome, ragione_sociale)').neq('stato', 'archiviata').order('created_at', { ascending: false }),
     ]);
     setIncarichi((inc || []) as unknown as Incarico[]);
     setMembri(((m || []) as Membro[]).filter((x) => x.user_id));
+    setPratiche((p || []) as unknown as MatterRef[]);
     setCaricando(false);
   }, [supabase]);
 
@@ -86,7 +92,33 @@ export default function IncarichiPage() {
     load();
   }
 
-  const miei = incarichi.filter((i) => (tuttiLoStudio ? true : i.assegnato_a === userId));
+  async function creaIncarico(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = new FormData(e.currentTarget);
+    const titolo = String(form.get('titolo') || '').trim();
+    const matterId = String(form.get('matter_id') || '');
+    if (!titolo || !matterId) return;
+    const { error } = await supabase.from('incarichi').insert({
+      studio_id: studioId, matter_id: matterId, titolo,
+      descrizione: String(form.get('descrizione') || '').trim() || null,
+      assegnato_a: String(form.get('assegnato_a') || '') || userId,
+      assegnato_da: userId, priorita: String(form.get('priorita') || 'normale'),
+      scadenza: String(form.get('scadenza') || '') || null,
+    });
+    if (error) { alert(error.message); return; }
+    setNuovoIncarico(false);
+    load();
+  }
+
+  const query = ricerca.trim().toLocaleLowerCase('it');
+  const miei = incarichi.filter((i) => {
+    if (!tuttiLoStudio && i.assegnato_a !== userId) return false;
+    if (filtroResponsabile && i.assegnato_a !== filtroResponsabile) return false;
+    if (!query) return true;
+    const pratica = primo(i.matters);
+    const cliente = pratica ? primo(pratica.clients) : null;
+    return [i.titolo, i.descrizione, clientLabel(cliente || undefined)].join(' ').toLocaleLowerCase('it').includes(query);
+  });
   const aperti = miei.filter((i) => STATI_APERTI.includes(i.stato));
   const chiusi = miei.filter((i) => !STATI_APERTI.includes(i.stato));
   const visibili = scheda === 'aperti' ? aperti : chiusi;
@@ -95,7 +127,8 @@ export default function IncarichiPage() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+        <div>
         <p className="module-eyebrow">Flusso di lavoro</p>
         <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">
           {tuttiLoStudio ? 'Incarichi dello studio' : 'I miei incarichi'}
@@ -105,6 +138,20 @@ export default function IncarichiPage() {
             ? 'Tutti gli incarichi assegnati nello studio, di chiunque siano.'
             : 'Gestisci e monitora tutti i tuoi incarichi.'}
         </p>
+        </div>
+        <button onClick={() => setNuovoIncarico(true)} className="shine-button premi rounded-full bg-bordeaux-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-bordeaux-800">
+          + Nuovo incarico
+        </button>
+      </div>
+
+      <div className="module-toolbar mb-4 flex flex-wrap gap-2 rounded-2xl bg-white/90 p-3 ring-1 ring-black/[0.04]">
+        <input value={ricerca} onChange={(e) => setRicerca(e.target.value)} placeholder="Cerca incarico o cliente…" className="min-w-56 flex-1 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-bordeaux-400" />
+        {tuttiLoStudio && (
+          <select value={filtroResponsabile} onChange={(e) => setFiltroResponsabile(e.target.value)} className="rounded-xl border border-neutral-200 bg-white px-3 py-2 text-sm outline-none focus:border-bordeaux-400">
+            <option value="">Tutti i responsabili</option>
+            {membri.map((m) => <option key={m.user_id} value={m.user_id}>{m.nome || m.email}</option>)}
+          </select>
+        )}
       </div>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -298,6 +345,46 @@ export default function IncarichiPage() {
           <Icon nome="freccia" className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </span>
       </Link>
+
+      {nuovoIncarico && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
+          <form onSubmit={creaIncarico} className="w-full max-w-xl rounded-3xl bg-white p-6 shadow-2xl">
+            <h2 className="text-lg font-bold text-neutral-900">Nuovo incarico</h2>
+            <p className="mt-1 text-sm text-neutral-500">Assegna subito il lavoro alla pratica corretta.</p>
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="sm:col-span-2 text-xs font-medium text-neutral-600">Pratica
+                <select name="matter_id" required className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm">
+                  <option value="">Seleziona…</option>
+                  {pratiche.map((p) => <option key={p.id} value={p.id}>{clientLabel(primo(p.clients) || undefined)} · {labelFromOptions(TIPI_PRATICA, p.tipo_pratica)}</option>)}
+                </select>
+              </label>
+              <label className="sm:col-span-2 text-xs font-medium text-neutral-600">Titolo
+                <input name="titolo" required className="mt-1 w-full rounded-xl border border-neutral-200 px-3 py-2.5 text-sm" />
+              </label>
+              <label className="sm:col-span-2 text-xs font-medium text-neutral-600">Descrizione
+                <textarea name="descrizione" className="mt-1 w-full rounded-xl border border-neutral-200 px-3 py-2.5 text-sm" />
+              </label>
+              <label className="text-xs font-medium text-neutral-600">Responsabile
+                <select name="assegnato_a" defaultValue={userId} className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm">
+                  {membri.map((m) => <option key={m.user_id} value={m.user_id}>{m.nome || m.email}</option>)}
+                </select>
+              </label>
+              <label className="text-xs font-medium text-neutral-600">Priorità
+                <select name="priorita" defaultValue="normale" className="mt-1 w-full rounded-xl border border-neutral-200 bg-white px-3 py-2.5 text-sm">
+                  {PRIORITA_INCARICO.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </select>
+              </label>
+              <label className="text-xs font-medium text-neutral-600">Scadenza
+                <input name="scadenza" type="date" className="mt-1 w-full rounded-xl border border-neutral-200 px-3 py-2.5 text-sm" />
+              </label>
+            </div>
+            <div className="mt-5 flex justify-end gap-2 border-t border-neutral-100 pt-4">
+              <button type="button" onClick={() => setNuovoIncarico(false)} className="premi rounded-full bg-neutral-100 px-4 py-2 text-sm">Annulla</button>
+              <button type="submit" className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white">Crea incarico</button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

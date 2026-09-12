@@ -3,6 +3,7 @@ import { contestoStudio } from '@/lib/studio/contesto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { accountGoogleAttivo } from '@/lib/google/accesso';
 import { elencaEventiGoogle } from '@/lib/google/calendar';
+import { classificaEvento } from '@/lib/calendario/classifica';
 
 /**
  * Porta dentro Themis ciò che c'era già nel Google Calendar dello
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
     .map((ev) => ({
       studio_id: contesto.studioId,
       titolo: ev.titolo,
-      tipo: 'altro',
+      tipo: classificaEvento(ev.titolo, ev.note),
       data: ev.data,
       ora_inizio: ev.ora_inizio,
       ora_fine: ev.ora_fine,

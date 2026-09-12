@@ -43,6 +43,7 @@ si esegue.
 | `027_feedback_atto.sql` | ❌ **no** |
 | `028_google_calendar.sql` | ❌ **no** |
 | `029_calendario_ics.sql` | ❌ **no** |
+| `037_studio_operativo_v2.sql` | ❌ **da applicare con il nuovo deploy** — parti, verifiche, versioni documentali, storico Themis, pianificazione e calcoli nel fascicolo |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 
