@@ -724,6 +724,7 @@ export default function Home() {
             <a href="/sponsor" className="hover:underline">Sponsor</a>
             <a href="#faq" className="hover:underline">FAQ</a>
             <a href="/privacy" className="hover:underline">Privacy</a>
+            <a href="/condizioni" className="hover:underline">Condizioni</a>
             <a href="/politica-rimborsi" className="hover:underline">Rimborsi</a>
             <a href="/portale" className="hover:underline">Accedi come assistito</a>
             <a href="/accedi" className="hover:underline">Accedi</a>

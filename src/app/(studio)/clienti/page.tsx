@@ -160,6 +160,15 @@ export default function ClientiPage() {
 
   useEffect(() => { load(); }, [mostraArchiviati]);
   useEffect(() => { loadConteggi(); }, []);
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('apri');
+    const cliente = id ? clients.find((riga) => riga.id === id) : null;
+    if (!cliente) return;
+    openEdit(cliente);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('apri');
+    window.history.replaceState({}, '', url);
+  }, [clients]);
   // Cambiando ricerca, filtro o elenco si torna alla prima pagina: restare
   // su pagina 4 quando i risultati sono diventati tre significa guardare
   // una tabella vuota e credere che non ci sia nulla.

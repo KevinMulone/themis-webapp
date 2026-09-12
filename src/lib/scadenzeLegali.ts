@@ -28,7 +28,7 @@ function sovrapponeAgosto(dataInizio: Date, dataFineGrezza: Date, anno: number):
   return dataInizio <= fineAgosto && dataFineGrezza >= inizioAgosto;
 }
 
-export { toIsoLocale } from './dateUtils';
+export { toIsoLocale } from './dateUtils.ts';
 
 function addGiorni(data: Date, giorni: number): Date {
   const d = new Date(data);

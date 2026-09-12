@@ -20,7 +20,7 @@ create table if not exists public.ai_utilizzo (
   token_output bigint not null default 0,
   -- Millesimi di euro: i centesimi perderebbero troppa precisione, visto
   -- che una singola richiesta può costare frazioni di centesimo.
-  costo_millesimi integer not null default 0,
+  costo_millesimi integer not null default 0, -- millesimi di dollaro USA
   created_at timestamptz not null default now()
 );
 
