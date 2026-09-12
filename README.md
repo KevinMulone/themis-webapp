@@ -797,8 +797,9 @@ database, perché `supabase/migrations/README.md` era rimasto indietro):
 | 012, 013 (IA e tetti) | ✅ applicate — il README delle migrazioni le dà ancora per non applicate |
 | 014–025, 027–035 | ✅ applicate (tabelle e colonne presenti) |
 | **026** (dati del difensore per il deposito) | ❌ **non applicata** — vedi §12 |
-| **036** (doppia notifica PEC) | ⚠️ da applicare — vedi §12.10 |
-| **037** (parti pratica, verifiche, versioni documentali, conversazioni Themis, pianificazione, calcoli salvati) | ⚠️ da applicare prima del deploy che la usa — il codice degrada con un avviso se non è ancora applicata |
+| **036** (doppia notifica PEC) | ✅ applicata (13.09.2026) |
+| **037** (parti pratica, verifiche, versioni documentali, conversazioni Themis, pianificazione, calcoli salvati) | ✅ applicata (13.09.2026) |
+| **038** (corregge l'eliminazione di clienti/pratiche/documenti e la versione dei documenti) | ⚠️ da applicare — vedi §12.12 |
 
 ---
 
@@ -926,6 +927,37 @@ Funzioni esplicitamente **non** presentate come operative in questo
 rilascio: firma elettronica qualificata, conservazione a norma, fatturazione
 elettronica, notifiche push. Richiedono un fornitore esterno scelto e
 configurato a parte.
+
+### 12. Eliminazione rotta e versione documenti sbagliata (13.09.2026) — richiede la migrazione 038
+
+Trovati testando l'app end-to-end come farebbe un avvocato, non dalla sola
+lettura del codice.
+
+**Eliminare un cliente, una pratica o un documento falliva sempre.**
+`notifica_eliminazione()` (migrazione 010) è un trigger condiviso da tre
+tabelle e leggeva `old.nome_file` (solo su `documenti`) e
+`old.cognome`/`old.nome`/`old.ragione_sociale` (solo su `clients`)
+direttamente sul record. PL/pgSQL verifica l'esistenza del campo sul tipo di
+riga reale anche nei rami del `CASE` non presi: eliminare una riga da una
+tabella priva di quella colonna falliva con un errore tecnico ("record
+\"old\" has no field..."), mostrato in un `alert()` del browser, non un
+messaggio comprensibile. **Effetto pratico: il pulsante "Elimina" su
+cliente/pratica/documento non ha mai funzionato**, senza che l'interfaccia
+lo segnalasse chiaramente. Corretto leggendo i campi da `to_jsonb(old)`,
+che su una chiave assente restituisce `NULL` invece di un errore.
+
+**La versione dei documenti (colonna aggiunta dalla 037) non era quella
+dichiarata.** Doveva essere "quante volte è già stato caricato un file con
+questo nome in questa pratica" — calcolata in
+`src/app/api/documenti/upload/route.ts` con un conteggio lato client prima
+dell'insert. Verificato caricando file con nomi mai visti nella stessa
+pratica: la versione cresceva comunque (2, poi 3) invece di restare 1 —
+un contatore di fatto per pratica, non per nome file — oltre a restare
+comunque soggetta a race condition fra upload concorrenti anche se il
+conteggio fosse stato giusto. Spostato il calcolo in un trigger
+`BEFORE INSERT` sul database, con un advisory lock sulla coppia
+pratica+nome file: sempre corretto, atomico anche in concorrenza,
+indipendente da chi chiama l'insert.
 
 ---
 
