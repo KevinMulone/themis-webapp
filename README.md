@@ -1,8 +1,12 @@
 # Themis
 
-Gestionale per studi legali italiani: fascicoli, PEC, WhatsApp, calendario,
-assistente IA sul fascicolo, generazione atti, deposito telematico e
-calcoli forensi — in una sola applicazione.
+Gestionale per studi legali italiani: fascicoli, PEC, calendario, assistente
+IA sul fascicolo, generazione atti e calcoli forensi — in una sola
+applicazione.
+
+> WhatsApp e deposito telematico esistono nel codice ma sono **nascosti
+> dall'interfaccia** dall'11.09.2026, in attesa di essere stabilizzati —
+> vedi §12.
 
 Prodotto in esercizio, non un esercizio di stile: nasce dallo Studio Legale
 Fussone (San Cataldo, CL) e viene usato tutti i giorni su pratiche vere.
@@ -118,12 +122,14 @@ stato dell'abbonamento — perché il layout ne faceva già una sola.
 | **Stripe** | Abbonamenti, checkout, portale cliente | ✅ attivo | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_*` |
 | **Resend** | Email transazionali (chiave licenza, richieste rimborso) | ✅ attivo | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` |
 | **Gestori PEC** (IMAP/SMTP diretto) | Posta certificata | ✅ attivo | credenziali per casella, nel database (cifrate) |
-| **WhatsApp via Baileys** | Chat dello studio | ⚙️ opzionale | `WHATSAPP_WORKER_URL`, `WHATSAPP_WORKER_SECRET` |
+| **WhatsApp via Baileys** | Chat dello studio | 🚧 nascosto in UI | `WHATSAPP_WORKER_URL`, `WHATSAPP_WORKER_SECRET` |
 | **Google Calendar API v3** | Sincronizzazione calendario (OAuth) | ⚙️ opzionale | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
 | **Portale Giustizia Civile** | Deep link ai registri di cancelleria | ✅ attivo | nessuna credenziale (link pubblico) |
 
-Le due voci "opzionali" degradano con grazia: senza le variabili d'ambiente,
-l'interfaccia lo dichiara e nasconde i pulsanti, senza rompersi.
+Google Calendar degrada con grazia: senza le variabili d'ambiente,
+l'interfaccia lo dichiara e nasconde i pulsanti, senza rompersi. WhatsApp è
+nascosto a prescindere dalle variabili d'ambiente (vedi §12): il codice e le
+route restano, ma nessun punto dell'interfaccia vi rimanda.
 
 ### PEC — IMAP/SMTP diretto, nessun intermediario
 
@@ -294,16 +300,20 @@ valore probatorio. **Nuova PEC** in due fasi con schermata di conferma, con
 possibilità di far scrivere la bozza a Themis. **Scadenze trovate nelle PEC**:
 l'IA propone, l'avvocato accetta o scarta — niente entra in calendario da solo.
 
-**WhatsApp** — messaggi con documento da collegare a un cliente (con proposta
-di abbinamento dell'IA e motivazione), casella chat con spunte di consegna,
-composizione con bozza IA, scadenze estratte dai messaggi. **Reparto
-fascicoli**: tutti gli allegati ricevuti, raggruppati per assistito.
+**WhatsApp** *(🚧 nascosto dall'interfaccia dall'11.09.2026, vedi §12 — il
+codice sotto resta invariato)* — messaggi con documento da collegare a un
+cliente (con proposta di abbinamento dell'IA e motivazione), casella chat con
+spunte di consegna, composizione con bozza IA, scadenze estratte dai
+messaggi. **Reparto fascicoli**: tutti gli allegati ricevuti, raggruppati per
+assistito.
 
 **Genera Atto** — modello `.docx` + pratica → documento compilato. I segnaposto
 automatici si riempiono dai dati (cliente, pratica, sinistro), quelli manuali
 si chiedono, con proposte dai valori già usati.
 
-**Deposito** — non costruisce la busta PCT e non firma nulla. Produce due cose:
+**Deposito** *(🚧 nascosto dall'interfaccia dall'11.09.2026, vedi §12 — il
+codice sotto resta invariato)* — non costruisce la busta PCT e non firma
+nulla. Produce due cose:
 una **lista di controllo pre-deposito** (ufficio, controparte, documenti, dati
 difensore, PEC) e un **prontuario ricalcato sulle schermate di SLpct**
 (5.1 dati generali, 5.2 contributo unificato, 5.3 partecipanti, 5.4 avvocato,
@@ -327,10 +337,12 @@ portale del Ministero.
 **Incarichi** — assegnazione fra membri, priorità, scadenze, presa in carico,
 passaggio, riapertura. Storico scritto dai trigger del database.
 
-**Impostazioni** — password, abbonamento e rimborso, scheda per l'elenco
-pubblico studi, carta intestata, tipografia dei documenti, dati del difensore,
-orari per il portale, Google Calendar (OAuth + ICS + import), WhatsApp,
-caselle PEC, modelli.
+**Impostazioni** — guida "Come usare Themis" scaricabile in PDF (presente
+anche in Domande frequenti), password, abbonamento e rimborso, scheda per
+l'elenco pubblico studi, carta intestata, tipografia dei documenti, dati del
+difensore, orari per il portale, Google Calendar (OAuth + ICS + import),
+caselle PEC, modelli. La sezione WhatsApp è nascosta insieme al resto della
+funzionalità (§12).
 
 **Collaboratori** e **Registro attività** — solo titolare.
 
@@ -367,20 +379,22 @@ Tre ruoli applicativi più l'amministratore (identificato dall'email, non dal ru
 | PEC | inviare una PEC ("è un atto giuridico"), aggiungere/rimuovere caselle |
 | Collaboratori | invitare, disattivare, rimuovere |
 | Google Calendar | collegare, scollegare, mettere in pausa, importare |
-| WhatsApp | collegare e scollegare il numero |
+| WhatsApp *(sezione nascosta, vedi §12)* | collegare e scollegare il numero |
 | Calendario | creare/rigenerare/spegnere il link ICS pubblico |
 | Licenze | attivare o riscattare una chiave |
 | Interfaccia | blocco Abbonamento e Elenco studi, scheda "Studio" delle notifiche, toggle "vedi tutto lo studio" negli incarichi, eliminazione di un incarico |
 
 ### Titolare e collaboratore insieme
 
-Clienti, pratiche, fascicoli, calendario, lettura PEC, chat WhatsApp e invio
-messaggi, tutto l'assistente IA, Genera Atto, Deposito, Calcolo Danno,
-Parcelle, Patrocinio, Giustizia Civile, e la parte non riservata delle
-impostazioni.
+Clienti, pratiche, fascicoli, calendario, lettura PEC, tutto l'assistente IA,
+Genera Atto, Calcolo Danno, Parcelle, Patrocinio, Giustizia Civile, e la
+parte non riservata delle impostazioni. Chat WhatsApp e invio messaggi e
+Deposito seguirebbero la stessa regola, ma sono attualmente nascosti (§12).
 
 Le voci di menu nascoste sono una cortesia: **il controllo vero è sempre lato
-server**, nelle route API e nelle policy del database.
+server**, nelle route API e nelle policy del database. Questo vale anche per
+WhatsApp e Deposito: nascosti dal menu, ma le route restano raggiungibili
+direttamente da URL e la logica di permessi sotto è invariata.
 
 ### Posti collaboratore per piano
 
@@ -790,6 +804,36 @@ nell'interfaccia dove mostrarlo.
 
 `012_ai.sql` descrive `costo_millesimi` come "millesimi di euro"; tutto il
 codice ragiona in **dollari**. Il commento è sbagliato, non il codice.
+
+### 10. WhatsApp e Deposito nascosti dall'interfaccia (dall'11.09.2026)
+
+Entrambe le funzionalità funzionavano in modo instabile, quindi sono state
+nascoste dall'interfaccia — non rimosse dal codice. È una decisione
+deliberata, in attesa che tornino affidabili, non un bug.
+
+**Cosa è cambiato:** rimosse le voci `/whatsapp`, `/whatsapp/documenti` e
+`/deposito` da `NAV` in `src/app/(studio)/layout.tsx` e dai relativi gruppi
+in `src/app/(studio)/SidebarNav.tsx`; tolto il render di
+`<ImpostazioniWhatsapp />` da `src/app/(studio)/impostazioni/page.tsx`
+(import commentato, non cancellato); ripulite le menzioni pubbliche in
+`src/app/page.tsx`, `src/app/layout.tsx` (meta description) e
+`src/app/(studio)/domande-frequenti/page.tsx`.
+
+**Cosa NON è cambiato:** le route (`src/app/(studio)/whatsapp/`,
+`src/app/(studio)/deposito/`), le API (`src/app/api/whatsapp/*`,
+`src/app/api/themis/whatsapp*`, `src/app/api/pratiche/[id]/pacchetto-deposito/`),
+le tabelle del database, i trigger, il worker WhatsApp e le policy RLS sono
+tutti intatti e raggiungibili direttamente da URL da chi conosce il
+percorso — non sono protetti da un ruolo diverso, solo tolti dal menu.
+
+**Per riattivarle:** ripristinare le voci in `NAV`/`GRUPPI` e il render di
+`ImpostazioniWhatsapp`; non serve toccare altro.
+
+**Guida utente:** contestualmente è stata aggiunta una guida "Come usare
+Themis" in PDF (`public/guide/come-usare-themis.pdf`, generata senza alcun
+riferimento a WhatsApp o Deposito), scaricabile da Impostazioni e da Domande
+frequenti — va rigenerata e aggiornata quando le due funzionalità
+rientreranno nell'interfaccia.
 
 ---
 
