@@ -31,14 +31,14 @@ export async function POST(request: Request) {
   );
   if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
 
-  const { count: versioniPrecedenti } = await supabase.from('documenti')
-    .select('id', { count: 'exact', head: true }).eq('matter_id', matterId).eq('nome_file', file.name);
   const recordBase = {
     id: documentoId, studio_id: studioId, matter_id: matterId, nome_file: file.name, storage_path: storagePath,
   };
+  // La versione la calcola un trigger lato database (migrazione 038): sempre
+  // corretta per nome file e atomica anche con upload concorrenti, cosa che
+  // un conteggio fatto qui prima dell'insert non poteva garantire.
   let { error: dbError } = await supabase.from('documenti').insert({
-    ...recordBase, versione: (versioniPrecedenti ?? 0) + 1, hash_sha256: hashSha256,
-    dimensione_bytes: file.size, caricato_da: contesto.userId,
+    ...recordBase, hash_sha256: hashSha256, dimensione_bytes: file.size, caricato_da: contesto.userId,
   });
   // Il deploy può precedere di pochi minuti la migrazione 037: in quel
   // caso il caricamento continua a funzionare con lo schema precedente.
