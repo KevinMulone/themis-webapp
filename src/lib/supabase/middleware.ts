@@ -34,6 +34,7 @@ export async function updateSession(request: NextRequest) {
   const isPublicRoute = request.nextUrl.pathname === '/'
     || request.nextUrl.pathname.startsWith('/portale')
     || request.nextUrl.pathname.startsWith('/politica-rimborsi')
+    || request.nextUrl.pathname.startsWith('/condizioni')
     // L'informativa privacy deve restare raggiungibile senza login: è
     // requisito della verifica OAuth di Google, che la apre da fuori.
     || request.nextUrl.pathname.startsWith('/privacy')

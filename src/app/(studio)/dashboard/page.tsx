@@ -133,6 +133,7 @@ export default async function DashboardPage() {
     { count: prenotazioniInAttesaCount },
     { count: pecCount },
     { count: incarichiCount },
+    { count: eventiTotaliCount },
     { data: prossimeScadenze },
     { data: praticheRecenti },
   ] = await Promise.all([
@@ -146,6 +147,7 @@ export default async function DashboardPage() {
       .eq('tipo_pec', 'posta-certificata').eq('letta', false),
     supabase.from('incarichi').select('id', { count: 'exact', head: true })
       .eq('assegnato_a', ctx.userId).in('stato', STATI_APERTI),
+    supabase.from('eventi').select('id', { count: 'exact', head: true }).limit(1),
     supabase.from('eventi')
       .select('id, titolo, tipo, data, ora_inizio')
       .in('tipo', tipiScadenza)
@@ -166,6 +168,12 @@ export default async function DashboardPage() {
   const oggiEsteso = new Date(oggi).toLocaleDateString('it-IT', {
     day: 'numeric', month: 'long', year: 'numeric',
   });
+  const onboarding = [
+    { fatto: (clientsCount ?? 0) > 0, href: '/clienti', titolo: 'Inserisci il primo cliente', testo: 'Crea l’anagrafica da cui nasceranno le pratiche.' },
+    { fatto: (matterCount ?? 0) > 0, href: '/pratiche', titolo: 'Apri la prima pratica', testo: 'Collega cliente, materia e responsabile.' },
+    { fatto: (eventiTotaliCount ?? 0) > 0, href: '/calendario', titolo: 'Aggiungi un impegno', testo: 'Registra un’udienza, una scadenza o un appuntamento.' },
+  ];
+  const onboardingCompletati = onboarding.filter((passo) => passo.fatto).length;
 
   return (
     <div className="mx-auto max-w-7xl">
@@ -190,6 +198,35 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {onboardingCompletati < onboarding.length && (
+        <section className="mb-6 overflow-hidden rounded-[24px] bg-gradient-to-br from-bordeaux-800 to-bordeaux-950 p-6 text-white shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold-300">Primi passi</p>
+              <h2 className="mt-1 font-display text-xl font-semibold">Configura lo studio</h2>
+              <p className="mt-1 text-sm text-white/65">Tre passaggi per rendere Themis subito operativo.</p>
+            </div>
+            <span className="rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium ring-1 ring-white/10">{onboardingCompletati} di {onboarding.length}</span>
+          </div>
+          <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-white/10">
+            <div className="h-full rounded-full bg-gold-400 transition-all" style={{ width: `${(onboardingCompletati / onboarding.length) * 100}%` }} />
+          </div>
+          <div className="mt-5 grid gap-2 md:grid-cols-2">
+            {onboarding.map((passo, indice) => (
+              <Link key={passo.titolo} href={passo.href} className={`flex items-start gap-3 rounded-2xl p-3 ring-1 transition ${passo.fatto ? 'bg-white/5 text-white/45 ring-white/5' : 'bg-white/10 ring-white/10 hover:bg-white/15'}`}>
+                <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${passo.fatto ? 'bg-emerald-400/20 text-emerald-200' : 'bg-gold-400 text-bordeaux-950'}`}>
+                  {passo.fatto ? '✓' : indice + 1}
+                </span>
+                <span>
+                  <span className={`block text-sm font-medium ${passo.fatto ? 'line-through' : ''}`}>{passo.titolo}</span>
+                  <span className="mt-0.5 block text-xs text-white/50">{passo.testo}</span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
         <Tessera

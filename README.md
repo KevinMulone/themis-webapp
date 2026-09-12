@@ -239,6 +239,10 @@ cavallo del cambio dell'ora finirebbe nell'ora sbagliata.
 | `CRON_SECRET` | ✅ | Autorizza il cron PEC (senza, la porta resta chiusa) |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | ⚙️ | Google Calendar via OAuth |
 | `WHATSAPP_WORKER_URL`, `WHATSAPP_WORKER_SECRET` | ⚙️ | Servizio WhatsApp |
+| `THEMIS_ENABLE_WHATSAPP` | ⚙️ | `true` riattiva pagine e API WhatsApp; assente significa disabilitato |
+| `THEMIS_ENABLE_DEPOSITO` | ⚙️ | `true` riattiva pagina e API Deposito; assente significa disabilitato |
+| `LEGAL_ENTITY_NAME`, `LEGAL_ENTITY_ADDRESS`, `LEGAL_ENTITY_VAT` | ✅ | Identità del fornitore mostrata nei documenti legali |
+| `PRIVACY_CONTACT_EMAIL` | ✅ | Contatto privacy; senza i quattro dati legali le registrazioni restano sospese |
 
 ### Worker WhatsApp (Railway / Fly.io)
 
@@ -258,9 +262,12 @@ cavallo del cambio dell'ora finirebbe nell'ora sbagliata.
 
 ### Area studio (`/dashboard` e seguenti)
 
-**Dashboard** — sei tessere cliccabili (clienti, pratiche attive,
+**Dashboard** — onboarding guidato per i nuovi studi, sei tessere cliccabili (clienti, pratiche attive,
 udienze/termini a 7 giorni, prenotazioni da confermare, PEC non lette,
 incarichi assegnati a me), prossime scadenze, pratiche recenti, azioni rapide.
+
+**Ricerca globale** — `⌘K` / `Ctrl+K` cerca insieme clienti, pratiche,
+documenti e PEC, mantenendo l'isolamento RLS dello studio.
 
 **Clienti** — anagrafica persone fisiche e giuridiche, ricerca su
 nome/CF/P.IVA/email/telefono, filtri, ordinamento, paginazione, export CSV
@@ -751,7 +758,7 @@ SLpct).
 prontuario resta vuota. **Rimedio:** eseguire
 `supabase/migrations/026_dati_professionista_deposito.sql`.
 
-### 2. Doppia notifica per ogni PEC ricevuta
+### 2. Doppia notifica per ogni PEC ricevuta — correzione pronta
 
 **Verificato in produzione:** ogni PEC in arrivo genera **due** righe in
 `notifiche`, una per trigger:
@@ -761,13 +768,13 @@ prontuario resta vuota. **Rimedio:** eseguire
 - `pec_messaggi_notifica` (migrazione 024) → tipo `pec_ricevuta`, destinatario
   valorizzato, `chiave_unicita = 'pec:'||id`
 
-La 024 sembra pensata per sostituire la 010, ma non ne elimina il trigger, e le
-chiavi non collidono. **Rimedio:** decidere quale tenere ed eliminare l'altro.
+La migrazione `036_correzioni_pec_ai.sql` elimina il trigger precedente e tiene
+la notifica idempotente introdotta dalla 024. Deve essere applicata in produzione.
 
-### 3. Il consumo IA della redazione PEC è etichettato `bozza`
+### 3. Il consumo IA della redazione PEC era etichettato `bozza` — corretto nel codice
 
-`/api/themis/pec` registra il consumo sotto la stessa etichetta di
-`/api/themis/bozza`: nelle statistiche i due usi non si distinguono.
+`/api/themis/pec` registra ora il consumo come `pec`; `bozza` resta riservato
+agli atti. Non è necessaria una modifica allo schema perché il campo è testuale.
 
 ### 4. Nessun test automatico sui calcoli forensi
 
@@ -782,11 +789,11 @@ condiviso>`, in entrambe le direzioni. Nessuna firma HMAC, nessun timestamp,
 nessuna protezione anti-replay (l'equivalente di `X-Hub-Signature-256` di Meta
 non esiste qui).
 
-### 6. Resend senza gestione errori
+### 6. Resend — correzione pronta
 
-`resend.emails.send(...)` è chiamato senza `try/catch`, senza retry e senza
-controllo della risposta; i template HTML interpolano valori **non escapati**.
-Un fallimento nell'invio della chiave di licenza passerebbe inosservato.
+L'invio ora controlla la risposta, ritenta gli errori transitori ed esegue
+l'escaping dei valori interpolati. Le licenze create dal webhook Stripe sono
+deterministiche per evento: un retry invia la stessa chiave valida.
 
 ### 7. Fragilità intrinseca di WhatsApp
 
@@ -805,10 +812,10 @@ nell'interfaccia dove mostrarlo.
 `012_ai.sql` descrive `costo_millesimi` come "millesimi di euro"; tutto il
 codice ragiona in **dollari**. Il commento è sbagliato, non il codice.
 
-### 10. WhatsApp e Deposito nascosti dall'interfaccia (dall'11.09.2026)
+### 10. WhatsApp e Deposito disabilitati (dall'11.09.2026)
 
 Entrambe le funzionalità funzionavano in modo instabile, quindi sono state
-nascoste dall'interfaccia — non rimosse dal codice. È una decisione
+disabilitate per impostazione predefinita — non rimosse dal codice. È una decisione
 deliberata, in attesa che tornino affidabili, non un bug.
 
 **Cosa è cambiato:** rimosse le voci `/whatsapp`, `/whatsapp/documenti` e
@@ -819,15 +826,16 @@ in `src/app/(studio)/SidebarNav.tsx`; tolto il render di
 `src/app/page.tsx`, `src/app/layout.tsx` (meta description) e
 `src/app/(studio)/domande-frequenti/page.tsx`.
 
-**Cosa NON è cambiato:** le route (`src/app/(studio)/whatsapp/`,
+**Il codice resta presente:** le route (`src/app/(studio)/whatsapp/`,
 `src/app/(studio)/deposito/`), le API (`src/app/api/whatsapp/*`,
 `src/app/api/themis/whatsapp*`, `src/app/api/pratiche/[id]/pacchetto-deposito/`),
 le tabelle del database, i trigger, il worker WhatsApp e le policy RLS sono
-tutti intatti e raggiungibili direttamente da URL da chi conosce il
-percorso — non sono protetti da un ruolo diverso, solo tolti dal menu.
+tutti intatti. Il proxy restituisce però `404` alle API e rimanda le pagine
+alla dashboard finché i rispettivi feature flag non sono esplicitamente attivi.
 
-**Per riattivarle:** ripristinare le voci in `NAV`/`GRUPPI` e il render di
-`ImpostazioniWhatsapp`; non serve toccare altro.
+**Per riattivarle:** impostare `THEMIS_ENABLE_WHATSAPP=true` e/o
+`THEMIS_ENABLE_DEPOSITO=true`, poi ripristinare le rispettive voci in
+`NAV`/`GRUPPI` e il render di `ImpostazioniWhatsapp`.
 
 **Guida utente:** contestualmente è stata aggiunta una guida "Come usare
 Themis" in PDF (`public/guide/come-usare-themis.pdf`, generata senza alcun

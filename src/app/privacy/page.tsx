@@ -1,4 +1,5 @@
 import BrandHero from '@/components/BrandHero';
+import { identitaLegale } from '@/lib/legal';
 
 /**
  * L'informativa privacy pubblica di Themis.
@@ -10,17 +11,18 @@ import BrandHero from '@/components/BrandHero';
  * dell'account Google vengono usati e per farne cosa — compresa
  * l'aderenza alla Limited Use policy, che Google cerca alla lettera.
  *
- * I dati del titolare del trattamento sono segnaposto: vanno riempiti
- * prima di presentare la domanda a Google e prima di qualunque uso reale.
+ * I dati del titolare arrivano dalla configurazione del deploy. Se mancano,
+ * la pagina lo dichiara e la registrazione di nuovi studi resta sospesa.
  */
 export default function PrivacyPage() {
+  const identita = identitaLegale();
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
       <BrandHero />
       <h1 className="mb-2 text-center font-display text-2xl font-semibold text-neutral-900">
         Informativa sul trattamento dei dati
       </h1>
-      <p className="mb-6 text-center text-xs text-neutral-500">Ultimo aggiornamento: 2 settembre 2026</p>
+      <p className="mb-6 text-center text-xs text-neutral-500">Ultimo aggiornamento: 12 settembre 2026</p>
 
       <div className="space-y-4 rounded-xl bg-neutral-50 p-8 text-sm leading-relaxed text-neutral-700">
         <p>
@@ -30,10 +32,17 @@ export default function PrivacyPage() {
         </p>
 
         <h2 className="pt-2 font-semibold text-neutral-900">Titolare del trattamento</h2>
-        <p>
-          [DA COMPLETARE: denominazione, sede e partita IVA del titolare] — contatto per ogni questione
-          relativa ai dati: [DA COMPLETARE: indirizzo email].
-        </p>
+        {identita.completa ? (
+          <p>
+            <strong>{identita.denominazione}</strong>, con sede in {identita.sede}, P. IVA {identita.partitaIva}.
+            Contatto per ogni questione relativa ai dati: <a className="underline" href={`mailto:${identita.emailPrivacy}`}>{identita.emailPrivacy}</a>.
+          </p>
+        ) : (
+          <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
+            I dati identificativi del titolare del trattamento sono in aggiornamento. Le nuove registrazioni
+            restano sospese fino al loro completamento.
+          </p>
+        )}
 
         <h2 className="pt-2 font-semibold text-neutral-900">Due livelli distinti di responsabilità</h2>
         <p>

@@ -230,7 +230,7 @@ export async function POST(request: Request) {
       }],
     }));
 
-    await registraUtilizzo(contesto.studioId, 'bozza', risposta.usage);
+    await registraUtilizzo(contesto.studioId, 'pec', risposta.usage);
 
     const completo = risposta.content
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')

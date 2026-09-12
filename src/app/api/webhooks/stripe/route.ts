@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/stripe/client';
@@ -49,20 +49,30 @@ export async function POST(request: Request) {
       const subscriptionId = session.subscription as string;
       const email = session.customer_details?.email;
 
-      const licenseId = randomUUID().replace(/-/g, '').slice(0, 12);
+      // Stesso evento Stripe => stessa chiave. Se l'email fallisce possiamo
+      // far ritentare Stripe senza produrre licenze diverse o invalide.
+      const licenseId = createHash('sha256').update(event.id).digest('hex').slice(0, 12);
       const expiresAtSentinel = `DAYS:${PLANS[planKey].days}`;
       const key = generateLicenseKey(licenseId, expiresAtSentinel, planKey);
 
-      await admin.from('issued_licenses').insert({
+      const { error: erroreLicenza } = await admin.from('issued_licenses').upsert({
         license_id: licenseId,
         plan: planKey,
         expires_at: expiresAtSentinel,
         stripe_customer_id: customerId,
         stripe_subscription_id: subscriptionId,
-      });
+      }, { onConflict: 'license_id', ignoreDuplicates: true });
+      if (erroreLicenza) throw new Error(`Licenza non registrata: ${erroreLicenza.message}`);
 
       if (email) {
-        await sendLicenseKeyEmail({ to: email, key, planLabel: PLANS[planKey].label });
+        try {
+          await sendLicenseKeyEmail({ to: email, key, planLabel: PLANS[planKey].label });
+        } catch (errore) {
+          // Consente a Stripe di ritentare. La chiave è deterministica, quindi
+          // un'eventuale consegna duplicata contiene sempre la stessa chiave.
+          await admin.from('stripe_webhook_events').delete().eq('id', event.id);
+          throw errore;
+        }
       }
       break;
     }

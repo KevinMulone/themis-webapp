@@ -35,17 +35,30 @@ export async function POST() {
   // Kevin ha chiesto che la richiesta di rimborso sospenda subito l'account:
   // il cliente non deve poter continuare a usare il servizio mentre aspetta
   // che il rimborso venga elaborato manualmente.
-  await admin.from('studios').update({
+  const { error: erroreSospensione } = await admin.from('studios').update({
     refund_requested_at: new Date().toISOString(),
     subscription_status: 'suspended',
   }).eq('id', user.id);
+  if (erroreSospensione) {
+    return NextResponse.json({ error: 'Non è stato possibile registrare la richiesta' }, { status: 500 });
+  }
 
-  await sendRefundRequestEmail({
-    nomeStudio: studio.nome_studio,
-    email: studio.email,
-    plan: studio.plan,
-    stripeCustomerId: studio.stripe_customer_id,
-  });
+  try {
+    await sendRefundRequestEmail({
+      nomeStudio: studio.nome_studio,
+      email: studio.email,
+      plan: studio.plan,
+      stripeCustomerId: studio.stripe_customer_id,
+    });
+  } catch {
+    // Se l'avviso all'amministratore non parte, non lasciare l'account
+    // sospeso con una richiesta che nessuno sa di dover lavorare.
+    await admin.from('studios').update({
+      refund_requested_at: null,
+      subscription_status: 'active',
+    }).eq('id', user.id).eq('subscription_status', 'suspended');
+    return NextResponse.json({ error: 'Richiesta non inviata. Riprova tra qualche minuto.' }, { status: 502 });
+  }
 
   return NextResponse.json({ ok: true });
 }
