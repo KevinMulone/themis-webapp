@@ -11,7 +11,7 @@ export default function CondizioniPage() {
       <div className="space-y-5 rounded-xl bg-neutral-50 p-8 text-sm leading-relaxed text-neutral-700">
         {!identita.completa && (
           <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
-            Documento in attesa dei dati identificativi del fornitore. Le nuove registrazioni sono sospese.
+            Documento in attesa dei dati identificativi del fornitore.
           </p>
         )}
         <section>
@@ -40,7 +40,7 @@ export default function CondizioniPage() {
         </section>
         <section>
           <h2 className="font-semibold text-neutral-900">Contatti</h2>
-          <p className="mt-2">{identita.completa ? <a className="underline" href={`mailto:${identita.emailPrivacy}`}>{identita.emailPrivacy}</a> : 'I contatti saranno pubblicati prima della riapertura delle registrazioni.'}</p>
+          <p className="mt-2">{identita.completa ? <a className="underline" href={`mailto:${identita.emailPrivacy}`}>{identita.emailPrivacy}</a> : 'I contatti saranno pubblicati a breve.'}</p>
         </section>
       </div>
     </div>
