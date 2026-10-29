@@ -39,8 +39,7 @@ export default function PrivacyPage() {
           </p>
         ) : (
           <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
-            I dati identificativi del titolare del trattamento sono in aggiornamento. Le nuove registrazioni
-            restano sospese fino al loro completamento.
+            I dati identificativi del titolare del trattamento sono in aggiornamento.
           </p>
         )}
 
