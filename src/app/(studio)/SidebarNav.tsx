@@ -10,7 +10,7 @@ import { Icon, type NomeIcona } from '@/components/ui/Icon';
 
 type NavItem = { href: string; label: string; badge?: number };
 type RisultatoRicerca = {
-  tipo: 'cliente' | 'pratica' | 'documento' | 'pec';
+  tipo: 'cliente' | 'pratica' | 'documento';
   id: string; titolo: string; sottotitolo: string; href: string;
 };
 
@@ -21,7 +21,6 @@ const ICONE: Record<string, NomeIcona> = {
   '/themis': 'themis',
   '/incarichi': 'incarichi',
   '/calendario': 'calendario',
-  '/pec': 'pec',
   '/whatsapp': 'whatsapp',
   '/whatsapp/documenti': 'documento',
   '/genera': 'genera',
@@ -245,13 +244,13 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
           >
             <div className="flex items-center gap-3 border-b border-neutral-100 px-5 py-4">
               <Icon nome="cerca" className="h-5 w-5 text-bordeaux-600" />
-              <label htmlFor="ricerca-globale" className="sr-only">Cerca clienti, pratiche, documenti e PEC</label>
+              <label htmlFor="ricerca-globale" className="sr-only">Cerca clienti, pratiche e documenti</label>
               <input
                 ref={inputRicerca}
                 id="ricerca-globale"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Cerca cliente, R.G., documento o PEC…"
+                placeholder="Cerca cliente, R.G. o documento…"
                 className="min-w-0 flex-1 bg-transparent text-base text-neutral-900 outline-none placeholder:text-neutral-400"
               />
               <button type="button" onClick={() => setRicercaAperta(false)} className="rounded-lg px-2 py-1 text-xs text-neutral-400 hover:bg-neutral-100">ESC</button>
@@ -271,7 +270,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
                   className="flex items-center gap-3 rounded-xl px-3 py-3 hover:bg-neutral-50"
                 >
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-bordeaux-50 text-bordeaux-600">
-                    <Icon nome={risultato.tipo === 'cliente' ? 'utente' : risultato.tipo === 'pec' ? 'pec' : 'documento'} className="h-[18px] w-[18px]" />
+                    <Icon nome={risultato.tipo === 'cliente' ? 'utente' : 'documento'} className="h-[18px] w-[18px]" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-medium text-neutral-800">{risultato.titolo}</span>
