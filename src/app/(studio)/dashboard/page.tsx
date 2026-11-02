@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { contestoStudio } from '@/lib/studio/contesto';
+import { pecAbilitata } from '@/lib/featureFlags';
 import { oggiIso, addDaysIso } from '@/lib/dateUtils';
 import { TIPI_EVENTO, TIPI_PRATICA, STATI_PRATICA, labelFromOptions, clientLabel, formatDateIt } from '@/lib/constants';
 import { STATI_APERTI } from '@/lib/incarichi';
@@ -260,11 +261,13 @@ export default async function DashboardPage() {
           valore={prenotazioniInAttesaCount ?? 0} titolo="Prenotazioni da confermare"
           allerta={(prenotazioniInAttesaCount ?? 0) > 0}
         />
-        <Tessera
-          href="/pec" icona="pec" tinta="blu"
-          valore={pecCount ?? 0} titolo="Messaggi PEC" sottotitolo="Non letti · tutti i periodi"
-          allerta={(pecCount ?? 0) > 0}
-        />
+        {pecAbilitata() && (
+          <Tessera
+            href="/pec" icona="pec" tinta="blu"
+            valore={pecCount ?? 0} titolo="Messaggi PEC" sottotitolo="Non letti · tutti i periodi"
+            allerta={(pecCount ?? 0) > 0}
+          />
+        )}
         <Tessera
           href="/incarichi" icona="incarichi" tinta="bordeaux"
           valore={incarichiCount ?? 0} titolo="Incarichi da fare" sottotitolo="Aperti"
@@ -345,7 +348,7 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <AzioneRapida href="/clienti" icona="clienti" testo="Nuovo cliente" />
           <AzioneRapida href="/pratiche" icona="pratiche" testo="Nuova pratica" />
-          <AzioneRapida href="/pec" icona="pec" testo="Nuova PEC" />
+          {pecAbilitata() && <AzioneRapida href="/pec" icona="pec" testo="Nuova PEC" />}
           <AzioneRapida href="/incarichi" icona="incarichi" testo="Nuovo incarico" />
           <AzioneRapida href="/calendario" icona="calendario" testo="Nuovo appuntamento" />
         </div>
