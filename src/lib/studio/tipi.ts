@@ -33,8 +33,4 @@ export type ContestoStudio = {
 export type ContestoStudioClient = Pick<
   ContestoStudio,
   'userId' | 'studioId' | 'ruolo' | 'nomeStudio'
-> & {
-  /** Le pagine client non leggono le variabili del server: il layout
-   *  passa qui lo stato dell'interruttore THEMIS_ENABLE_PEC. */
-  pecAbilitata: boolean;
-};
+>;
