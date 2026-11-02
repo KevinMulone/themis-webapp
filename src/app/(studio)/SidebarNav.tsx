@@ -30,6 +30,7 @@ const ICONE: Record<string, NomeIcona> = {
   '/parcelle': 'parcelle',
   '/patrocinio': 'patrocinio',
   '/registri-giustizia': 'cerca',
+  '/fascicoli-rfid': 'documento',
   '/studi': 'edificio',
   '/domande-frequenti': 'aiuto',
   '/attivita': 'attivita',
@@ -40,7 +41,7 @@ const ICONE: Record<string, NomeIcona> = {
 const GRUPPI: { titolo: string; hrefs: string[] }[] = [
   { titolo: 'Studio', hrefs: ['/dashboard', '/clienti', '/pratiche', '/themis', '/incarichi'] },
   { titolo: 'Comunicazioni', hrefs: ['/calendario', '/pec'] },
-  { titolo: 'Strumenti', hrefs: ['/genera', '/calcolo-danno', '/parcelle', '/patrocinio', '/registri-giustizia'] },
+  { titolo: 'Strumenti', hrefs: ['/genera', '/calcolo-danno', '/parcelle', '/patrocinio', '/registri-giustizia', '/fascicoli-rfid'] },
   { titolo: 'Account', hrefs: ['/attivita', '/collaboratori', '/impostazioni', '/studi', '/domande-frequenti'] },
 ];
 
