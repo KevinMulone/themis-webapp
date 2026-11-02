@@ -330,7 +330,7 @@ export default function CollaboratoriClient() {
       <div className="mb-4 grid grid-cols-1 gap-6 rounded-[24px] bg-white ring-1 ring-black/[0.04] p-6 md:grid-cols-3 md:divide-x md:divide-neutral-100">
         <Garanzia
           icona="lucchetto" tinta="bg-violet-50 text-violet-500" titolo="Sicuro"
-          testo="Fatturazione, caselle PEC ed eliminazioni restano solo tue."
+          testo="Fatturazione ed eliminazioni restano solo tue."
         />
         <div className="md:pl-6">
           <Garanzia
