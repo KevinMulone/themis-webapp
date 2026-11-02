@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { contestoStudio } from '@/lib/studio/contesto';
 import { clientLabel } from '@/lib/constants';
+import { pecAbilitata } from '@/lib/featureFlags';
 
 type ClienteRef = {
   tipo_soggetto: string;
@@ -62,10 +63,12 @@ export async function GET(request: Request) {
     supabase.from('documenti')
       .select('id, nome_file, matter_id')
       .eq('studio_id', ctx.studioId).ilike('nome_file', like).limit(8),
-    supabase.from('pec_messaggi')
-      .select('id, oggetto, mittente, matter_id')
-      .eq('studio_id', ctx.studioId).or(`oggetto.ilike.${like},mittente.ilike.${like}`)
-      .limit(8),
+    pecAbilitata()
+      ? supabase.from('pec_messaggi')
+        .select('id, oggetto, mittente, matter_id')
+        .eq('studio_id', ctx.studioId).or(`oggetto.ilike.${like},mittente.ilike.${like}`)
+        .limit(8)
+      : { data: [] as { id: string; oggetto: string | null; mittente: string | null; matter_id: string | null }[], error: null },
   ]);
 
   const risultati: RisultatoRicerca[] = [];
