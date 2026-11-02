@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import SincronizzazionePec from './SincronizzazionePec';
+import { pecAbilitata } from '@/lib/featureFlags';
 import { oggiIso } from '@/lib/dateUtils';
 import { contestoStudio, eCollaboratoreDisattivato } from '@/lib/studio/contesto';
 import { createClient } from '@/lib/supabase/server';
@@ -80,8 +81,9 @@ export default async function StudioLayout({ children }: { children: React.React
     .eq('assegnato_a', ctx.userId)
     .in('stato', STATI_APERTI);
 
+  const pec = pecAbilitata();
   const voci = [
-    ...NAV,
+    ...NAV.filter((v) => pec || v.href !== '/pec'),
     ...(ctx.ruolo === 'titolare' ? NAV_TITOLARE : []),
     NAV_IMPOSTAZIONI,
   ].map((v) =>
@@ -90,7 +92,7 @@ export default async function StudioLayout({ children }: { children: React.React
 
   return (
     <StudioProvider
-      valore={{ userId: ctx.userId, studioId: ctx.studioId, ruolo: ctx.ruolo, nomeStudio: ctx.nomeStudio }}
+      valore={{ userId: ctx.userId, studioId: ctx.studioId, ruolo: ctx.ruolo, nomeStudio: ctx.nomeStudio, pecAbilitata: pec }}
     >
       <div className="app-shell flex min-h-screen flex-col lg:flex-row">
         <UsageTracker />
@@ -100,7 +102,7 @@ export default async function StudioLayout({ children }: { children: React.React
           abbonamentoLabel={giorniRimanenti(ctx.subscriptionExpiresAt)}
         />
         <main className="studio-page relative flex-1 overflow-y-auto p-4 lg:p-8 xl:p-10">
-          <SincronizzazionePec />
+          {pec && <SincronizzazionePec />}
           {children}
         </main>
       </div>
