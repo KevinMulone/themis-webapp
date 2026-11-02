@@ -57,7 +57,7 @@ const GESTORI_PEC: { nome: string; host: string; porta: number }[] = [
 
 export default function ImpostazioniPage() {
   const supabase = createClient();
-  const { studioId, userId, ruolo } = useStudio();
+  const { studioId, userId, ruolo, pecAbilitata } = useStudio();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [settings, setSettings] = useState<Settings>({ font_family: 'Times New Roman', font_size_pt: 12, line_spacing: 1.5 });
   const [avvocato, setAvvocato] = useState<DatiAvvocato>(AVVOCATO_VUOTO);
@@ -737,7 +737,7 @@ export default function ImpostazioniPage() {
         {[
           ['sicurezza', 'Sicurezza'], ['abbonamento', 'Abbonamento'], ['documenti', 'Documenti'],
           ['deposito', 'Deposito'], ['portale', 'Portale'], ['calendario', 'Calendario'],
-          ['pec', 'PEC'], ['modelli', 'Modelli'],
+          ...(pecAbilitata ? [['pec', 'PEC']] : []), ['modelli', 'Modelli'],
         ].map(([id, label]) => <a key={id} href={`#${id}`} className="shrink-0 rounded-xl px-3.5 py-2 text-xs font-semibold text-neutral-600 hover:bg-bordeaux-50 hover:text-bordeaux-700">{label}</a>)}
       </nav>
 
@@ -1209,6 +1209,7 @@ export default function ImpostazioniPage() {
         )}
       </div>
 
+      {pecAbilitata && (
       <div id="pec" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold text-neutral-900">Caselle PEC</h2>
@@ -1420,6 +1421,7 @@ export default function ImpostazioniPage() {
           </div>
         </form>
       </div>
+      )}
 
       <div id="modelli" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Modelli disponibili ({templates.length})</h2>
