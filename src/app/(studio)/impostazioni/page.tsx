@@ -21,10 +21,6 @@ const AVVOCATO_VUOTO: DatiAvvocato = {
   avvocato_indirizzo: '', avvocato_cap: '', avvocato_citta: '', avvocato_provincia: '',
 };
 type DayRule = { open: boolean; start_time: string; end_time: string };
-type PecAccount = {
-  id: string; etichetta: string; indirizzo_pec: string; imap_host: string; imap_port: number;
-  imap_user: string; attivo: boolean; ultimo_controllo_at: string | null; ultimo_errore: string | null;
-};
 type Abbonamento = {
   stripe_customer_id: string | null; plan: string | null;
   subscription_status: string; subscription_expires_at: string | null;
@@ -50,14 +46,9 @@ const FONT_CHOICES = ['Times New Roman', 'Garamond', 'Georgia', 'Cambria', 'Cali
 const LINE_SPACING_CHOICES = [1.0, 1.15, 1.5, 2.0];
 const GIORNI = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
 const DEFAULT_DAY: DayRule = { open: false, start_time: '09:00', end_time: '13:00' };
-const GESTORI_PEC: { nome: string; host: string; porta: number }[] = [
-  { nome: 'Aruba', host: 'imaps.pec.aruba.it', porta: 993 },
-  { nome: 'Namirial / Sicurezza Postale', host: 'imaps.sicurezzapostale.it', porta: 993 },
-];
-
 export default function ImpostazioniPage() {
   const supabase = createClient();
-  const { studioId, userId, ruolo, pecAbilitata } = useStudio();
+  const { studioId, userId, ruolo } = useStudio();
   const [templates, setTemplates] = useState<Template[]>([]);
   const [settings, setSettings] = useState<Settings>({ font_family: 'Times New Roman', font_size_pt: 12, line_spacing: 1.5 });
   const [avvocato, setAvvocato] = useState<DatiAvvocato>(AVVOCATO_VUOTO);
@@ -70,26 +61,6 @@ export default function ImpostazioniPage() {
   const [passwordMsg, setPasswordMsg] = useState<{ type: 'ok' | 'error'; text: string } | null>(null);
   const templateFileRef = useRef<HTMLInputElement>(null);
   const letterheadFileRef = useRef<HTMLInputElement>(null);
-  const [pecAccounts, setPecAccounts] = useState<PecAccount[]>([]);
-  const [pecHost, setPecHost] = useState('');
-  const [pecPort, setPecPort] = useState(993);
-  const [pecFormError, setPecFormError] = useState('');
-  const [pecSalvando, setPecSalvando] = useState(false);
-  const [pecSincronizzando, setPecSincronizzando] = useState(false);
-  const [pecSyncMsg, setPecSyncMsg] = useState('');
-  const [pecSecondi, setPecSecondi] = useState(0);
-  const [pecAncora, setPecAncora] = useState(false);
-  const [pecArretrato, setPecArretrato] = useState(false);
-  const [pecGiro, setPecGiro] = useState(0);
-  const [pecTotaleArretrato, setPecTotaleArretrato] = useState(0);
-  const pecInterrompi = useRef(false);
-  const [pecCartelle, setPecCartelle] = useState<{ nome: string; percorso: string; messaggi: number }[] | null>(null);
-  const [pecScaricati, setPecScaricati] = useState(0);
-  const [pecDiagnosi, setPecDiagnosi] = useState('');
-  const [pecPasswordId, setPecPasswordId] = useState('');
-  const [pecNuovaPassword, setPecNuovaPassword] = useState('');
-  const [pecPwdMsg, setPecPwdMsg] = useState('');
-  const pecFormRef = useRef<HTMLFormElement>(null);
   const [abbonamento, setAbbonamento] = useState<Abbonamento | null>(null);
   const [portaleLoading, setPortaleLoading] = useState(false);
   const [mostraPinAdmin, setMostraPinAdmin] = useState(false);
@@ -286,14 +257,11 @@ export default function ImpostazioniPage() {
   }, []);
 
   async function load() {
-    const [{ data: tpl }, { data: s }, letterheadRes, { data: rules }, { data: pec }, { data: studio }, { data: google }] = await Promise.all([
+    const [{ data: tpl }, { data: s }, letterheadRes, { data: rules }, { data: studio }, { data: google }] = await Promise.all([
       supabase.from('templates').select('id, nome, categoria, descrizione, studio_id').eq('attivo', true).order('categoria'),
       supabase.from('studio_settings').select('*').eq('studio_id', studioId).single(),
       fetch('/api/settings/letterhead'),
       supabase.from('availability_rules').select('*').eq('studio_id', studioId),
-      supabase.from('pec_account')
-        .select('id, etichetta, indirizzo_pec, imap_host, imap_port, imap_user, attivo, ultimo_controllo_at, ultimo_errore')
-        .order('created_at'),
       // Volutamente userId e non studioId: l'abbonamento è del titolare,
       // non dello studio inteso come gruppo di persone. Vale ovunque si
       // legga studios per Stripe, scadenze o rimborsi — un domani un
@@ -330,7 +298,6 @@ export default function ImpostazioniPage() {
       setDays(newDays);
       setSlotMinutes(rules[0].slot_minutes);
     }
-    setPecAccounts(pec || []);
   }
 
   useEffect(() => { load(); }, []);
@@ -361,36 +328,6 @@ export default function ImpostazioniPage() {
   async function handleRemoveLetterhead() {
     if (!confirm("Rimuovere l'intestazione?")) return;
     await fetch('/api/settings/letterhead', { method: 'DELETE' });
-    load();
-  }
-
-  /**
-   * Cambia solo la password di una casella già inserita.
-   *
-   * Prima l'unico modo era rimuovere e riaggiungere: quattro campi
-   * riscritti per cambiarne uno, e con una password che di solito si
-   * sbaglia un paio di volte prima di azzeccarla. Gli altri parametri
-   * vengono rimandati identici, perché la route li richiede tutti.
-   */
-  async function handleCambiaPassword(a: PecAccount) {
-    if (!pecNuovaPassword.trim()) return;
-    setPecPwdMsg('');
-    const res = await fetch('/api/pec/account', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: a.id, etichetta: a.etichetta, indirizzo_pec: a.indirizzo_pec,
-        imap_host: a.imap_host, imap_port: a.imap_port, imap_user: a.imap_user,
-        password: pecNuovaPassword,
-      }),
-    });
-    if (!res.ok) {
-      const b = await res.json().catch(() => ({ error: 'Errore' }));
-      setPecPwdMsg(b.error || 'Non riuscito');
-      return;
-    }
-    setPecNuovaPassword('');
-    setPecPasswordId('');
-    setPecPwdMsg('');
     load();
   }
 
@@ -488,188 +425,6 @@ export default function ImpostazioniPage() {
     (e.target as HTMLFormElement).reset();
   }
 
-  async function handleAddPecAccount(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setPecFormError('');
-    const form = new FormData(e.currentTarget);
-    setPecSalvando(true);
-    const res = await fetch('/api/pec/account', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        etichetta: form.get('etichetta'),
-        indirizzo_pec: form.get('indirizzo_pec'),
-        imap_host: form.get('imap_host'),
-        imap_port: Number(form.get('imap_port')),
-        imap_user: form.get('imap_user'),
-        password: form.get('password'),
-      }),
-    });
-    const body = await res.json();
-    setPecSalvando(false);
-    if (!res.ok) { setPecFormError(body.error || 'Errore di salvataggio'); return; }
-    pecFormRef.current?.reset();
-    setPecHost('');
-    setPecPort(993);
-    load();
-  }
-
-  async function handleDeletePecAccount(id: string) {
-    if (!confirm('Rimuovere questa casella PEC? I messaggi già scaricati restano nello storico.')) return;
-    await fetch(`/api/pec/account?id=${id}`, { method: 'DELETE' });
-    load();
-  }
-
-  // Un cronometro invece di una percentuale: IMAP non dice a che punto è
-  // dello scarico, e una barra che finge di sapere quanto manca è peggio
-  // di una che dice onestamente «sto lavorando da 40 secondi».
-  useEffect(() => {
-    if (!pecSincronizzando) return;
-    const t = setInterval(() => setPecSecondi((n) => n + 1), 1000);
-    return () => clearInterval(t);
-  }, [pecSincronizzando]);
-
-  async function handleSyncPec() {
-    setPecSincronizzando(true);
-    setPecSyncMsg('');
-    setPecAncora(false);
-    setPecSecondi(0);
-    try {
-      const res = await fetch('/api/pec/sync', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ modo: 'nuovi' }),
-      });
-      const body = await res.json();
-      if (!res.ok) { setPecSyncMsg(`Errore: ${body.error}`); return; }
-      const risultati = (body.risultati || []) as
-        { messaggiScaricati: number; restanti?: number; saltati?: number }[];
-      const totale = risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
-      const saltati = risultati.reduce((s, r) => s + (r.saltati ?? 0), 0);
-      // Ora il server dice quante ne restano davvero, invece di farlo
-      // dedurre dal fatto che il giro era pieno.
-      const ancora = risultati.reduce((s, r) => s + (r.restanti ?? 0), 0);
-      setPecAncora(ancora > 0);
-      setPecSyncMsg(
-        (totale > 0
-          ? `${totale} messaggi scaricati${ancora > 0 ? `, altri ${ancora} da prendere.` : '.'}`
-          : 'Nessun messaggio nuovo.')
-        + (saltati > 0 ? ` ${saltati} non archiviati perché troppo grandi: restano nella webmail.` : ''),
-      );
-      load();
-    } catch {
-      setPecSyncMsg('La sincronizzazione si è interrotta. Riprova.');
-    } finally {
-      setPecSincronizzando(false);
-    }
-  }
-
-  /**
-   * Recupera l'arretrato ripetendo la sincronizzazione fino a esaurimento.
-   *
-   * Il ciclo sta nel browser e non nel server, e non è un ripiego: ogni
-   * giro è una richiesta che finisce per conto suo, quindi il tempo massimo
-   * della funzione non viene mai sfiorato, e i messaggi già scaricati
-   * restano salvati anche se il giro successivo fallisce. Un ciclo lato
-   * server su una casella con anni di arretrato scadrebbe a metà, e
-   * ricomincerebbe da capo ogni volta.
-   */
-  async function handleRecuperaArretrato() {
-    setPecArretrato(true);
-    pecInterrompi.current = false;
-    setPecGiro(0);
-    setPecTotaleArretrato(0);
-    setPecSyncMsg('');
-    let totale = 0;
-
-    // Tetto di sicurezza: 200 giri sono 2.000 messaggi. Serve a non
-    // lasciare un ciclo infinito acceso se il server rispondesse sempre
-    // "dieci" per un difetto suo.
-    for (let giro = 1; giro <= 200 && !pecInterrompi.current; giro++) {
-      setPecGiro(giro);
-      let risultati: { messaggiScaricati: number; letti?: number; restanti?: number }[] = [];
-      try {
-        const res = await fetch('/api/pec/sync', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ modo: 'arretrato' }),
-        });
-        const body = await res.json();
-        if (!res.ok) { setPecSyncMsg(`Interrotto al giro ${giro}: ${body.error}`); break; }
-        risultati = (body.risultati || []) as
-          { messaggiScaricati: number; letti?: number; restanti?: number }[];
-      } catch {
-        setPecSyncMsg(`Interrotto al giro ${giro}: connessione persa. I messaggi già scaricati restano.`);
-        break;
-      }
-
-      totale += risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
-      setPecTotaleArretrato(totale);
-      const ancora = risultati.reduce((s, r) => s + (r.restanti ?? 0), 0);
-      const letti = risultati.reduce((s, r) => s + (r.letti ?? 0), 0);
-
-      // Ci si ferma su quanti ne ha LETTI il server, non su quanti ne ha
-      // inseriti. Durante una rilettura i primi giri ripassano messaggi già
-      // presenti: zero inserimenti, ma il lavoro non è finito affatto.
-      // Fermarsi lì spegneva il recupero al primo giro.
-      if (letti === 0 || ancora === 0) {
-        setPecSyncMsg(totale > 0
-          ? `Ripasso completato: ${totale} messaggi nuovi in ${giro} giri.`
-          : `Ripasso completato in ${giro} giri: non mancava nulla.`);
-        setPecAncora(false);
-        break;
-      }
-    }
-
-    if (pecInterrompi.current) {
-      setPecSyncMsg(`Fermato: ${totale} messaggi recuperati. Puoi riprendere quando vuoi.`);
-    }
-    setPecArretrato(false);
-    load();
-  }
-
-  /**
-   * Rilegge la casella da capo.
-   *
-   * Serve quando dei messaggi sono stati scavalcati e il segnalibro è
-   * andato avanti senza di loro. Non crea doppioni: l'unicità su
-   * (casella, cartella, uid) fa scartare da sola ciò che c'è già.
-   */
-  async function handleRileggiTutto() {
-    if (!confirm(
-      'Rileggere la casella da capo?\n\nServe se qualche messaggio è stato saltato. '
-      + 'Non crea doppioni, ma può richiedere parecchi giri se la casella è grande.',
-    )) return;
-    setPecSincronizzando(true);
-    setPecSyncMsg('');
-    setPecSecondi(0);
-    try {
-      const res = await fetch('/api/pec/sync', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ modo: 'nuovi', azzera: true }),
-      });
-      const body = await res.json();
-      if (!res.ok) { setPecSyncMsg(`Errore: ${body.error}`); return; }
-      const risultati = (body.risultati || []) as { messaggiScaricati: number; restanti?: number }[];
-      const totale = risultati.reduce((s, r) => s + r.messaggiScaricati, 0);
-      setPecAncora(true);
-      setPecSyncMsg(`Rilettura avviata: ${totale} messaggi in questo giro. `
-        + 'Ora usa «Recupera anche le PEC più vecchie» per ripassare tutta la casella.');
-      load();
-    } finally {
-      setPecSincronizzando(false);
-    }
-  }
-
-  async function handleCartellePec(id: string) {
-    setPecDiagnosi('Lettura delle cartelle...');
-    setPecCartelle(null);
-    const res = await fetch(`/api/pec/cartelle?id=${id}`);
-    const body = await res.json();
-    if (!res.ok) { setPecDiagnosi(`Errore: ${body.error}`); return; }
-    setPecCartelle(body.cartelle || []);
-    setPecScaricati(body.scaricati ?? 0);
-    setPecDiagnosi('');
-  }
-
   async function handleGestisciAbbonamento() {
     setPortaleLoading(true);
     const res = await fetch('/api/billing-portal', { method: 'POST' });
@@ -737,7 +492,7 @@ export default function ImpostazioniPage() {
         {[
           ['sicurezza', 'Sicurezza'], ['abbonamento', 'Abbonamento'], ['documenti', 'Documenti'],
           ['deposito', 'Deposito'], ['portale', 'Portale'], ['calendario', 'Calendario'],
-          ...(pecAbilitata ? [['pec', 'PEC']] : []), ['modelli', 'Modelli'],
+          ['modelli', 'Modelli'],
         ].map(([id, label]) => <a key={id} href={`#${id}`} className="shrink-0 rounded-xl px-3.5 py-2 text-xs font-semibold text-neutral-600 hover:bg-bordeaux-50 hover:text-bordeaux-700">{label}</a>)}
       </nav>
 
@@ -983,7 +738,7 @@ export default function ImpostazioniPage() {
       <div id="calendario" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-1 font-semibold text-neutral-900">Google Calendar</h2>
         <p className="mb-3 text-xs text-neutral-500">
-          Themis resta il calendario vero — colori, collegamento alla pratica, proposte dalle PEC continuano
+          Themis resta il calendario vero — colori e collegamento alla pratica continuano
           a funzionare solo qui. Se attivo, ogni impegno creato in Themis viene copiato anche sul tuo Google
           Calendar, così lo vedi sul telefono.
         </p>
@@ -1208,220 +963,6 @@ export default function ImpostazioniPage() {
           </div>
         )}
       </div>
-
-      {pecAbilitata && (
-      <div id="pec" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-semibold text-neutral-900">Caselle PEC</h2>
-          {pecAccounts.length > 0 && (
-            <button
-              onClick={handleSyncPec} disabled={pecSincronizzando}
-              className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs hover:bg-neutral-200 disabled:opacity-50"
-            >
-              {pecSincronizzando ? 'Sincronizzazione...' : 'Scarica le nuove'}
-            </button>
-          )}
-        </div>
-        <p className="mb-3 text-xs text-neutral-500">
-          La password della PEC non basta più da sola se hai attivato la verifica in due passaggi: serve una
-          password dedicata &quot;per programmi di posta&quot;, generata dal pannello del tuo gestore. Non è la
-          password con cui accedi alla webmail.
-        </p>
-        {pecSincronizzando && (
-          <div className="mb-3">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-200">
-              <div className="h-full w-1/3 animate-[scorri_1.2s_ease-in-out_infinite] rounded-full bg-bordeaux-700" />
-            </div>
-            <p className="mt-1 text-xs text-neutral-500">
-              Lettura della casella in corso da {pecSecondi}s.
-              {pecSecondi > 20 && ' Il primo scarico è il più lento: sta aprendo la casella dall’inizio.'}
-              {pecSecondi > 90 && ' Se supera i tre minuti, la funzione scade da sola e potrai riprovare.'}
-            </p>
-          </div>
-        )}
-        {pecSyncMsg && (
-          <p className="mb-3 text-sm text-neutral-600">
-            {pecSyncMsg}
-            {pecAncora && !pecArretrato && (
-              <span className="ml-1 text-neutral-500">Ce ne sono altri in attesa.</span>
-            )}
-          </p>
-        )}
-
-        {pecDiagnosi && <p className="mb-3 text-sm text-neutral-600">{pecDiagnosi}</p>}
-        {pecCartelle && (
-          <div className="mb-3 rounded-2xl bg-white ring-1 ring-black/[0.04] p-3">
-            <p className="mb-2 text-xs font-semibold text-neutral-700">
-              Cartelle sul server · Themis ne ha archiviati {pecScaricati}
-            </p>
-            <ul className="space-y-0.5 text-xs text-neutral-600">
-              {pecCartelle.map((c) => (
-                <li key={c.percorso} className="flex justify-between gap-4">
-                  <span className="truncate">{c.nome}<span className="text-neutral-400"> ({c.percorso})</span></span>
-                  <span className="shrink-0 tabular-nums">
-                    {c.messaggi < 0 ? 'non leggibile' : `${c.messaggi} messaggi`}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-2 text-[11px] text-neutral-500">
-              Themis legge la posta in arrivo, le inviate e gli archivi. Restano fuori
-              cestino, indesiderata e bozze: non sono corrispondenza.
-            </p>
-          </div>
-        )}
-
-        {/* Si mostra sempre, non solo dopo una sincronizzazione che abbia
-            riportato arretrato: ricaricando la pagina quello stato si perde,
-            e il pulsante spariva pur essendoci ancora mezza casella da
-            prendere. Se non c'è niente da fare, lo dice premendolo. */}
-        {pecAccounts.length > 0 && !pecArretrato && !pecSincronizzando && (
-          <button
-            type="button" onClick={handleRecuperaArretrato}
-            className="premi mb-3 rounded-full bg-bordeaux-700/[0.08] px-4 py-2 text-sm font-semibold text-bordeaux-700 hover:bg-bordeaux-700/[0.14]"
-          >
-            Completa l&apos;archivio
-          </button>
-        )}
-
-        {pecArretrato && (
-          <div className="mb-3 rounded-2xl bg-white ring-1 ring-black/[0.04] p-3">
-            <div className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-neutral-200">
-              <div className="h-full w-1/3 animate-[scorri_1.2s_ease-in-out_infinite] rounded-full bg-bordeaux-700" />
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-xs text-neutral-600">
-                Giro {pecGiro} · {pecTotaleArretrato} messaggi recuperati finora.
-                Scende dalle più recenti verso le più vecchie. Puoi lasciare la pagina
-                aperta e fare altro.
-              </p>
-              <button
-                type="button" onClick={() => { pecInterrompi.current = true; }}
-                className="text-xs text-red-600 hover:underline"
-              >
-                Ferma
-              </button>
-            </div>
-          </div>
-        )}
-        {pecAccounts.length > 0 && (
-          <ul className="mb-4 divide-y divide-neutral-100 text-sm">
-            {pecAccounts.map((a) => (
-              <li key={a.id} className="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="min-w-0">
-                  <div className="font-medium text-neutral-800 break-words">{a.etichetta} — {a.indirizzo_pec}</div>
-                  <div className="text-xs text-neutral-400">
-                    {a.ultimo_controllo_at
-                      ? `Ultimo controllo: ${new Date(a.ultimo_controllo_at).toLocaleString('it-IT')}`
-                      : 'Non ancora sincronizzata'}
-                  </div>
-                  {a.ultimo_errore && <div className="text-xs text-red-600">Errore: {a.ultimo_errore}</div>}
-
-                  {pecPasswordId === a.id && (
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <input
-                        type="password" autoComplete="new-password"
-                        value={pecNuovaPassword}
-                        onChange={(e) => setPecNuovaPassword(e.target.value)}
-                        placeholder="Password per programmi di posta"
-                        className="w-64 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
-                      />
-                      <button
-                        type="button" onClick={() => handleCambiaPassword(a)}
-                        disabled={!pecNuovaPassword.trim()}
-                        className="premi rounded-full bg-bordeaux-700 px-3 py-1.5 text-xs font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50"
-                      >
-                        Salva password
-                      </button>
-                      {pecPwdMsg && <span className="text-xs text-red-600">{pecPwdMsg}</span>}
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-wrap items-center gap-3 sm:shrink-0">
-                  <button
-                    type="button" onClick={handleRileggiTutto}
-                    className="text-xs text-neutral-500 hover:underline"
-                  >
-                    Rileggi da capo
-                  </button>
-                  <button
-                    type="button" onClick={() => handleCartellePec(a.id)}
-                    className="text-xs text-neutral-500 hover:underline"
-                  >
-                    Cosa c&apos;è sul server
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPecPasswordId(pecPasswordId === a.id ? '' : a.id);
-                      setPecNuovaPassword(''); setPecPwdMsg('');
-                    }}
-                    className="text-xs text-bordeaux-700 hover:underline"
-                  >
-                    {pecPasswordId === a.id ? 'Annulla' : 'Cambia password'}
-                  </button>
-                  <button onClick={() => handleDeletePecAccount(a.id)} className="text-xs text-red-600 hover:underline">
-                    Rimuovi
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-        <form ref={pecFormRef} onSubmit={handleAddPecAccount} className="grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-neutral-200 pt-4">
-          <div className="col-span-2">
-            <label className="mb-1 block text-xs text-neutral-500">Etichetta (per riconoscerla in elenco)</label>
-            <input name="etichetta" required placeholder="Es. PEC studio" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
-          </div>
-          <div className="col-span-2">
-            <label className="mb-1 block text-xs text-neutral-500">Indirizzo PEC</label>
-            <input name="indirizzo_pec" type="email" required placeholder="nome@pec.it" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
-          </div>
-          <div className="col-span-2">
-            <label className="mb-1 block text-xs text-neutral-500">Gestore (precompila host e porta)</label>
-            <select
-              defaultValue=""
-              onChange={(e) => {
-                const g = GESTORI_PEC.find((x) => x.nome === e.target.value);
-                if (g) { setPecHost(g.host); setPecPort(g.porta); } else { setPecHost(''); setPecPort(993); }
-              }}
-              className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
-            >
-              <option value="">Altro (inserisci host manualmente)</option>
-              {GESTORI_PEC.map((g) => <option key={g.nome} value={g.nome}>{g.nome}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs text-neutral-500">Host IMAP</label>
-            <input
-              name="imap_host" required value={pecHost} onChange={(e) => setPecHost(e.target.value)}
-              placeholder="imaps.pec.esempio.it" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs text-neutral-500">Porta</label>
-            <input
-              name="imap_port" type="number" required value={pecPort} onChange={(e) => setPecPort(Number(e.target.value))}
-              className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs text-neutral-500">Nome utente IMAP</label>
-            <input name="imap_user" required placeholder="di solito l'indirizzo PEC stesso" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs text-neutral-500">Password per programmi di posta</label>
-            <input name="password" type="password" required autoComplete="new-password" className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white" />
-          </div>
-          {pecFormError && <p className="col-span-2 text-sm text-red-600">{pecFormError}</p>}
-          <div className="col-span-2 flex justify-end">
-            <button type="submit" disabled={pecSalvando} className="premi rounded-full bg-bordeaux-700 px-4 py-2 text-sm font-semibold text-white hover:bg-bordeaux-800 disabled:opacity-50">
-              {pecSalvando ? 'Salvataggio...' : 'Aggiungi casella'}
-            </button>
-          </div>
-        </form>
-      </div>
-      )}
 
       <div id="modelli" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Modelli disponibili ({templates.length})</h2>
