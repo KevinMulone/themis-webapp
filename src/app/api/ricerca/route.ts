@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { contestoStudio } from '@/lib/studio/contesto';
 import { clientLabel } from '@/lib/constants';
-import { pecAbilitata } from '@/lib/featureFlags';
 
 type ClienteRef = {
   tipo_soggetto: string;
@@ -12,7 +11,7 @@ type ClienteRef = {
 };
 
 export type RisultatoRicerca = {
-  tipo: 'cliente' | 'pratica' | 'documento' | 'pec';
+  tipo: 'cliente' | 'pratica' | 'documento';
   id: string;
   titolo: string;
   sottotitolo: string;
@@ -55,7 +54,7 @@ export async function GET(request: Request) {
     ...(clientIds.length ? [`client_id.in.(${clientIds.join(',')})`] : []),
   ].join(',');
 
-  const [pratiche, documenti, pec] = await Promise.all([
+  const [pratiche, documenti] = await Promise.all([
     supabase.from('matters')
       .select('id, tipo_pratica, rg_numero, rg_anno, numero_riferimento, controparte_nome, clients(tipo_soggetto, nome, cognome, ragione_sociale)')
       .eq('studio_id', ctx.studioId).neq('stato', 'archiviata')
@@ -63,12 +62,6 @@ export async function GET(request: Request) {
     supabase.from('documenti')
       .select('id, nome_file, matter_id')
       .eq('studio_id', ctx.studioId).ilike('nome_file', like).limit(8),
-    pecAbilitata()
-      ? supabase.from('pec_messaggi')
-        .select('id, oggetto, mittente, matter_id')
-        .eq('studio_id', ctx.studioId).or(`oggetto.ilike.${like},mittente.ilike.${like}`)
-        .limit(8)
-      : { data: [] as { id: string; oggetto: string | null; mittente: string | null; matter_id: string | null }[], error: null },
   ]);
 
   const risultati: RisultatoRicerca[] = [];
@@ -89,11 +82,8 @@ export async function GET(request: Request) {
   for (const d of documenti.data ?? []) {
     risultati.push({ tipo: 'documento', id: d.id, titolo: d.nome_file, sottotitolo: 'Documento', href: d.matter_id ? `/pratiche/${d.matter_id}` : '/pratiche' });
   }
-  for (const m of pec.data ?? []) {
-    risultati.push({ tipo: 'pec', id: m.id, titolo: m.oggetto || 'PEC senza oggetto', sottotitolo: m.mittente || 'Posta certificata', href: m.matter_id ? `/pratiche/${m.matter_id}` : '/pec' });
-  }
 
-  const errore = clienti.error || pratiche.error || documenti.error || pec.error;
+  const errore = clienti.error || pratiche.error || documenti.error;
   if (errore) {
     console.error('Ricerca globale incompleta:', errore.message);
   }
