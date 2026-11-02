@@ -24,7 +24,7 @@ const SEZIONI: Sezione[] = [
     voci: [
       {
         d: 'Cosa posso chiedere a Themis?',
-        r: 'Dalla pagina "Themis" puoi fare domande su un fascicolo (risponde citando i documenti da cui prende l\'informazione, così puoi controllare), farti proporre scadenze trovate nelle PEC, e farti scrivere una prima bozza di un atto.',
+        r: 'Dalla pagina "Themis" puoi fare domande su un fascicolo (risponde citando i documenti da cui prende l\'informazione, così puoi controllare) e farti scrivere una prima bozza di un atto.',
       },
       {
         d: 'Le bozze di Themis si possono usare così come sono?',
@@ -50,23 +50,6 @@ const SEZIONI: Sezione[] = [
       {
         d: 'Posso importare gli impegni che avevo già su Google Calendar prima di usare Themis?',
         r: 'Sì, da Impostazioni → Calendario → "Importa": scegli un intervallo di date, il file resta sul tuo computer per la lettura, viaggiano verso Themis solo gli impegni scelti.',
-      },
-    ],
-  },
-  {
-    titolo: 'PEC',
-    voci: [
-      {
-        d: 'Come collego una casella PEC?',
-        r: 'Da Impostazioni → Caselle PEC, con l\'indirizzo, l\'host/porta del server IMAP del tuo gestore e la password. Se hai la verifica in due passaggi attiva sulla PEC, serve una password dedicata "per programmi di posta" generata dal gestore, non quella con cui accedi alla webmail.',
-      },
-      {
-        d: 'Ogni quanto si scaricano le nuove PEC?',
-        r: 'Da sole, ogni notte, e anche ogni volta che tieni Themis aperto in una scheda del browser (controlla ogni pochi minuti). C\'è anche un tasto "Sincronizza ora" per farlo subito.',
-      },
-      {
-        d: 'Themis trova da solo le scadenze scritte in una PEC?',
-        r: 'Solo se glielo chiedi: nella pagina PEC premi "Cerca scadenze". Ogni proposta mostra la frase esatta del messaggio da cui è dedotta, e va accettata o scartata a mano — non finisce in calendario da sola.',
       },
     ],
   },
@@ -105,7 +88,7 @@ const SEZIONI: Sezione[] = [
       },
       {
         d: 'Cosa vede un collaboratore rispetto al titolare?',
-        r: 'Un collaboratore vede clienti e pratiche dello studio come il titolare, ma non gestisce fatturazione, abbonamento, caselle PEC o l\'eliminazione definitiva di pratiche e clienti — quelle restano riservate al titolare.',
+        r: 'Un collaboratore vede clienti e pratiche dello studio come il titolare, ma non gestisce fatturazione, abbonamento o l\'eliminazione definitiva di pratiche e clienti — quelle restano riservate al titolare.',
       },
     ],
   },
