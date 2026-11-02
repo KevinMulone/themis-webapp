@@ -44,6 +44,7 @@ si esegue.
 | `028_google_calendar.sql` | ❌ **no** |
 | `029_calendario_ics.sql` | ❌ **no** |
 | `037_studio_operativo_v2.sql` | ❌ **da applicare con il nuovo deploy** — parti, verifiche, versioni documentali, storico Themis, pianificazione e calcoli nel fascicolo |
+| `039_fascicoli_rfid.sql` | ✅ sì (02.11.2026) — fascicoli fisici con etichette RFID (pagina `/fascicoli-rfid`, route `/api/rfid/*`); indipendente dalle precedenti non applicate |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 
