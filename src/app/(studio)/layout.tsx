@@ -1,6 +1,4 @@
 import { redirect } from 'next/navigation';
-import SincronizzazionePec from './SincronizzazionePec';
-import { pecAbilitata } from '@/lib/featureFlags';
 import { oggiIso } from '@/lib/dateUtils';
 import { contestoStudio, eCollaboratoreDisattivato } from '@/lib/studio/contesto';
 import { createClient } from '@/lib/supabase/server';
@@ -26,7 +24,6 @@ const NAV = [
   { href: '/themis', label: 'Themis' },
   { href: '/incarichi', label: 'I miei incarichi' },
   { href: '/calendario', label: 'Calendario' },
-  { href: '/pec', label: 'PEC' },
   { href: '/genera', label: 'Genera Atto' },
   { href: '/calcolo-danno', label: 'Calcolo Danno' },
   { href: '/parcelle', label: 'Parcelle' },
@@ -81,9 +78,8 @@ export default async function StudioLayout({ children }: { children: React.React
     .eq('assegnato_a', ctx.userId)
     .in('stato', STATI_APERTI);
 
-  const pec = pecAbilitata();
   const voci = [
-    ...NAV.filter((v) => pec || v.href !== '/pec'),
+    ...NAV,
     ...(ctx.ruolo === 'titolare' ? NAV_TITOLARE : []),
     NAV_IMPOSTAZIONI,
   ].map((v) =>
@@ -92,7 +88,7 @@ export default async function StudioLayout({ children }: { children: React.React
 
   return (
     <StudioProvider
-      valore={{ userId: ctx.userId, studioId: ctx.studioId, ruolo: ctx.ruolo, nomeStudio: ctx.nomeStudio, pecAbilitata: pec }}
+      valore={{ userId: ctx.userId, studioId: ctx.studioId, ruolo: ctx.ruolo, nomeStudio: ctx.nomeStudio }}
     >
       <div className="app-shell flex min-h-screen flex-col lg:flex-row">
         <UsageTracker />
@@ -102,7 +98,6 @@ export default async function StudioLayout({ children }: { children: React.React
           abbonamentoLabel={giorniRimanenti(ctx.subscriptionExpiresAt)}
         />
         <main className="studio-page relative flex-1 overflow-y-auto p-4 lg:p-8 xl:p-10">
-          {pec && <SincronizzazionePec />}
           {children}
         </main>
       </div>
