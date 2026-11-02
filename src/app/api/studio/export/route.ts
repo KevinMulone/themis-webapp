@@ -30,7 +30,7 @@ export async function GET() {
     manifest.tabelle[tabella] = data?.length ?? 0;
     zip.file(`${tabella}.json`, JSON.stringify(data ?? [], null, 2));
   }
-  manifest.avvisi.push('I file binari cifrati e le credenziali PEC/Google non sono inclusi in questo export dati.');
+  manifest.avvisi.push('I file binari cifrati e le credenziali Google non sono inclusi in questo export dati.');
   zip.file('manifest.json', JSON.stringify(manifest, null, 2));
   const contenuto = await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
   const corpo = new ArrayBuffer(contenuto.byteLength);
