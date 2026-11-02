@@ -56,7 +56,6 @@ function Reveal({ children, className = '', delay = 0 }: {
 const MODULI: { icona: NomeIcona; titolo: string; testo: string }[] = [
   { icona: 'pratiche', titolo: 'Gestione pratiche', testo: 'Fascicoli, R.G., stato, controparte e assegnazione in un elenco solo.' },
   { icona: 'clienti', titolo: 'Anagrafe clienti', testo: 'Persone e società, archivio, ricerca per nome, CF, pec e città.' },
-  { icona: 'pec', titolo: 'PEC in studio', testo: 'Casella collegata, non lette in evidenza, ricevute e termini proposti.' },
   { icona: 'calendario', titolo: 'Calendario unico', testo: 'Udienze e scadenze visibili a titolare e collaboratori, anche su Google.' },
   { icona: 'themis', titolo: 'Assistente Themis', testo: 'Domande al fascicolo con citazione della pagina. Bozze da rileggere sempre.' },
   { icona: 'genera', titolo: 'Generazione atti', testo: 'Modelli dello studio compilati con i dati già in pratica.' },
@@ -70,12 +69,12 @@ const BLOCCHI = [
   {
     kicker: 'Chi siamo',
     titolo: 'Themis è lo studio, messo in un’unica app.',
-    testo: 'Nasce dallo studio legale quotidiano: fascicoli che si perdono tra cartelle, PEC, chat e fogli. L’obiettivo non è un chatbot. È un posto solo dove lo studio lavora — e che resta aggiornato, mese dopo mese.',
+    testo: 'Nasce dallo studio legale quotidiano: fascicoli che si perdono tra cartelle, chat e fogli. L’obiettivo non è un chatbot. È un posto solo dove lo studio lavora — e che resta aggiornato, mese dopo mese.',
   },
   {
     kicker: 'Cosa facciamo',
     titolo: 'Tutto il lavoro del fascicolo, senza cinque programmi.',
-    testo: 'Clienti, pratiche, PEC, calendario, atti, parcelle e patrocinio stanno nello stesso spazio. Ogni documento è cifrato per il tuo studio. L’assistente legge solo ciò che gli dai tu.',
+    testo: 'Clienti, pratiche, calendario, atti, parcelle e patrocinio stanno nello stesso spazio. Ogni documento è cifrato per il tuo studio. L’assistente legge solo ciò che gli dai tu.',
   },
   {
     kicker: 'L’obiettivo',
@@ -104,7 +103,7 @@ const PIANI = [
 
 const FAQ: { d: string; r: string }[] = [
   { d: 'Themis sostituisce lo studio o l’avvocato?', r: 'No. È lo strumento dello studio. Le decisioni, la firma e la responsabilità restano dell’avvocato.' },
-  { d: 'Cosa copre oggi?', r: 'Clienti, pratiche (compresi i sinistri), PEC, calendario, assistente sul fascicolo, generazione atti, parcelle, danno biologico, patrocinio, collaboratori e registri di giustizia civile.' },
+  { d: 'Cosa copre oggi?', r: 'Clienti, pratiche (compresi i sinistri), calendario, assistente sul fascicolo, generazione atti, parcelle, danno biologico, patrocinio, collaboratori e registri di giustizia civile.' },
   { d: 'L’app resterà ferma dopo l’acquisto?', r: 'No. Themis è pensata per aggiornarsi di continuo: correzioni, nuove funzioni, più chiarezza. L’abbonamento include gli aggiornamenti.' },
   { d: 'Themis inventa sentenze o norme?', r: 'No. Dove manca un dato scrive [DA COMPLETARE]. Le bozze vanno sempre rilette prima di usarle.' },
   { d: 'I documenti sono al sicuro?', r: 'Ogni studio ha una propria chiave di cifratura. La cifratura avviene prima dello storage e non si può disattivare.' },
@@ -171,7 +170,7 @@ function HeroProductDemo() {
                   <span className="rounded-full bg-white px-3 py-1.5 text-[10px] text-neutral-500 shadow-sm">12 settembre</span>
                 </div>
                 <div className="mt-5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-                  {[['24', 'Pratiche attive'], ['3', 'Scadenze'], ['5', 'PEC non lette'], ['8', 'Incarichi']].map(([n, l], i) => (
+                  {[['24', 'Pratiche attive'], ['3', 'Scadenze'], ['2', 'Prenotazioni'], ['8', 'Incarichi']].map(([n, l], i) => (
                     <div key={l} className="rounded-2xl bg-white p-3 shadow-[0_12px_30px_-22px_rgba(0,0,0,.35)]">
                       <div className={`text-xl font-bold ${i === 2 ? 'text-bordeaux-700' : 'text-neutral-900'}`}>{n}</div>
                       <div className="mt-1 text-[10px] text-neutral-500">{l}</div>
@@ -610,30 +609,6 @@ export default function Home() {
       <RigaFunzione
         invertito
         alterna
-        kicker="PEC"
-        titolo="La posta certificata resta nel fascicolo."
-        testo="La PEC si scarica da sola. Le non lette restano evidenti. Niente caselle sparse tra più account."
-      >
-        <Schermo titolo="Themis — PEC">
-          <div className="divide-y divide-neutral-100">
-            {[
-              ['Tribunale di Caltanissetta', 'Fissazione udienza'],
-              ['Generali Italia', 'Riscontro sinistro'],
-              ['Avv. Di Vita', 'Trasmissione ricorso'],
-            ].map(([a, b], i) => (
-              <div key={a} className="flex items-center gap-3 px-5 py-3">
-                <span className={`h-1.5 w-1.5 rounded-full ${i < 2 ? 'bg-bordeaux-700' : 'bg-transparent'}`} />
-                <div>
-                  <div className={`text-sm ${i < 2 ? 'font-semibold text-neutral-900' : 'text-neutral-400'}`}>{a}</div>
-                  <div className="text-xs text-neutral-400">{b}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Schermo>
-      </RigaFunzione>
-
-      <RigaFunzione
         kicker="Assistente"
         titolo="Chiedi al fascicolo. Non a un motore di ricerca."
         testo="Themis legge i documenti che scegli tu e risponde citando pagina e riga. Prepara una prima bozza. Dove manca un dato lascia un segnaposto: a firmare sei tu."
@@ -652,8 +627,6 @@ export default function Home() {
       </RigaFunzione>
 
       <RigaFunzione
-        invertito
-        alterna
         kicker="Calendario"
         titolo="Udienze e scadenze, sempre visibili."
         testo="Un calendario solo per lo studio, condiviso tra titolare e collaboratori, anche su Google."
@@ -709,7 +682,7 @@ export default function Home() {
         </Reveal>
         <div className="mx-auto mt-12 grid max-w-4xl gap-3 sm:grid-cols-3">
           {[
-            { n: '01', t: 'Si usa in studio', d: 'Pratiche vere, PEC vere, scadenze vere.' },
+            { n: '01', t: 'Si usa in studio', d: 'Pratiche vere, udienze vere, scadenze vere.' },
             { n: '02', t: 'Si ascolta', d: 'Quello che manca diventa il prossimo pezzo.' },
             { n: '03', t: 'Si pubblica di nuovo', d: 'Aggiornamenti nell’abbonamento, senza un altro acquisto.' },
           ].map((s) => (
