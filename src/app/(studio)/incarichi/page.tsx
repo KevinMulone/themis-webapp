@@ -57,7 +57,7 @@ function Suggerimento({ href, icona, titolo, testo }: {
 
 export default function IncarichiPage() {
   const supabase = createClient();
-  const { userId, ruolo, studioId, pecAbilitata } = useStudio();
+  const { userId, ruolo, studioId } = useStudio();
   const [incarichi, setIncarichi] = useState<Incarico[]>([]);
   const [membri, setMembri] = useState<Membro[]>([]);
   const [scheda, setScheda] = useState<'aperti' | 'completati'>('aperti');
@@ -241,14 +241,6 @@ export default function IncarichiPage() {
                     testo="Sfoglia le pratiche e assegna gli incarichi dal fascicolo."
                   />
                 </div>
-                {pecAbilitata && (
-                  <div className="md:pl-2">
-                    <Suggerimento
-                      href="/pec" icona="campanella" titolo="Rimani aggiornato"
-                      testo="Le PEC in arrivo accendono la campanella: nessuna scadenza sfugge."
-                    />
-                  </div>
-                )}
               </div>
             </div>
           </>
