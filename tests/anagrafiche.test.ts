@@ -5,8 +5,9 @@ import {
 } from '../src/lib/anagrafiche.ts';
 
 test('valida codice fiscale e partita IVA con le cifre di controllo', () => {
-  assert.equal(codiceFiscaleValido('RSSMRA85T10A562G'), true);
+  assert.equal(codiceFiscaleValido('RSSMRA85T10A562S'), true);
   assert.equal(codiceFiscaleValido('RSSMRA85T10A562X'), false);
+  assert.equal(codiceFiscaleValido('rssmra85t10a562g'), false);
   assert.equal(partitaIvaValida('00743110157'), true);
   assert.equal(partitaIvaValida('00743110158'), false);
 });
@@ -17,7 +18,7 @@ test('segnala contatti errati e dati obbligatori', () => {
 });
 
 test('individua duplicati per identificativo, contatto o denominazione', () => {
-  const esistenti = [{ id: '1', nome: 'Mario', cognome: 'Rossi', codice_fiscale: 'RSSMRA85T10A562G' }];
+  const esistenti = [{ id: '1', nome: 'Mario', cognome: 'Rossi', codice_fiscale: 'RSSMRA85T10A562S' }];
   assert.equal(trovaPossibiliDuplicati({ nome: 'Mario', cognome: 'Rossi' }, esistenti).length, 1);
-  assert.equal(trovaPossibiliDuplicati({ id: '1', codice_fiscale: 'RSSMRA85T10A562G' }, esistenti).length, 0);
+  assert.equal(trovaPossibiliDuplicati({ id: '1', codice_fiscale: 'RSSMRA85T10A562S' }, esistenti).length, 0);
 });

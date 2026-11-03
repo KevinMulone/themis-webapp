@@ -30,10 +30,11 @@ export function codiceFiscaleValido(value: string): boolean {
     K: 2, L: 4, M: 18, N: 20, O: 11, P: 3, Q: 6, R: 8, S: 12, T: 14,
     U: 16, V: 10, W: 22, X: 25, Y: 24, Z: 23,
   };
-  const pari = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  // Posizioni pari: cifre 0-9 valgono 0-9, lettere A-Z valgono 0-25.
+  const valorePari = (c: string) => (c >= '0' && c <= '9' ? Number(c) : c.charCodeAt(0) - 65);
   let somma = 0;
   for (let i = 0; i < 15; i += 1) {
-    somma += i % 2 === 0 ? dispari[cf[i]] : pari.indexOf(cf[i]);
+    somma += i % 2 === 0 ? dispari[cf[i]] : valorePari(cf[i]);
   }
   return cf[15] === String.fromCharCode(65 + (somma % 26));
 }
