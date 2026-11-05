@@ -158,6 +158,11 @@ export default function FascicoliRfidPage() {
 
   useEffect(() => { load(); }, [load]);
   useAggiornamentoLive(['rfid_lettori', 'rfid_etichette', 'rfid_posizioni', 'rfid_movimenti', 'rfid_mappa'], ricarica);
+  // Rete di sicurezza: se la connessione dal vivo cade o non parte, la piantina si aggiorna lo stesso.
+  useEffect(() => {
+    const t = setInterval(() => { if (document.visibilityState === 'visible') load(); }, 15000);
+    return () => clearInterval(t);
+  }, [load]);
   // "2 min fa" deve diventare "3 min fa" anche se nulla si muove.
   useEffect(() => {
     const t = setInterval(() => setOrologio((n) => n + 1), 30000);
@@ -258,21 +263,24 @@ export default function FascicoliRfidPage() {
     else load();
   }
 
-  // I fascicoli associati, raggruppati per antenna, per la piantina.
+  // Tutte le etichette lette, raggruppate per antenna, per la piantina: quelle ancora da associare
+  // compaiono comunque, così si vede subito dove sta ogni etichetta.
   const antenneDi = new Map(antenne.map((a) => [a.antenna, a]));
   const perAntenna = new Map<number, FascicoloInStanza[]>();
   for (const p of posizioni) {
+    if (p.antenna === null) continue;
     const e = etichettaDi.get(p.epc);
-    if (!e || p.antenna === null) continue;
     const sec = Date.now() - new Date(p.ultimo_visto).getTime();
     const elenco = perAntenna.get(p.antenna) ?? [];
     elenco.push({
-      epc: p.epc, titolo: titoloDi(e), visto: `visto ${fa(p.ultimo_visto)}`,
+      epc: p.epc, titolo: e ? titoloDi(e) : `Etichetta ${corta(p.epc)}`, nonAssociata: !e,
+      visto: `visto ${fa(p.ultimo_visto)}`,
       perso: sec > NON_VISTO_MS, uscito: antenneDi.get(p.antenna)?.uscita === true && sec > USCITO_MS,
     });
     perAntenna.set(p.antenna, elenco);
   }
-  const nonRilevati = fascicoli.filter(({ pos }) => !pos || pos.antenna === null || !mappa.some((m) => m.antenna === pos.antenna)).length;
+  const nonRilevati = fascicoli.filter(({ pos }) => !pos || pos.antenna === null || !mappa.some((m) => m.antenna === pos.antenna)).length
+    + posizioni.filter((p) => !etichettaDi.has(p.epc) && (p.antenna === null || !mappa.some((m) => m.antenna === p.antenna))).length;
 
   const scheda = 'module-panel overflow-hidden rounded-[26px] bg-white/90 ring-1 ring-black/[0.04]';
 

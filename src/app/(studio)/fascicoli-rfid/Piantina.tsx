@@ -14,7 +14,9 @@ export type Stanza = {
   antenna: number | null; ax?: number; ay?: number; corridoio?: boolean;
 };
 export type Antenna = { antenna: number; nome: string; attiva: boolean; uscita: boolean };
-export type FascicoloInStanza = { epc: string; titolo: string; visto: string; perso: boolean; uscito: boolean };
+export type FascicoloInStanza = {
+  epc: string; titolo: string; visto: string; perso: boolean; uscito: boolean; nonAssociata?: boolean;
+};
 
 type Props = {
   stanze: Stanza[];
@@ -302,7 +304,7 @@ export function Piantina({ stanze, antenne, perAntenna, nonRilevati, puoModifica
                 <text x={s.x + 10} y={s.y + 20} fontSize={13.5} fontWeight={650} fill="#171717" pointerEvents="none">{s.nome}</text>
                 <text x={s.x + 10} y={s.y + 36} fontSize={11} fill="#737373" pointerEvents="none">{info}</text>
                 {!modifica && mostrati.map((f, j) => (
-                  <text key={f.epc} x={s.x + 10} y={s.y + 56 + j * 15} fontSize={12} fill={f.uscito ? '#dc2626' : c} pointerEvents="none">
+                  <text key={f.epc} x={s.x + 10} y={s.y + 56 + j * 15} fontSize={12} fill={f.uscito ? '#dc2626' : f.nonAssociata ? '#a3a3a3' : c} fontStyle={f.nonAssociata ? 'italic' : undefined} pointerEvents="none">
                     {f.titolo.length > caratteri ? `${f.titolo.slice(0, caratteri - 1)}…` : f.titolo}
                   </text>
                 ))}
@@ -408,7 +410,7 @@ export function Piantina({ stanze, antenne, perAntenna, nonRilevati, puoModifica
                 <ul className="divide-y divide-neutral-200">
                   {listaSel.map((f) => (
                     <li key={f.epc} className={`flex flex-wrap items-center justify-between gap-2 py-1.5 ${f.perso ? 'text-neutral-400' : 'text-neutral-800'}`}>
-                      <span className="font-medium">{f.titolo}{f.uscito && <span className="ml-2 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">uscito?</span>}</span>
+                      <span className="font-medium">{f.titolo}{f.nonAssociata && <span className="ml-2 text-xs font-normal text-neutral-400">da associare a un cliente</span>}{f.uscito && <span className="ml-2 rounded-full bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">uscito?</span>}</span>
                       <span className="text-xs text-neutral-400">{f.visto}</span>
                     </li>
                   ))}
