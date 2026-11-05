@@ -51,6 +51,21 @@ export const TIPI_SOGGETTO: [string, string][] = [
   ['persona_giuridica', 'Persona giuridica'],
 ];
 
+// Di chi è il numero di telefono del cliente (vuoto = del cliente stesso).
+export const TELEFONO_DI: [string, string][] = [
+  ['madre', 'Madre'],
+  ['padre', 'Padre'],
+  ['figlio', 'Figlio'],
+  ['figlia', 'Figlia'],
+  ['coniuge', 'Coniuge / convivente'],
+  ['fratello', 'Fratello'],
+  ['sorella', 'Sorella'],
+  ['altro_familiare', 'Altro familiare'],
+  ['tutore', 'Tutore / amministratore di sostegno'],
+  ['caregiver', 'Badante / caregiver'],
+  ['altro', 'Altra persona'],
+];
+
 export const METODI_PAGAMENTO: [string, string][] = [
   ['contanti', 'Contanti'],
   ['carta', 'Carta'],

@@ -5,7 +5,7 @@ import CampoComune from './CampoComune';
 import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
-import { TIPI_SOGGETTO, TIPI_PRATICA, labelFromOptions, clientLabel } from '@/lib/constants';
+import { TIPI_SOGGETTO, TIPI_PRATICA, TELEFONO_DI, labelFromOptions, clientLabel } from '@/lib/constants';
 import { Icon, type NomeIcona } from '@/components/ui/Icon';
 import HoverLift from '@/components/motion/HoverLift';
 import { explodeNode } from '@/lib/motion/explode';
@@ -26,6 +26,7 @@ type Client = {
   citta: string | null;
   provincia: string | null;
   telefono: string | null;
+  telefono_di?: string | null;
   email: string | null;
   pec: string | null;
   note: string | null;
@@ -244,10 +245,10 @@ export default function ClientiPage() {
    * le sorprese non vanno bene.
    */
   function esportaCsv() {
-    const intestazioni = ['Nome', 'Tipo', 'Codice fiscale', 'Partita IVA', 'Telefono', 'Email', 'PEC', 'Indirizzo', 'CAP', 'Città', 'Provincia'];
+    const intestazioni = ['Nome', 'Tipo', 'Codice fiscale', 'Partita IVA', 'Telefono', 'Telefono di', 'Email', 'PEC', 'Indirizzo', 'CAP', 'Città', 'Provincia'];
     const righe = filtered.map((c) => [
       clientLabel(c), labelFromOptions(TIPI_SOGGETTO, c.tipo_soggetto),
-      c.codice_fiscale, c.partita_iva, c.telefono, c.email, c.pec,
+      c.codice_fiscale, c.partita_iva, c.telefono, labelFromOptions(TELEFONO_DI, c.telefono_di), c.email, c.pec,
       c.indirizzo, c.cap, c.citta, c.provincia,
     ]);
     const csv = [intestazioni, ...righe]
@@ -275,6 +276,10 @@ export default function ClientiPage() {
     for (const campo of ['email', 'pec'] as const) {
       if (payload[campo]) payload[campo] = String(payload[campo]).trim().toLowerCase();
     }
+
+    // Se il database non ha ancora la colonna (migrazione 041) e nulla è stato scelto, il campo non si invia:
+    // così il salvataggio dei clienti non dipende dall'ordine con cui si aggiorna il database.
+    if (payload.telefono_di == null && !(editing && 'telefono_di' in editing)) delete payload.telefono_di;
 
     const candidato = { ...payload, id: editing?.id } as Partial<Client>;
     const errori = validaAnagrafica(candidato);
@@ -586,6 +591,11 @@ export default function ClientiPage() {
                         <span className="flex items-center gap-1.5">
                           <Icon nome="utente" className="h-3.5 w-3.5 text-neutral-300" />
                           {c.telefono}
+                          {c.telefono_di && (
+                            <span className="rounded-full bg-bordeaux-50 px-2 py-0.5 text-[11px] font-medium text-bordeaux-700">
+                              {labelFromOptions(TELEFONO_DI, c.telefono_di)}
+                            </span>
+                          )}
                         </span>
                       ) : '—'}
                     </td>
@@ -691,6 +701,17 @@ export default function ClientiPage() {
                 citta={editing.citta} provincia={editing.provincia} cap={editing.cap}
               />
               <Field label="Telefono" name="telefono" defaultValue={editing.telefono} type="tel" autoComplete="tel" />
+              <div>
+                <label className="mb-1 block text-xs text-neutral-500">Di chi è il numero</label>
+                <select
+                  name="telefono_di"
+                  defaultValue={editing.telefono_di ?? ''}
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm outline-none transition-colors focus:border-bordeaux-400 focus:bg-white"
+                >
+                  <option value="">Del cliente stesso</option>
+                  {TELEFONO_DI.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                </select>
+              </div>
               <Field label="Email" name="email" defaultValue={editing.email} type="email" autoComplete="email" />
               <Field label="PEC" name="pec" defaultValue={editing.pec} type="email" autoComplete="email" />
               <div className="col-span-2">
