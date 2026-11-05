@@ -11,6 +11,34 @@ type Movimento = { id: number; epc: string; da_antenna?: number | null; a_antenn
 
 const EPC = /^[0-9A-F]{4,64}$/;
 
+type StanzaMappa = {
+  nome: string; x: number; y: number; w: number; h: number;
+  antenna: number | null; ax?: number; ay?: number; corridoio?: boolean;
+};
+
+const intero = (v: unknown, min: number, max: number) =>
+  typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max ? Math.round(v) : null;
+
+/** Rimette in ordine una piantina arrivata dal Mac: solo i campi attesi, nei limiti attesi. */
+function pulisciMappa(grezza: unknown): StanzaMappa[] {
+  if (!Array.isArray(grezza)) return [];
+  const stanze: StanzaMappa[] = [];
+  for (const s of grezza.slice(0, 60)) {
+    const x = intero(s?.x, 0, 5000), y = intero(s?.y, 0, 5000);
+    const w = intero(s?.w, 20, 5000), h = intero(s?.h, 20, 5000);
+    if (x === null || y === null || w === null || h === null) continue;
+    const stanza: StanzaMappa = {
+      nome: (typeof s.nome === 'string' ? s.nome.trim() : '').slice(0, 40) || 'Stanza',
+      x, y, w, h, antenna: intero(s.antenna, 0, 31),
+    };
+    const ax = intero(s.ax, 0, w), ay = intero(s.ay, 0, h);
+    if (stanza.antenna !== null && ax !== null && ay !== null) { stanza.ax = ax; stanza.ay = ay; }
+    if (s.corridoio === true) stanza.corridoio = true;
+    stanze.push(stanza);
+  }
+  return stanze;
+}
+
 function istante(secondi: unknown): string | null {
   if (typeof secondi !== 'number' || !Number.isFinite(secondi) || secondi <= 0) return null;
   return new Date(secondi * 1000).toISOString();
@@ -96,6 +124,15 @@ export async function POST(request: Request) {
     const { error } = await admin.from('rfid_movimenti')
       .upsert(righeMovimenti, { onConflict: 'lettore_id,id_locale', ignoreDuplicates: true });
     if (error) return NextResponse.json({ error: 'Spostamenti non salvati' }, { status: 500 });
+  }
+
+  // La piantina disegnata sul Mac serve solo da punto di partenza: se lo
+  // studio non ne ha una in Themis, si crea da qui. Dopo, la modifica lo
+  // studio dalla pagina e questa non la sovrascrive più.
+  const mappa = pulisciMappa(corpo.mappa);
+  if (mappa.length) {
+    await admin.from('rfid_mappa')
+      .upsert({ studio_id: studioId, stanze: mappa }, { onConflict: 'studio_id', ignoreDuplicates: true });
   }
 
   await admin.from('rfid_lettori').update({ ultimo_contatto: new Date().toISOString() }).eq('id', lettore.id);

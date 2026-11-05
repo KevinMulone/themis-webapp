@@ -45,6 +45,7 @@ si esegue.
 | `029_calendario_ics.sql` | ❌ **no** |
 | `037_studio_operativo_v2.sql` | ❌ **da applicare con il nuovo deploy** — parti, verifiche, versioni documentali, storico Themis, pianificazione e calcoli nel fascicolo |
 | `039_fascicoli_rfid.sql` | ✅ sì (02.11.2026) — fascicoli fisici con etichette RFID (pagina `/fascicoli-rfid`, route `/api/rfid/*`); indipendente dalle precedenti non applicate |
+| `040_rfid_cliente_e_piantina.sql` | ⏳ da applicare — etichette RFID associate al cliente (`client_id`) e piantina dello studio (`rfid_mappa`) |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 
