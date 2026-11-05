@@ -29,6 +29,9 @@ type Props = {
 
 const COLORI = ['#8a1c3c', '#1d6fb8', '#2f8f5b', '#b7791f', '#6b46c1', '#c05621', '#0e7490', '#be185d'];
 const colore = (antenna: number | null) => (antenna === null ? '#9ca3af' : COLORI[antenna % COLORI.length]);
+// Grandezza della piantina in percentuale della larghezza disponibile; si ricorda su questo computer.
+const ZOOM_MIN = 30, ZOOM_MAX = 150, ZOOM_PASSO = 10, ZOOM_INIZIALE = 70;
+const ZOOM_CHIAVE = 'themis-piantina-zoom';
 const GRIGLIA = 10;
 const aGriglia = (v: number) => Math.round(v / GRIGLIA) * GRIGLIA;
 
@@ -66,6 +69,7 @@ export function Piantina({ stanze, antenne, perAntenna, nonRilevati, puoModifica
   const [drag, setDrag] = useState<Trascina | null>(null);
   const [esito, setEsito] = useState<string | null>(null);
   const [salvando, setSalvando] = useState(false);
+  const [zoom, setZoom] = useState(ZOOM_INIZIALE);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dragRef = useRef<Trascina | null>(null);
   const bozzaRef = useRef<Stanza[] | null>(null);
@@ -131,6 +135,19 @@ export function Piantina({ stanze, antenne, perAntenna, nonRilevati, puoModifica
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [drag !== null]);
+
+  useEffect(() => {
+    try {
+      const salvato = Number(localStorage.getItem(ZOOM_CHIAVE));
+      if (salvato >= ZOOM_MIN && salvato <= ZOOM_MAX) setZoom(salvato);
+    } catch { /* senza memoria locale resta il valore di partenza */ }
+  }, []);
+
+  function cambiaZoom(valore: number) {
+    const v = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, Math.round(valore)));
+    setZoom(v);
+    try { localStorage.setItem(ZOOM_CHIAVE, String(v)); } catch { /* facoltativo */ }
+  }
 
   function inizia() {
     setBozza(stanze.map((s) => ({ ...s })));
@@ -233,11 +250,37 @@ export function Piantina({ stanze, antenne, perAntenna, nonRilevati, puoModifica
 
   return (
     <div className="p-4 sm:p-6">
-      {!modifica && puoModificare && (
-        <div className="mb-3 flex justify-end">
-          <button onClick={inizia} className="premi rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-50">
-            {stanze.length ? 'Modifica la piantina' : 'Disegna la piantina'}
-          </button>
+      {(modifica || stanze.length > 0 || puoModificare) && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          {(modifica || stanze.length > 0) ? (
+            <div className="flex items-center gap-2 text-xs text-neutral-500">
+              <span>Grandezza</span>
+              <button
+                onClick={() => cambiaZoom(zoom - ZOOM_PASSO)} disabled={zoom <= ZOOM_MIN} aria-label="Rimpicciolisci"
+                className="premi flex h-7 w-7 items-center justify-center rounded-full bg-white text-base text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-50 disabled:opacity-40"
+              >−</button>
+              <input
+                type="range" min={ZOOM_MIN} max={ZOOM_MAX} step={ZOOM_PASSO} value={zoom}
+                onChange={(e) => cambiaZoom(Number(e.target.value))} aria-label="Grandezza della piantina"
+                className="w-28 accent-bordeaux-700 sm:w-40"
+              />
+              <button
+                onClick={() => cambiaZoom(zoom + ZOOM_PASSO)} disabled={zoom >= ZOOM_MAX} aria-label="Ingrandisci"
+                className="premi flex h-7 w-7 items-center justify-center rounded-full bg-white text-base text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-50 disabled:opacity-40"
+              >+</button>
+              <span className="w-10 text-right font-semibold tabular-nums text-neutral-700">{zoom}%</span>
+              {zoom !== 100 && (
+                <button onClick={() => cambiaZoom(100)} className="premi rounded-full px-2 py-1 text-xs text-neutral-500 hover:bg-neutral-100">
+                  Adatta alla pagina
+                </button>
+              )}
+            </div>
+          ) : <span />}
+          {!modifica && puoModificare && (
+            <button onClick={inizia} className="premi rounded-full bg-white px-4 py-1.5 text-xs font-semibold text-neutral-700 ring-1 ring-black/10 hover:bg-neutral-50">
+              {stanze.length ? 'Modifica la piantina' : 'Disegna la piantina'}
+            </button>
+          )}
         </div>
       )}
 
@@ -253,8 +296,8 @@ export function Piantina({ stanze, antenne, perAntenna, nonRilevati, puoModifica
         <svg
           ref={svgRef} viewBox={viewBox} role="img" aria-label="Piantina dello studio"
           onPointerDown={giu}
-          className={`block h-auto w-full rounded-2xl border border-neutral-200 bg-white ${modifica ? 'select-none' : ''}`}
-          style={modifica ? { touchAction: 'none' } : undefined}
+          className={`mx-auto block h-auto rounded-2xl border border-neutral-200 bg-white ${modifica ? 'select-none' : ''}`}
+          style={{ width: `${zoom}%`, ...(modifica ? { touchAction: 'none' } : {}) }}
         >
           {modifica && (
             <>
