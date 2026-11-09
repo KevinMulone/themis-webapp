@@ -11,6 +11,15 @@ export type AnagraficaEssenziale = {
   telefono?: string | null;
 };
 
+/**
+ * Identificativo di un cittadino straniero senza codice fiscale italiano: tax ID, numero di
+ * passaporto o di un altro documento. Non ha una cifra di controllo comune, quindi si verifica
+ * solo che abbia un aspetto plausibile (3-30 tra lettere, cifre, spazi, punti, trattini, barre).
+ */
+export function codiceEsteroValido(value: string): boolean {
+  return /^[A-Za-z0-9][A-Za-z0-9 ./-]{2,29}$/.test(String(value ?? '').trim());
+}
+
 export type ErroreAnagrafica = { campo: string; messaggio: string };
 
 export function normalizzaCodice(value: unknown): string {
@@ -96,24 +105,29 @@ export function partitaIvaValida(value: string): boolean {
   return (10 - (somma % 10)) % 10 === Number(piva[10]);
 }
 
-export function validaAnagrafica(data: AnagraficaEssenziale): ErroreAnagrafica[] {
+export function validaAnagrafica(data: AnagraficaEssenziale, opzioni: { codiceEstero?: boolean } = {}): ErroreAnagrafica[] {
+  const controllaCodice = (codice: string): ErroreAnagrafica | null => {
+    if (opzioni.codiceEstero) {
+      return codiceEsteroValido(codice) ? null
+        : { campo: 'codice_fiscale', messaggio: 'Il codice o il numero di documento estero deve avere da 3 a 30 caratteri (lettere, cifre, spazi, punti, trattini).' };
+    }
+    return codiceFiscaleValido(codice) ? null : { campo: 'codice_fiscale', messaggio: erroreCodiceFiscale(codice) };
+  };
   const errori: ErroreAnagrafica[] = [];
   const personaFisica = (data.tipo_soggetto || 'persona_fisica') === 'persona_fisica';
   if (personaFisica) {
     if (!String(data.nome ?? '').trim()) errori.push({ campo: 'nome', messaggio: 'Inserisci il nome.' });
     if (!String(data.cognome ?? '').trim()) errori.push({ campo: 'cognome', messaggio: 'Inserisci il cognome.' });
-    if (data.codice_fiscale && !codiceFiscaleValido(data.codice_fiscale)) {
-      errori.push({ campo: 'codice_fiscale', messaggio: erroreCodiceFiscale(data.codice_fiscale) });
-    }
+    const erroreCf = data.codice_fiscale ? controllaCodice(data.codice_fiscale) : null;
+    if (erroreCf) errori.push(erroreCf);
   } else {
     if (!String(data.ragione_sociale ?? '').trim()) errori.push({ campo: 'ragione_sociale', messaggio: 'Inserisci la ragione sociale.' });
     if (data.partita_iva && !partitaIvaValida(data.partita_iva)) {
       errori.push({ campo: 'partita_iva', messaggio: 'La partita IVA non supera il controllo formale.' });
     }
     // un condominio o un ente può avere solo il codice fiscale
-    if (data.codice_fiscale && !codiceFiscaleValido(data.codice_fiscale)) {
-      errori.push({ campo: 'codice_fiscale', messaggio: erroreCodiceFiscale(data.codice_fiscale) });
-    }
+    const erroreCf = data.codice_fiscale ? controllaCodice(data.codice_fiscale) : null;
+    if (erroreCf) errori.push(erroreCf);
   }
   if (data.email && !emailValida(data.email)) errori.push({ campo: 'email', messaggio: 'Indirizzo email non valido.' });
   if (data.pec && !emailValida(data.pec)) errori.push({ campo: 'pec', messaggio: 'Indirizzo PEC non valido.' });

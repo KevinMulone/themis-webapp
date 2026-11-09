@@ -9,7 +9,7 @@ import { TIPI_SOGGETTO, TIPI_PRATICA, TELEFONO_DI, labelFromOptions, clientLabel
 import { Icon, type NomeIcona } from '@/components/ui/Icon';
 import HoverLift from '@/components/motion/HoverLift';
 import { explodeNode } from '@/lib/motion/explode';
-import { normalizzaCodice, normalizzaCodiceFiscale, trovaPossibiliDuplicati, validaAnagrafica } from '@/lib/anagrafiche';
+import { codiceFiscaleValido, normalizzaCodice, normalizzaCodiceFiscale, trovaPossibiliDuplicati, validaAnagrafica } from '@/lib/anagrafiche';
 
 type Client = {
   id: string;
@@ -271,7 +271,14 @@ export default function ClientiPage() {
     const form = new FormData(e.currentTarget);
     const payload: Record<string, unknown> = {};
     form.forEach((value, key) => { payload[key] = typeof value === 'string' && value.trim() === '' ? null : value; });
-    if (payload.codice_fiscale) payload.codice_fiscale = normalizzaCodiceFiscale(payload.codice_fiscale);
+    // Cittadino straniero: nel campo c'è un codice o un numero di documento estero, senza controllo italiano.
+    const codiceEstero = payload.cf_estero === 'on';
+    delete payload.cf_estero; // serve solo al controllo, non è una colonna
+    if (payload.codice_fiscale) {
+      payload.codice_fiscale = codiceEstero
+        ? String(payload.codice_fiscale).trim().toUpperCase().replace(/\s+/g, ' ')
+        : normalizzaCodiceFiscale(payload.codice_fiscale);
+    }
     if (payload.partita_iva) payload.partita_iva = normalizzaCodice(payload.partita_iva);
     for (const campo of ['email', 'pec'] as const) {
       if (payload[campo]) payload[campo] = String(payload[campo]).trim().toLowerCase();
@@ -282,7 +289,7 @@ export default function ClientiPage() {
     if (payload.telefono_di == null && !(editing && 'telefono_di' in editing)) delete payload.telefono_di;
 
     const candidato = { ...payload, id: editing?.id } as Partial<Client>;
-    const errori = validaAnagrafica(candidato);
+    const errori = validaAnagrafica(candidato, { codiceEstero });
     if (errori.length) {
       setSaveError(errori.map((errore) => errore.messaggio).join(' '));
       return;
@@ -688,12 +695,14 @@ export default function ClientiPage() {
                   <Field label="Codice fiscale" name="codice_fiscale" defaultValue={editing.codice_fiscale} maxLength={16} autoCapitalize="characters" />
                   <Field label="Data di nascita" name="data_nascita" type="date" defaultValue={editing.data_nascita} />
                   <Field label="Luogo di nascita" name="luogo_nascita" defaultValue={editing.luogo_nascita} />
+                  <CasellaEstero editing={editing} />
                 </>
               ) : (
                 <>
                   <Field label="Ragione sociale" name="ragione_sociale" defaultValue={editing.ragione_sociale} full required />
                   <Field label="Partita IVA" name="partita_iva" defaultValue={editing.partita_iva} inputMode="numeric" maxLength={11} />
                   <Field label="Codice fiscale (se diverso dalla partita IVA, o se manca)" name="codice_fiscale" defaultValue={editing.codice_fiscale} maxLength={16} autoCapitalize="characters" full />
+                  <CasellaEstero editing={editing} />
                 </>
               )}
               <Field label="Indirizzo" name="indirizzo" defaultValue={editing.indirizzo} full />
@@ -885,6 +894,21 @@ export default function ClientiPage() {
         </div>
       )}
     </div>
+  );
+}
+
+/** Cittadino straniero: nel campo codice fiscale si scrive il codice estero o il numero del documento. */
+function CasellaEstero({ editing }: { editing: Partial<Client> }) {
+  // Un codice già salvato che non è un codice fiscale italiano valido è un codice estero.
+  const eraEstero = !!editing.codice_fiscale && !codiceFiscaleValido(editing.codice_fiscale);
+  return (
+    <label className="col-span-2 flex items-start gap-2 text-xs text-neutral-600">
+      <input type="checkbox" name="cf_estero" defaultChecked={eraEstero} className="mt-0.5" />
+      <span>
+        Cittadino straniero senza codice fiscale italiano: nel campo «Codice fiscale» scrivo il codice
+        fiscale estero (tax ID) o il numero del documento (passaporto, carta d&apos;identità).
+      </span>
+    </label>
   );
 }
 

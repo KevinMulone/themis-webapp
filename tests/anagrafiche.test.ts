@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  codiceFiscaleValido, erroreCodiceFiscale, normalizzaCodiceFiscale, partitaIvaValida, trovaPossibiliDuplicati, validaAnagrafica,
+  codiceEsteroValido, codiceFiscaleValido, erroreCodiceFiscale, normalizzaCodiceFiscale, partitaIvaValida, trovaPossibiliDuplicati, validaAnagrafica,
 } from '../src/lib/anagrafiche.ts';
 
 test('valida codice fiscale e partita IVA con le cifre di controllo', () => {
@@ -44,4 +44,14 @@ test('condomini ed enti: codice fiscale di 11 cifre, anche senza partita IVA', (
   assert.deepEqual(ok, []);
   const ko = validaAnagrafica({ tipo_soggetto: 'persona_giuridica', ragione_sociale: 'Condominio Prova', codice_fiscale: '00743110158' });
   assert.deepEqual(ko.map((e) => e.campo), ['codice_fiscale']);
+});
+
+test('cittadini stranieri: codice o documento estero senza controllo italiano', () => {
+  assert.equal(codiceEsteroValido('P1234567'), true);
+  assert.equal(codiceEsteroValido('123-45-6789'), true);
+  assert.equal(codiceEsteroValido('AB'), false);
+  assert.equal(codiceEsteroValido('###'), false);
+  const dati = { tipo_soggetto: 'persona_fisica', nome: 'Jane', cognome: 'Doe', codice_fiscale: 'P1234567' };
+  assert.deepEqual(validaAnagrafica(dati, { codiceEstero: true }), []);
+  assert.deepEqual(validaAnagrafica(dati).map((e) => e.campo), ['codice_fiscale']);
 });
