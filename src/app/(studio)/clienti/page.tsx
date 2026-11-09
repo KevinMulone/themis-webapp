@@ -9,7 +9,7 @@ import { TIPI_SOGGETTO, TIPI_PRATICA, TELEFONO_DI, labelFromOptions, clientLabel
 import { Icon, type NomeIcona } from '@/components/ui/Icon';
 import HoverLift from '@/components/motion/HoverLift';
 import { explodeNode } from '@/lib/motion/explode';
-import { normalizzaCodice, trovaPossibiliDuplicati, validaAnagrafica } from '@/lib/anagrafiche';
+import { normalizzaCodice, normalizzaCodiceFiscale, trovaPossibiliDuplicati, validaAnagrafica } from '@/lib/anagrafiche';
 
 type Client = {
   id: string;
@@ -271,7 +271,7 @@ export default function ClientiPage() {
     const form = new FormData(e.currentTarget);
     const payload: Record<string, unknown> = {};
     form.forEach((value, key) => { payload[key] = typeof value === 'string' && value.trim() === '' ? null : value; });
-    if (payload.codice_fiscale) payload.codice_fiscale = normalizzaCodice(payload.codice_fiscale);
+    if (payload.codice_fiscale) payload.codice_fiscale = normalizzaCodiceFiscale(payload.codice_fiscale);
     if (payload.partita_iva) payload.partita_iva = normalizzaCodice(payload.partita_iva);
     for (const campo of ['email', 'pec'] as const) {
       if (payload[campo]) payload[campo] = String(payload[campo]).trim().toLowerCase();
@@ -693,6 +693,7 @@ export default function ClientiPage() {
                 <>
                   <Field label="Ragione sociale" name="ragione_sociale" defaultValue={editing.ragione_sociale} full required />
                   <Field label="Partita IVA" name="partita_iva" defaultValue={editing.partita_iva} inputMode="numeric" maxLength={11} />
+                  <Field label="Codice fiscale (se diverso dalla partita IVA, o se manca)" name="codice_fiscale" defaultValue={editing.codice_fiscale} maxLength={16} autoCapitalize="characters" full />
                 </>
               )}
               <Field label="Indirizzo" name="indirizzo" defaultValue={editing.indirizzo} full />

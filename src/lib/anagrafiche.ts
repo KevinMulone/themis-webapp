@@ -21,22 +21,64 @@ export function emailValida(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(value.trim());
 }
 
-export function codiceFiscaleValido(value: string): boolean {
-  const cf = normalizzaCodice(value);
-  if (!/^[A-Z0-9]{16}$/.test(cf)) return false;
-  const dispari: Record<string, number> = {
-    '0': 1, '1': 0, '2': 5, '3': 7, '4': 9, '5': 13, '6': 15, '7': 17, '8': 19, '9': 21,
-    A: 1, B: 0, C: 5, D: 7, E: 9, F: 13, G: 15, H: 17, I: 19, J: 21,
-    K: 2, L: 4, M: 18, N: 20, O: 11, P: 3, Q: 6, R: 8, S: 12, T: 14,
-    U: 16, V: 10, W: 22, X: 25, Y: 24, Z: 23,
-  };
+const DISPARI: Record<string, number> = {
+  '0': 1, '1': 0, '2': 5, '3': 7, '4': 9, '5': 13, '6': 15, '7': 17, '8': 19, '9': 21,
+  A: 1, B: 0, C: 5, D: 7, E: 9, F: 13, G: 15, H: 17, I: 19, J: 21,
+  K: 2, L: 4, M: 18, N: 20, O: 11, P: 3, Q: 6, R: 8, S: 12, T: 14,
+  U: 16, V: 10, W: 22, X: 25, Y: 24, Z: 23,
+};
+
+/** La lettera di controllo che il codice fiscale dovrebbe avere, calcolata sui primi 15 caratteri. */
+export function carattereControllo(primi15: string): string {
   // Posizioni pari: cifre 0-9 valgono 0-9, lettere A-Z valgono 0-25.
   const valorePari = (c: string) => (c >= '0' && c <= '9' ? Number(c) : c.charCodeAt(0) - 65);
   let somma = 0;
   for (let i = 0; i < 15; i += 1) {
-    somma += i % 2 === 0 ? dispari[cf[i]] : valorePari(cf[i]);
+    somma += i % 2 === 0 ? DISPARI[primi15[i]] : valorePari(primi15[i]);
   }
-  return cf[15] === String.fromCharCode(65 + (somma % 26));
+  return String.fromCharCode(65 + (somma % 26));
+}
+
+/**
+ * Codice fiscale di una persona (16 caratteri) o di un ente, un condominio, una società
+ * (11 cifre, con la stessa cifra di controllo della partita IVA).
+ */
+export function codiceFiscaleValido(value: string): boolean {
+  const cf = normalizzaCodice(value);
+  if (/^\d{11}$/.test(cf)) return partitaIvaValida(cf);
+  if (!/^[A-Z0-9]{16}$/.test(cf)) return false;
+  return cf[15] === carattereControllo(cf.slice(0, 15));
+}
+
+// Dove il codice fiscale ha una lettera (cognome, nome, mese, comune, controllo) e dove una cifra.
+const POSIZIONI_LETTERA = new Set([0, 1, 2, 3, 4, 5, 8, 11, 15]);
+
+/**
+ * Normalizza il codice fiscale e, se è sbagliato solo per lo scambio tra O e 0 o tra I e 1
+ * (l'errore più comune quando lo si copia), lo corregge. Corregge solo se il risultato è un
+ * codice valido: non indovina mai altri errori.
+ */
+export function normalizzaCodiceFiscale(value: unknown): string {
+  const cf = normalizzaCodice(value);
+  if (cf.length !== 16 || codiceFiscaleValido(cf)) return cf;
+  const corretto = cf.split('').map((c, i) => {
+    if (POSIZIONI_LETTERA.has(i)) return c === '0' ? 'O' : c === '1' ? 'I' : c;
+    return c === 'O' ? '0' : c === 'I' ? '1' : c;
+  }).join('');
+  return codiceFiscaleValido(corretto) ? corretto : cf;
+}
+
+/** Il messaggio per un codice fiscale che non passa il controllo, con la lettera attesa quando si può dire. */
+export function erroreCodiceFiscale(value: string): string {
+  const cf = normalizzaCodice(value);
+  if (/^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$/.test(cf)) {
+    return `Il codice fiscale non supera il controllo: l'ultima lettera dovrebbe essere ${carattereControllo(cf.slice(0, 15))}. `
+      + 'Controllalo sulla tessera sanitaria (le altre lettere e cifre potrebbero essere sbagliate).';
+  }
+  if (cf.length === 16) {
+    return 'Il codice fiscale non supera il controllo: controlla che O/0 e I/1 siano al posto giusto (le cifre sono 0 e 1, le lettere O e I).';
+  }
+  return 'Il codice fiscale non supera il controllo: deve avere 16 caratteri (persona) o 11 cifre (ente, condominio, società).';
 }
 
 export function partitaIvaValida(value: string): boolean {
@@ -61,12 +103,16 @@ export function validaAnagrafica(data: AnagraficaEssenziale): ErroreAnagrafica[]
     if (!String(data.nome ?? '').trim()) errori.push({ campo: 'nome', messaggio: 'Inserisci il nome.' });
     if (!String(data.cognome ?? '').trim()) errori.push({ campo: 'cognome', messaggio: 'Inserisci il cognome.' });
     if (data.codice_fiscale && !codiceFiscaleValido(data.codice_fiscale)) {
-      errori.push({ campo: 'codice_fiscale', messaggio: 'Il codice fiscale non supera il controllo formale.' });
+      errori.push({ campo: 'codice_fiscale', messaggio: erroreCodiceFiscale(data.codice_fiscale) });
     }
   } else {
     if (!String(data.ragione_sociale ?? '').trim()) errori.push({ campo: 'ragione_sociale', messaggio: 'Inserisci la ragione sociale.' });
     if (data.partita_iva && !partitaIvaValida(data.partita_iva)) {
       errori.push({ campo: 'partita_iva', messaggio: 'La partita IVA non supera il controllo formale.' });
+    }
+    // un condominio o un ente può avere solo il codice fiscale
+    if (data.codice_fiscale && !codiceFiscaleValido(data.codice_fiscale)) {
+      errori.push({ campo: 'codice_fiscale', messaggio: erroreCodiceFiscale(data.codice_fiscale) });
     }
   }
   if (data.email && !emailValida(data.email)) errori.push({ campo: 'email', messaggio: 'Indirizzo email non valido.' });
