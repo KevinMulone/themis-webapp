@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import LogoutButton from '@/components/LogoutButton';
 import NotificheCampanella from './NotificheCampanella';
+import LivelloEffetti, { type EffettoClic } from './EffettiMenu';
 import { Icon, type NomeIcona } from '@/components/ui/Icon';
 
 type NavItem = { href: string; label: string; badge?: number };
@@ -109,8 +110,23 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel, tem
   navItems: NavItem[]; nomeStudio: string; abbonamentoLabel: string | null; temaIniziale?: Tema;
 }) {
   const [tema, setTema] = useState<Tema>(temaIniziale);
+  const [effetto, setEffetto] = useState<(EffettoClic & { href: string }) | null>(null);
+  const timerEffetto = useRef<ReturnType<typeof setTimeout> | null>(null);
   const t = TEMI[tema];
   const scuro = tema === 'scuro';
+  // Al clic su una voce parte un effetto sull'icona (meteora nel tema scuro, squalo nel chiaro). La navigazione non aspetta:
+  // il menu resta montato mentre la pagina cambia, quindi l'animazione prosegue sopra la nuova pagina.
+  function lanciaEffetto(ev: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    if (ev.metaKey || ev.ctrlKey || ev.shiftKey || ev.button !== 0) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const tile = ev.currentTarget.querySelector('[data-tile]');
+    if (!tile) return;
+    const r = tile.getBoundingClientRect();
+    setEffetto({ href, tipo: scuro ? 'meteora' : 'squalo', x: r.left + r.width / 2, y: r.top + r.height / 2, chiave: Date.now() });
+    if (timerEffetto.current) clearTimeout(timerEffetto.current);
+    timerEffetto.current = setTimeout(() => setEffetto(null), 2100);
+  }
+
   function cambiaTema() {
     const nuovo: Tema = scuro ? 'chiaro' : 'scuro';
     setTema(nuovo);
@@ -248,7 +264,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel, tem
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => setOpen(false)}
+                    onClick={(ev) => { lanciaEffetto(ev, item.href); setOpen(false); }}
                     aria-current={attiva ? 'page' : undefined}
                     className={`premi group relative flex items-center gap-2.5 rounded-xl px-2 py-[6px] text-[13px] tracking-tight transition [@media(max-height:820px)]:py-[4px] ${
                       attiva ? t.voceAttiva : t.voceInattiva
@@ -256,8 +272,12 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel, tem
                   >
                     {attiva && <span className={t.lineaAttiva} aria-hidden="true" />}
                     <span
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${attiva ? t.tileAttiva : t.tileInattiva}`}
-                      style={{ animationDelay: `${-((posizione.get(item.href) ?? 0) * 0.67 % 4.4).toFixed(2)}s` }}
+                      data-tile
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${attiva ? t.tileAttiva : t.tileInattiva} ${
+                        effetto?.href === item.href ? (effetto.tipo === 'meteora' ? 'tile-meteorite' : 'tile-mangiata') : ''
+                      }`}
+                      // il ritardo negativo sfasa l'oscillazione; con un effetto in corso la seconda animazione parte subito
+                      style={{ animationDelay: `${-((posizione.get(item.href) ?? 0) * 0.67 % 4.4).toFixed(2)}s${effetto?.href === item.href ? ', 0s' : ''}` }}
                     >
                       {ICONE[item.href] && <Icon nome={ICONE[item.href]} className="h-[15px] w-[15px]" />}
                     </span>
@@ -315,6 +335,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel, tem
 
   return (
     <>
+      <LivelloEffetti effetto={effetto} />
       <div className={`flex items-center justify-between px-4 py-3 lg:hidden ${t.barra}`}>
         <div className="flex items-center gap-2">
           <Image src="/icon.svg" alt="" width={24} height={24} className={`rounded-[7px] ${t.mobileLogo}`} />
