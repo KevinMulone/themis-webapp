@@ -45,7 +45,9 @@ si esegue.
 | `029_calendario_ics.sql` | ❌ **no** |
 | `037_studio_operativo_v2.sql` | ❌ **da applicare con il nuovo deploy** — parti, verifiche, versioni documentali, storico Themis, pianificazione e calcoli nel fascicolo |
 | `039_fascicoli_rfid.sql` | ✅ sì (02.11.2026) — fascicoli fisici con etichette RFID (pagina `/fascicoli-rfid`, route `/api/rfid/*`); indipendente dalle precedenti non applicate |
-| `040_rfid_cliente_e_piantina.sql` | ⏳ da applicare — etichette RFID associate al cliente (`client_id`) e piantina dello studio (`rfid_mappa`) |
+| `040_rfid_cliente_e_piantina.sql` | ✅ sì (05.11.2026) — etichette RFID associate al cliente (`client_id`) e piantina dello studio (`rfid_mappa`) |
+| `041_clienti_telefono_di.sql` | ✅ sì (09.11.2026) — di chi è il numero di telefono del cliente (`clients.telefono_di`) |
+| `042_whatsapp_cliente_eliminabile.sql` | ⏳ da applicare — un cliente con messaggi WhatsApp collegati si può eliminare (`ON DELETE SET NULL`) |
 
 ## Falla di sicurezza trovata il 31.08.2026 (chiusa dalla 008)
 
