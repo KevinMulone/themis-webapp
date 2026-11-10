@@ -35,7 +35,14 @@ export async function DELETE(_request: Request, ctx: RouteContext<'/api/pratiche
   const percorsi = (documenti ?? []).map((d) => d.storage_path as string).filter((p) => p && p !== 'pending');
 
   const { error } = await supabase.from('matters').delete().eq('id', id);
-  if (error) return NextResponse.json({ error: 'Pratica non eliminata: riprova.' }, { status: 500 });
+  if (error) {
+    // Si dice la causa vera (solo al titolare): "riprova" non aiuta se il database rifiuta per un motivo preciso.
+    console.error('Eliminazione pratica non riuscita:', error.code, error.message);
+    const motivo = error.code === '23503'
+      ? 'ci sono ancora dati collegati che il database non cancella da solo'
+      : error.message;
+    return NextResponse.json({ error: `Pratica non eliminata: ${motivo}`, codice: error.code }, { status: 500 });
+  }
 
   let fileRimossi = 0;
   if (percorsi.length) {
