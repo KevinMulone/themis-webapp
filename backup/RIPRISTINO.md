@@ -8,10 +8,9 @@ Nella cartella `Backup Themis` trovi:
 - `database/themis-db-DATA.dump.enc` — clienti, pratiche, eventi, impostazioni (cifrato)
 - `database/themis-auth-DATA.dump.enc` — gli accessi degli utenti (cifrato)
 - `files/` — i documenti, già cifrati dall'app
-- `ultimo-backup.txt` — quando è stato fatto l'ultimo
 
 ## 1. Decifra le due copie del database
-Nel Terminale, dentro la cartella `database` (sostituisci DATA con quella del file più recente):
+Nel Terminale, dentro la cartella `database` (sostituisci DATA con data e ora nel nome del file più recente, per esempio 2026-11-10_1301):
 
 ```bash
 openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -in themis-auth-DATA.dump.enc -out auth.dump

@@ -69,13 +69,16 @@ cifra "$TMP/auth.dump" "$DEST/database/themis-auth-$DATA.dump.enc" || fail "Cifr
 echo "   database: $(du -h "$DEST/database/themis-db-$DATA.dump.enc" | cut -f1) · accessi: $(du -h "$DEST/database/themis-auth-$DATA.dump.enc" | cut -f1)"
 
 echo "3/3 File dei documenti..."
-SUPABASE_URL="$SUPABASE_URL" SERVICE_KEY="$CHIAVE" python3 "$AQUI/scarica_file.py" "$DEST/files" \
+MANIFEST="$(dirname "$CONF")/manifest-file.json" SUPABASE_URL="$SUPABASE_URL" SERVICE_KEY="$CHIAVE" python3 "$AQUI/scarica_file.py" "$DEST/files" \
   || fail "Alcuni file dei documenti non sono stati copiati: vedi $LOG"
 
 # Si tengono le ultime N copie del database; i file dei documenti non si cancellano mai.
+# (Da programma macOS non lascia modificare file già presenti nel Dropbox: per questo i nomi hanno la data
+# e nessun file viene riscritto. Se una vecchia copia non si può cancellare, si segnala e si va avanti.)
 for prefisso in themis-db themis-auth; do
-  ls -1t "$DEST/database/$prefisso"-*.enc 2>/dev/null | tail -n +$(( ${BACKUP_COPIE:-30} + 1 )) | while IFS= read -r vecchio; do rm -f "$vecchio"; done
+  ls -1t "$DEST/database/$prefisso"-*.enc 2>/dev/null | tail -n +$(( ${BACKUP_COPIE:-30} + 1 )) | while IFS= read -r vecchio; do
+    rm -f "$vecchio" || echo "Avviso: non riesco a cancellare la vecchia copia $(basename "$vecchio")"
+  done
 done
-[ -f "$AQUI/RIPRISTINO.md" ] && cp "$AQUI/RIPRISTINO.md" "$DEST/RIPRISTINO.md"
-date '+%d/%m/%Y %H:%M' > "$DEST/ultimo-backup.txt"
+[ -f "$DEST/RIPRISTINO.md" ] || cp "$AQUI/RIPRISTINO.md" "$DEST/RIPRISTINO.md" 2>/dev/null
 echo "Fatto: $DEST"

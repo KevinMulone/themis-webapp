@@ -3,13 +3,16 @@
 
 Uso:  SUPABASE_URL=... SERVICE_KEY=... python3 scarica_file.py CARTELLA_DESTINAZIONE
 
-- Scarica solo i file nuovi o cambiati (un elenco .manifest.json ricorda cosa c'è già).
+- Scarica solo i file nuovi o cambiati (un elenco, in MANIFEST o in .manifest.json, ricorda cosa c'è già).
+- Nella cartella di destinazione (Dropbox) non si rinomina e non si sostituisce nulla: macOS lo vieta ai programmi
+  lanciati in automatico. I file si scrivono direttamente, passando da una cartella temporanea.
 - Non cancella mai nulla dalla destinazione: se un file sparisce da Supabase, la copia resta.
 - I file sono già cifrati dall'app (AES-256-GCM): si copiano così come sono, senza toccarli.
   Per leggerli servono la chiave DOCUMENT_ENCRYPTION_MASTER_KEY e, quindi, di conservarla a parte.
 """
 import json
 import os
+import shutil
 import sys
 import time
 import urllib.error
@@ -64,7 +67,10 @@ def elenco(prefisso=""):
 
 
 os.makedirs(DEST, exist_ok=True)
-percorso_manifest = os.path.join(DEST, ".manifest.json")
+percorso_manifest = os.environ.get("MANIFEST") or os.path.join(DEST, ".manifest.json")
+os.makedirs(os.path.dirname(percorso_manifest), exist_ok=True)
+TEMPORANEA = os.path.join(os.path.dirname(percorso_manifest), "tmp")
+os.makedirs(TEMPORANEA, exist_ok=True)
 try:
     with open(percorso_manifest, encoding="utf-8") as f:
         manifest = json.load(f)
@@ -81,9 +87,11 @@ for nome, dimensione, aggiornato in file_remoti:
     try:
         contenuto = chiama(f"/storage/v1/object/{BUCKET}/{urllib.parse.quote(nome, safe='/')}")
         os.makedirs(os.path.dirname(locale), exist_ok=True)
-        with open(locale + ".part", "wb") as f:
+        provvisorio = os.path.join(TEMPORANEA, "scarico.part")
+        with open(provvisorio, "wb") as f:
             f.write(contenuto)
-        os.replace(locale + ".part", locale)
+        shutil.copyfile(provvisorio, locale)  # scrive direttamente il file finale; il manifest si aggiorna solo se riesce
+        os.remove(provvisorio)
         manifest[nome] = firma
         nuovi += 1
     except Exception as e:  # un file che non si scarica non deve fermare gli altri
