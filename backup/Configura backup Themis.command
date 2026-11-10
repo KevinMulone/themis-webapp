@@ -28,10 +28,12 @@ echo; echo "2) File dei documenti."
 URL_PREDEFINITO="$(grep -m1 '^NEXT_PUBLIC_SUPABASE_URL=' "$AQUI/../.env.supabase-nuovo" 2>/dev/null | cut -d= -f2-)"
 read -r -p "   Indirizzo del progetto [${URL_PREDEFINITO:-https://xxxx.supabase.co}]: " SUPABASE_URL
 SUPABASE_URL="${SUPABASE_URL:-$URL_PREDEFINITO}"
-echo "   Chiave 'service_role': Supabase > Project Settings > API Keys (è segreta: non incollarla in chat)."
-read -r -s -p "   Chiave service_role (non si vede): " CHIAVE; echo
+echo "   Chiave segreta: Supabase > Project Settings > API Keys > 'Secret keys' > default (occhio per mostrarla, poi copia)."
+echo "   Se non funziona, usa la vecchia 'service_role': pulsante 'View legacy API keys'. Sono segrete: non incollarle in chat."
+read -r -s -p "   Chiave segreta (non si vede): " CHIAVE; echo
+AUTH=(); case "$CHIAVE" in eyJ*) AUTH=(-H "Authorization: Bearer $CHIAVE");; esac
 CODICE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$SUPABASE_URL/storage/v1/object/list/documents" \
-  -H "Authorization: Bearer $CHIAVE" -H "apikey: $CHIAVE" -H 'Content-Type: application/json' -d '{"prefix":"","limit":1}')"
+  "${AUTH[@]}" -H "apikey: $CHIAVE" -H 'Content-Type: application/json' -d '{"prefix":"","limit":1}')"
 [ "$CODICE" = "200" ] || fail "Chiave o indirizzo non validi (risposta $CODICE)."
 echo "   OK."
 

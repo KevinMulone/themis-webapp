@@ -22,7 +22,11 @@ CHIAVE = os.environ.get("SERVICE_KEY", "")
 if not URL or not CHIAVE or len(sys.argv) != 2:
     sys.exit("Uso: SUPABASE_URL=... SERVICE_KEY=... python3 scarica_file.py CARTELLA")
 DEST = sys.argv[1]
-INTESTAZIONI = {"Authorization": "Bearer " + CHIAVE, "apikey": CHIAVE}
+# Le chiavi nuove (sb_secret_...) vanno solo nell'intestazione apikey; la vecchia service_role (un JWT, inizia con eyJ)
+# va anche come Bearer.
+INTESTAZIONI = {"apikey": CHIAVE}
+if CHIAVE.startswith("eyJ"):
+    INTESTAZIONI["Authorization"] = "Bearer " + CHIAVE
 
 
 def chiama(percorso, corpo=None, tentativi=3):

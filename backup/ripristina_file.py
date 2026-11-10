@@ -30,7 +30,7 @@ for radice, _, nomi in os.walk(BASE):
             corpo = f.read()
         richiesta = urllib.request.Request(
             f"{URL}/storage/v1/object/{BUCKET}/{urllib.parse.quote(percorso, safe='/')}", data=corpo, method="POST",
-            headers={"Authorization": "Bearer " + CHIAVE, "apikey": CHIAVE,
+            headers={**({"Authorization": "Bearer " + CHIAVE} if CHIAVE.startswith("eyJ") else {}), "apikey": CHIAVE,
                      "Content-Type": "application/octet-stream", "x-upsert": "true"})
         try:
             urllib.request.urlopen(richiesta, timeout=120).read()
