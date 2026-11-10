@@ -16,7 +16,8 @@ export type NomeIcona =
   | 'collaboratori' | 'impostazioni' | 'esci' | 'piu' | 'freccia' | 'invio'
   | 'documento' | 'orologio' | 'abbonamento'
   | 'lucchetto' | 'scudo' | 'utente' | 'puntini' | 'stelle' | 'matita'
-  | 'occhio' | 'campanella' | 'scarica' | 'whatsapp' | 'aiuto' | 'cerca' | 'edificio';
+  | 'occhio' | 'campanella' | 'scarica' | 'whatsapp' | 'aiuto' | 'cerca' | 'edificio'
+  | 'etichetta' | 'tribunale';
 
 const TRACCIATI: Record<NomeIcona, React.ReactNode> = {
   dashboard: (
@@ -229,6 +230,22 @@ const TRACCIATI: Record<NomeIcona, React.ReactNode> = {
       <path d="M4 9 12 4l8 5" />
       <path d="M4 9v10M20 9v10M4 19h16" />
       <path d="M8 9v10M12 9v10M16 9v10" />
+    </>
+  ),
+  // un cartellino con il foro, come l'etichetta applicata al fascicolo di carta
+  etichetta: (
+    <>
+      <path d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7a1 1 0 0 1 .7.3l7.6 7.6a1 1 0 0 1 0 1.4l-7.4 7.4a1 1 0 0 1-1.4 0l-7.9-7.9a1 1 0 0 1-.3-.6Z" />
+      <circle cx="8.2" cy="8.2" r="1.3" />
+    </>
+  ),
+  // la bilancia è già di "Themis" e "Patrocinio": per i registri del tribunale, un palazzo con il frontone
+  tribunale: (
+    <>
+      <path d="M3 8.5 12 3.5l9 5" />
+      <path d="M5 8.5h14" />
+      <path d="M6.5 11.5v6M10 11.5v6M14 11.5v6M17.5 11.5v6" />
+      <path d="M4 20.5h16M5 17.5h14" />
     </>
   ),
 };

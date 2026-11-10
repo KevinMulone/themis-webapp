@@ -28,8 +28,8 @@ const ICONE: Record<string, NomeIcona> = {
   '/calcolo-danno': 'calcolo',
   '/parcelle': 'parcelle',
   '/patrocinio': 'patrocinio',
-  '/registri-giustizia': 'cerca',
-  '/fascicoli-rfid': 'documento',
+  '/registri-giustizia': 'tribunale',
+  '/fascicoli-rfid': 'etichetta',
   '/studi': 'edificio',
   '/domande-frequenti': 'aiuto',
   '/attivita': 'attivita',
@@ -53,6 +53,8 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
   const [risultati, setRisultati] = useState<RisultatoRicerca[]>([]);
   const [ricercaInCorso, setRicercaInCorso] = useState(false);
   const inputRicerca = useRef<HTMLInputElement>(null);
+  const elencoRef = useRef<HTMLElement | null>(null);
+  const [bordi, setBordi] = useState({ su: false, giu: false });
   const pathname = usePathname();
 
   useEffect(() => {
@@ -94,6 +96,27 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
     return () => { window.clearTimeout(timer); controller.abort(); };
   }, [query]);
 
+  // Dice se l'elenco continua sopra o sotto: serve a far sfumare i bordi e a non nascondere voci senza che si veda.
+  function aggiornaBordi() {
+    const el = elencoRef.current;
+    if (!el) return;
+    const su = el.scrollTop > 4;
+    const giu = el.scrollTop + el.clientHeight < el.scrollHeight - 4;
+    setBordi((b) => (b.su === su && b.giu === giu ? b : { su, giu }));
+  }
+  useEffect(() => { aggiornaBordi(); });  // a ogni disegno: cambiano le voci, i contatori, la finestra
+  useEffect(() => {
+    window.addEventListener('resize', aggiornaBordi);
+    return () => window.removeEventListener('resize', aggiornaBordi);
+  }, []);
+
+  // L'abbonamento in una riga sola: "1050 gg"; giallo sotto i 30 giorni, rosso se scade a breve o è scaduto.
+  const abbonamentoBreve = abbonamentoLabel
+    ?.replace('scade tra ', '').replace(' giorni', ' gg').replace('scade ', '') ?? null;
+  const giorniAbb = abbonamentoLabel ? Number(abbonamentoLabel.match(/\d+/)?.[0] ?? NaN) : NaN;
+  const abbRosso = !!abbonamentoLabel && /scaduto|oggi|domani/.test(abbonamentoLabel);
+  const abbGiallo = !abbRosso && Number.isFinite(giorniAbb) && giorniAbb <= 30;
+
   function eVoceAttiva(href: string) {
     if (href === '/whatsapp') return pathname === '/whatsapp';
     return pathname === href || pathname.startsWith(`${href}/`);
@@ -111,11 +134,11 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
 
   const navContent = (
     <>
-      <div className="mx-2 mt-1 flex items-center gap-3 rounded-2xl bg-white/45 px-3 py-3 ring-1 ring-white/70">
-        <Image src="/icon.svg" alt="" width={34} height={34} className="rounded-[10px] shadow-[0_8px_20px_-12px_rgba(69,18,36,.8)]" />
+      <div className="mx-2 mt-1 flex items-center gap-3 px-2 py-2">
+        <Image src="/icon.svg" alt="" width={36} height={36} className="rounded-[11px] shadow-[0_10px_22px_-12px_rgba(69,18,36,.85)]" />
         <div className="min-w-0 flex-1">
-          <h1 className="text-[15px] font-bold tracking-[-.025em] text-neutral-950">Themis</h1>
-          <p className="mt-0.5 truncate text-[11px] text-neutral-500">{nomeStudio}</p>
+          <h1 className="text-[16px] font-bold leading-tight tracking-[-.03em] text-neutral-950">Themis</h1>
+          <p className="truncate text-[11.5px] leading-tight text-neutral-500">{nomeStudio || 'Il tuo studio'}</p>
         </div>
         <NotificheCampanella />
       </div>
@@ -123,20 +146,27 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
       <button
         type="button"
         onClick={() => setRicercaAperta(true)}
-        className="group mx-2 mb-5 mt-3 flex items-center gap-2.5 rounded-2xl bg-white/75 px-3 py-3 text-left text-xs text-neutral-500 shadow-[0_12px_30px_-25px_rgba(0,0,0,.35)] ring-1 ring-black/[0.045] transition hover:bg-white"
+        className="group mx-2 mb-3 mt-1 flex items-center gap-2.5 rounded-xl bg-white/80 px-3 py-2.5 text-left text-[12.5px] text-neutral-500 ring-1 ring-black/[0.06] transition hover:bg-white hover:ring-bordeaux-200"
       >
-        <Icon nome="cerca" className="h-4 w-4 transition group-hover:text-bordeaux-600" />
+        <Icon nome="cerca" className="h-4 w-4 text-neutral-400 transition group-hover:text-bordeaux-600" />
         <span className="flex-1">Cerca nello studio</span>
-        <kbd className="rounded border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-[10px] text-neutral-400">⌘K</kbd>
+        <kbd className="rounded-md border border-neutral-200 bg-white px-1.5 py-0.5 font-sans text-[10px] text-neutral-400">⌘K</kbd>
       </button>
 
-      <nav className="sidebar-scroll flex flex-1 flex-col gap-5 overflow-y-auto px-2 pb-3">
+      <nav
+        ref={elencoRef}
+        onScroll={aggiornaBordi}
+        data-su={bordi.su ? '1' : '0'}
+        data-giu={bordi.giu ? '1' : '0'}
+        className="sidebar-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2 pb-2 [@media(max-height:820px)]:gap-3"
+      >
         {sezioni.map((sezione, idx) => (
           <div key={`${sezione.titolo}-${idx}`}>
-            <p className="px-3 pb-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-neutral-400">
+            <p className="flex items-center gap-2 px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
               {sezione.titolo}
+              <span className="h-px flex-1 bg-gradient-to-r from-black/[0.07] to-transparent" aria-hidden="true" />
             </p>
-            <div className="flex flex-col gap-px">
+            <div className="flex flex-col gap-0.5">
               {sezione.voci.map((item) => {
                 const attiva = eVoceAttiva(item.href);
                 return (
@@ -145,24 +175,26 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
                     href={item.href}
                     onClick={() => setOpen(false)}
                     aria-current={attiva ? 'page' : undefined}
-                    className={`premi group relative flex items-center gap-2.5 overflow-hidden rounded-xl px-3 py-2 text-[13px] tracking-tight transition ${
+                    className={`premi group relative flex items-center gap-2.5 rounded-xl px-2 py-[6px] text-[13px] tracking-tight transition [@media(max-height:820px)]:py-[4px] ${
                       attiva
-                        ? 'bg-white font-semibold text-neutral-950 shadow-[0_10px_28px_-22px_rgba(69,18,36,.45)] ring-1 ring-black/[0.045]'
-                        : 'text-neutral-600 hover:bg-white/55 hover:text-neutral-900'
+                        ? 'bg-gradient-to-r from-bordeaux-50 via-white/90 to-white/60 font-semibold text-bordeaux-900 shadow-[0_8px_22px_-16px_rgba(69,18,36,.55)] ring-1 ring-bordeaux-100/80'
+                        : 'text-neutral-600 hover:bg-white/60 hover:text-neutral-900'
                     }`}
                   >
-                    {attiva && <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-bordeaux-600" aria-hidden="true" />}
-                    {ICONE[item.href] && (
-                      <Icon
-                        nome={ICONE[item.href]}
-                        className={`h-4 w-4 shrink-0 transition-transform duration-300 group-hover:scale-110 ${attiva ? 'text-bordeaux-700' : 'text-neutral-400'}`}
-                      />
-                    )}
+                    <span
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${
+                        attiva
+                          ? 'bg-bordeaux-600 text-white shadow-[0_6px_14px_-6px_rgba(124,36,64,.8)]'
+                          : 'text-neutral-400 group-hover:bg-bordeaux-50 group-hover:text-bordeaux-600'
+                      }`}
+                    >
+                      {ICONE[item.href] && <Icon nome={ICONE[item.href]} className="h-[15px] w-[15px]" />}
+                    </span>
                     <span className="flex-1 truncate">{item.label}</span>
                     {item.badge ? (
                       <span
-                        className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${
-                          attiva ? 'bg-neutral-900 text-white' : 'bg-neutral-200/80 text-neutral-600'
+                        className={`min-w-[20px] rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold tabular-nums ${
+                          attiva ? 'bg-bordeaux-600 text-white' : 'bg-bordeaux-50 text-bordeaux-700'
                         }`}
                       >
                         {item.badge}
@@ -176,22 +208,29 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
         ))}
       </nav>
 
-      <div className="px-2 pb-2">
+      <div className="border-t border-black/[0.05] px-2 pb-1 pt-2">
         {abbonamentoLabel && (
           <Link
-            href="/impostazioni"
+            href="/impostazioni#abbonamento"
             onClick={() => setOpen(false)}
-            className="rialzo mb-2 block rounded-2xl bg-gradient-to-br from-white/90 to-gold-50/50 p-3.5 shadow-[0_14px_32px_-26px_rgba(69,18,36,.3)] ring-1 ring-black/[0.04]"
+            className={`rialzo mb-1.5 flex items-center gap-2 rounded-xl px-3 py-2 text-[12px] ring-1 ${
+              abbRosso ? 'bg-red-50 text-red-800 ring-red-100'
+                : abbGiallo ? 'bg-amber-50 text-amber-900 ring-amber-100'
+                : 'bg-gradient-to-r from-gold-50/80 to-white/70 text-neutral-700 ring-gold-100/80'
+            }`}
           >
-            <div className="flex items-center gap-2 text-[12px] font-medium text-neutral-800">
-              <Icon nome="abbonamento" className="h-3.5 w-3.5 text-gold-600" />
-              Abbonamento
-            </div>
-            <p className="mt-0.5 text-[11px] text-neutral-500">{abbonamentoLabel}</p>
+            <Icon nome="abbonamento" className={`h-3.5 w-3.5 ${abbRosso ? 'text-red-600' : abbGiallo ? 'text-amber-600' : 'text-gold-600'}`} />
+            <span className="font-medium">Abbonamento</span>
+            <span className="ml-auto text-[11px] opacity-75">{abbonamentoBreve}</span>
           </Link>
         )}
-        <LogoutButton />
-        <p className="pt-3 text-center text-[9px] font-medium uppercase tracking-[.14em] text-neutral-400">Themis · Versione beta</p>
+        <div className="flex items-center justify-between">
+          <LogoutButton className="premi flex items-center gap-2 rounded-xl px-3 py-1.5 text-[13px] text-neutral-600 hover:bg-white/70 hover:text-neutral-900">
+            <Icon nome="esci" className="h-4 w-4 text-neutral-400" />
+            Esci
+          </LogoutButton>
+          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[.12em] text-neutral-400">Beta</span>
+        </div>
       </div>
     </>
   );

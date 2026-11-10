@@ -182,6 +182,13 @@ body {
   scrollbar-color: rgba(107,29,57,.12) transparent;
 }
 .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+/* dissolvenza ai bordi dell'elenco quando c'è altro da scorrere: si capisce che il menu continua */
+.sidebar-scroll[data-su='1'] { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px); mask-image: linear-gradient(to bottom, transparent 0, #000 26px); }
+.sidebar-scroll[data-giu='1'] { -webkit-mask-image: linear-gradient(to top, transparent 0, #000 26px); mask-image: linear-gradient(to top, transparent 0, #000 26px); }
+.sidebar-scroll[data-su='1'][data-giu='1'] {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 26px, #000 calc(100% - 26px), transparent 100%);
+}
 .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(107,29,57,.12); border-radius: 999px; }
 
 /* Sistema condiviso dell'area studio: ogni modulo mantiene la propria

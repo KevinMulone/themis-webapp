@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
-export default function LogoutButton({ className }: { className?: string }) {
+export default function LogoutButton({ className, children }: { className?: string; children?: React.ReactNode }) {
   const router = useRouter();
   return (
     <button
@@ -16,7 +16,7 @@ export default function LogoutButton({ className }: { className?: string }) {
         router.refresh();
       }}
     >
-      Esci
+      {children ?? 'Esci'}
     </button>
   );
 }
