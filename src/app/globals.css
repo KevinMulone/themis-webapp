@@ -208,6 +208,16 @@ body {
 .sidebar-tek .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.16); }
 .barra-tek { background: linear-gradient(180deg, #160b11, #0d070a); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
 
+/* Icone del menu chiaro: galleggiano sullo sfondo della pagina con una lieve oscillazione, ognuna sfasata dalle altre.
+   Si usa la proprietà `translate` (indipendente da `transform` e da `scale`) così non litiga con l'ingrandimento al passaggio del mouse. */
+@keyframes galleggia {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -3px; }
+}
+.galleggia { animation: galleggia 5.5s ease-in-out infinite; }
+.group:hover .galleggia { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .galleggia { animation: none; } }
+
 /* dissolvenza ai bordi dell'elenco quando c'è altro da scorrere: si capisce che il menu continua */
 .sidebar-scroll[data-su='1'] { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px); mask-image: linear-gradient(to bottom, transparent 0, #000 26px); }
 .sidebar-scroll[data-giu='1'] { -webkit-mask-image: linear-gradient(to top, transparent 0, #000 26px); mask-image: linear-gradient(to top, transparent 0, #000 26px); }

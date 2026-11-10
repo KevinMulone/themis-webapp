@@ -67,24 +67,25 @@ const TEMI = {
     mobileLogo: 'ring-1 ring-white/15',
   },
   chiaro: {
-    asideDesktop: 'vetro lg:border-r lg:border-white/70 lg:shadow-[16px_0_55px_-48px_rgba(45,12,24,.38)]',
+    // nessuno sfondo, bordo o ombra: il menu sta sullo stesso fondo della pagina e solo le voci "galleggiano"
+    asideDesktop: '',
     asideMobile: 'vetro border-r border-white/70', barra: 'vetro border-b border-black/[0.06]',
     logo: 'shadow-[0_10px_22px_-12px_rgba(69,18,36,.85)]', logoAlone: 'hidden',
     titolo: 'text-[16px] font-bold tracking-[-.03em] text-neutral-950',
     studio: 'text-[11.5px] text-neutral-500',
-    cerca: 'bg-white/80 ring-1 ring-black/[0.06] text-neutral-500 hover:bg-white hover:ring-bordeaux-200',
+    cerca: 'bg-white/90 ring-1 ring-white text-neutral-500 shadow-[0_14px_30px_-18px_rgba(69,18,36,.4)] hover:bg-white hover:ring-bordeaux-200',
     cercaIcona: 'text-neutral-400 group-hover:text-bordeaux-600',
     kbd: 'border-neutral-200 bg-white font-sans text-neutral-400',
     sezTitolo: 'font-semibold tracking-[0.14em] text-neutral-400', sezNumero: 'hidden',
     sezLinea: 'from-black/[0.07]',
-    voceAttiva: 'bg-gradient-to-r from-bordeaux-50 via-white/90 to-white/60 font-semibold text-bordeaux-900 shadow-[0_8px_22px_-16px_rgba(69,18,36,.55)] ring-1 ring-bordeaux-100/80',
-    voceInattiva: 'text-neutral-600 hover:bg-white/60 hover:text-neutral-900',
+    voceAttiva: 'bg-white/55 font-semibold text-bordeaux-900 ring-1 ring-white shadow-[0_16px_32px_-22px_rgba(69,18,36,.5)]',
+    voceInattiva: 'text-neutral-600 hover:bg-white/45 hover:text-neutral-950',
     lineaAttiva: 'hidden',
-    tileAttiva: 'bg-bordeaux-600 text-white shadow-[0_6px_14px_-6px_rgba(124,36,64,.8)]',
-    tileInattiva: 'text-neutral-400 group-hover:bg-bordeaux-50 group-hover:text-bordeaux-600',
+    tileAttiva: 'galleggia scale-105 bg-gradient-to-br from-bordeaux-500 to-bordeaux-700 text-white shadow-[0_14px_24px_-8px_rgba(124,36,64,.75)]',
+    tileInattiva: 'galleggia bg-white/90 text-neutral-500 ring-1 ring-white shadow-[0_10px_20px_-10px_rgba(69,18,36,.4)] group-hover:scale-110 group-hover:text-bordeaux-600 group-hover:shadow-[0_16px_26px_-10px_rgba(124,36,64,.55)]',
     badgeAttivo: 'bg-bordeaux-600 text-white', badgeInattivo: 'bg-bordeaux-50 text-bordeaux-700',
     badge: 'rounded-full',
-    piede: 'border-black/[0.05]',
+    piede: 'border-transparent',
     abb: 'bg-gradient-to-r from-gold-50/80 to-white/70 text-neutral-700 ring-gold-100/80', abbRosso: 'bg-red-50 text-red-800 ring-red-100',
     abbGiallo: 'bg-amber-50 text-amber-900 ring-amber-100',
     abbIcona: 'text-gold-600', abbIconaRosso: 'text-red-600', abbIconaGiallo: 'text-amber-600', abbValore: '',
@@ -199,6 +200,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel, tem
   })).filter((s) => s.voci.length);
   sezioni.forEach((s) => s.voci.forEach((v) => usati.add(v.href)));
   const resto = navItems.filter((v) => !usati.has(v.href));
+  const posizione = new Map(navItems.map((v, i) => [v.href, i]));
   if (resto.length) sezioni.push({ titolo: 'Altro', voci: resto });
 
   const navContent = (
@@ -253,7 +255,10 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel, tem
                     }`}
                   >
                     {attiva && <span className={t.lineaAttiva} aria-hidden="true" />}
-                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${attiva ? t.tileAttiva : t.tileInattiva}`}>
+                    <span
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${attiva ? t.tileAttiva : t.tileInattiva}`}
+                      style={{ animationDelay: `${-((posizione.get(item.href) ?? 0) * 0.83 % 5.5).toFixed(2)}s` }}
+                    >
                       {ICONE[item.href] && <Icon nome={ICONE[item.href]} className="h-[15px] w-[15px]" />}
                     </span>
                     <span className="flex-1 truncate">{item.label}</span>
