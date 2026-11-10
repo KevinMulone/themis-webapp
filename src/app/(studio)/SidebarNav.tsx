@@ -52,8 +52,8 @@ const TEMI = {
     voceAttiva: 'bg-gradient-to-r from-white/[0.10] to-white/[0.03] font-medium text-white ring-1 ring-white/10',
     voceInattiva: 'text-neutral-400 hover:bg-white/[0.06] hover:text-white',
     lineaAttiva: 'absolute -left-2 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-bordeaux-300 shadow-[0_0_14px_3px_rgba(219,139,160,.65)]',
-    tileAttiva: 'bg-gradient-to-br from-bordeaux-400 to-bordeaux-700 text-white shadow-[0_0_18px_-3px_rgba(191,81,112,.85)] ring-1 ring-white/20',
-    tileInattiva: 'text-neutral-500 group-hover:bg-white/[0.08] group-hover:text-bordeaux-300',
+    tileAttiva: 'galleggia bg-gradient-to-br from-bordeaux-400 to-bordeaux-700 text-white ring-1 ring-white/20',
+    tileInattiva: 'galleggia bg-white/[0.04] text-neutral-500 ring-1 ring-white/10 group-hover:bg-white/[0.1] group-hover:text-bordeaux-300',
     badgeAttivo: 'bg-bordeaux-500 text-white', badgeInattivo: 'bg-bordeaux-500/20 text-bordeaux-200 ring-1 ring-bordeaux-400/25',
     badge: 'rounded-md font-mono',
     piede: 'border-white/[0.07]',
@@ -257,7 +257,7 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel, tem
                     {attiva && <span className={t.lineaAttiva} aria-hidden="true" />}
                     <span
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${attiva ? t.tileAttiva : t.tileInattiva}`}
-                      style={{ animationDelay: `${-((posizione.get(item.href) ?? 0) * 0.83 % 5.5).toFixed(2)}s` }}
+                      style={{ animationDelay: `${-((posizione.get(item.href) ?? 0) * 0.67 % 4.4).toFixed(2)}s` }}
                     >
                       {ICONE[item.href] && <Icon nome={ICONE[item.href]} className="h-[15px] w-[15px]" />}
                     </span>

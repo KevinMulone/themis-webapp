@@ -208,14 +208,17 @@ body {
 .sidebar-tek .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.16); }
 .barra-tek { background: linear-gradient(180deg, #160b11, #0d070a); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
 
-/* Icone del menu chiaro: galleggiano sullo sfondo della pagina con una lieve oscillazione, ognuna sfasata dalle altre.
+/* Icone del menu: galleggiano sullo sfondo con un'oscillazione ben visibile (6 px) e l'ombra che si allontana quando salgono
+   e si stringe quando scendono, come un oggetto sospeso; ognuna è sfasata dalle altre.
    Si usa la proprietà `translate` (indipendente da `transform` e da `scale`) così non litiga con l'ingrandimento al passaggio del mouse. */
 @keyframes galleggia {
-  0%, 100% { translate: 0 0; }
-  50% { translate: 0 -3px; }
+  0%, 100% { translate: 0 2px; box-shadow: 0 5px 10px -7px rgba(var(--ombra-galleggia), .45); }
+  50% { translate: 0 -6px; box-shadow: 0 20px 24px -12px rgba(var(--ombra-galleggia), .5); }
 }
-.galleggia { animation: galleggia 5.5s ease-in-out infinite; }
-.group:hover .galleggia { animation-play-state: paused; }
+.galleggia { --ombra-galleggia: 69, 18, 36; animation: galleggia 4.4s ease-in-out infinite; }
+.sidebar-tek .galleggia { --ombra-galleggia: 0, 0, 0; }
+/* al passaggio del mouse l'icona si ferma un po' in alto, così l'ingrandimento e l'ombra della classe hover si vedono */
+.group:hover .galleggia { animation: none; translate: 0 -4px; }
 @media (prefers-reduced-motion: reduce) { .galleggia { animation: none; } }
 
 /* dissolvenza ai bordi dell'elenco quando c'è altro da scorrere: si capisce che il menu continua */
