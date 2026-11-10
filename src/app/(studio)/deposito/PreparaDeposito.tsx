@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
 import { TIPI_PRATICA, labelFromOptions, clientLabel, formatDateIt } from '@/lib/constants';
 import { Icon } from '@/components/ui/Icon';
+import { preparaFile } from '@/lib/preparaFile';
 
 type MatterInfo = {
   tipo_pratica: string; tribunale: string | null; sezione: string | null;
@@ -204,8 +205,10 @@ export default function PreparaDeposito({ matterId, clientId, matter, documenti,
     setCaricandoFirmati(true);
     try {
       for (const f of Array.from(file)) {
+        const preparato = await preparaFile(f);
+        if ('errore' in preparato) { setErroreFirmati(`"${f.name}": ${preparato.errore}`); return; }
         const form = new FormData();
-        form.append('file', f);
+        form.append('file', preparato.file);
         form.append('matter_id', matterId);
         const res = await fetch('/api/documenti/upload', { method: 'POST', body: form });
         if (!res.ok) {

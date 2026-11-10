@@ -6,6 +6,7 @@ import { STATI_APERTI } from '@/lib/incarichi';
 import { StudioProvider } from '@/lib/studio/StudioProvider';
 import SidebarNav from './SidebarNav';
 import UsageTracker from './UsageTracker';
+import AvvisoSpazio from '@/components/AvvisoSpazio';
 
 function giorniRimanenti(expiresAt: string | null): string | null {
   if (!expiresAt) return null;
@@ -78,6 +79,14 @@ export default async function StudioLayout({ children }: { children: React.React
     .eq('assegnato_a', ctx.userId)
     .in('stato', STATI_APERTI);
 
+  // Lo spazio usato su Supabase, solo per il titolare: se il progetto si riempie, si blocca tutto.
+  // Se la funzione non c'è ancora o la lettura fallisce, semplicemente non si mostra nulla.
+  let spazio: { storage_bytes: number; database_bytes: number } | null = null;
+  if (ctx.ruolo === 'titolare') {
+    const { data } = await supabase.rpc('spazio_usato');
+    if (data) spazio = data as { storage_bytes: number; database_bytes: number };
+  }
+
   const voci = [
     ...NAV,
     ...(ctx.ruolo === 'titolare' ? NAV_TITOLARE : []),
@@ -98,6 +107,7 @@ export default async function StudioLayout({ children }: { children: React.React
           abbonamentoLabel={giorniRimanenti(ctx.subscriptionExpiresAt)}
         />
         <main className="studio-page relative flex-1 overflow-y-auto p-4 lg:p-8 xl:p-10">
+          {spazio && <AvvisoSpazio storageBytes={spazio.storage_bytes} databaseBytes={spazio.database_bytes} />}
           {children}
         </main>
       </div>

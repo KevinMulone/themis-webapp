@@ -10,6 +10,7 @@ import IncarichiPratica from './IncarichiPratica';
 import ChiediAlFascicolo from './ChiediAlFascicolo';
 import RedigiAtto from './RedigiAtto';
 import ControlliPratica from './ControlliPratica';
+import { preparaFile } from '@/lib/preparaFile';
 import {
   TIPI_PRATICA, STATI_PRATICA, TIPI_SINISTRO, STATI_NEGOZIAZIONE, METODI_PAGAMENTO,
   labelFromOptions, clientLabel,
@@ -121,11 +122,13 @@ export default function MatterDetailPage({ params }: { params: Promise<{ id: str
   }
 
   async function handleUploadDocumento(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const scelto = e.target.files?.[0];
+    if (!scelto) return;
+    const preparato = await preparaFile(scelto);
+    if ('errore' in preparato) { alert(preparato.errore); e.target.value = ''; return; }
     setUploadingDoc(true);
     const form = new FormData();
-    form.append('file', file);
+    form.append('file', preparato.file);
     form.append('matter_id', id);
     const res = await fetch('/api/documenti/upload', { method: 'POST', body: form });
     setUploadingDoc(false);

@@ -4,6 +4,7 @@ import { contestoStudio } from '@/lib/studio/contesto';
 import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
 import { encryptBuffer } from '@/lib/crypto/docEncryption';
 import { createHash } from 'node:crypto';
+import { verificaCaricamento } from '@/lib/spazio';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -15,6 +16,9 @@ export async function POST(request: Request) {
   const file = form.get('file') as File | null;
   const matterId = form.get('matter_id') as string | null;
   if (!file || !matterId) return NextResponse.json({ error: 'File e pratica sono obbligatori' }, { status: 400 });
+
+  const rifiuto = await verificaCaricamento(file.size);
+  if (rifiuto) return rifiuto;
 
   const { data: matter } = await supabase.from('matters').select('id').eq('id', matterId).single();
   if (!matter) return NextResponse.json({ error: 'Pratica non trovata' }, { status: 404 });

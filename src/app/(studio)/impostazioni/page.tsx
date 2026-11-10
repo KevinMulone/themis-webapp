@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useStudio } from '@/lib/studio/StudioProvider';
+import { LIMITE_FILE_BYTES, messaggioFileTroppoGrande } from '@/lib/spazioCostanti';
+import ContatoreSpazio from './ContatoreSpazio';
 import { TIPI_PRATICA, labelFromOptions } from '@/lib/constants';
 import { leggiIcs, type ImpegnoImportato as ImpegnoLetto } from '@/lib/calendario/leggiIcs';
 // WhatsApp temporaneamente nascosto dall'interfaccia (funzionalità instabile).
@@ -318,6 +320,7 @@ export default function ImpostazioniPage() {
   async function handleLetterheadUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > LIMITE_FILE_BYTES) { alert(messaggioFileTroppoGrande(file.size)); e.target.value = ''; return; }
     const form = new FormData();
     form.append('file', file);
     const res = await fetch('/api/settings/letterhead', { method: 'POST', body: form });
@@ -600,6 +603,8 @@ export default function ImpostazioniPage() {
       )}
 
       {ruolo === 'titolare' && <ImpostazioniElenco />}
+
+      {ruolo === 'titolare' && <ContatoreSpazio />}
 
       <div id="documenti" className="scroll-mt-24 mb-4 rounded-2xl bg-white ring-1 ring-black/[0.04] p-6">
         <h2 className="mb-3 font-semibold text-neutral-900">Intestazione documenti</h2>

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { verificaCaricamento } from '@/lib/spazio';
 import { createClient } from '@/lib/supabase/server';
 import { contestoStudio } from '@/lib/studio/contesto';
 import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
@@ -33,9 +34,8 @@ export async function POST(request: Request) {
   const form = await request.formData();
   const file = form.get('file') as File | null;
   if (!file) return NextResponse.json({ error: 'File obbligatorio' }, { status: 400 });
-  if (file.size > 8 * 1024 * 1024) {
-    return NextResponse.json({ error: 'Immagine troppo grande (max 8 MB)' }, { status: 400 });
-  }
+  const rifiuto = await verificaCaricamento(file.size);
+  if (rifiuto) return rifiuto;
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const storagePath = `letterheads/${studioId}.enc`;

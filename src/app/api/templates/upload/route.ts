@@ -4,6 +4,7 @@ import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
 import { encryptBuffer } from '@/lib/crypto/docEncryption';
 import { discoverPlaceholders } from '@/lib/discoverPlaceholders';
 import { contestoStudio } from '@/lib/studio/contesto';
+import { verificaCaricamento } from '@/lib/spazio';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -19,6 +20,9 @@ export async function POST(request: Request) {
   if (!file || !nome) {
     return NextResponse.json({ error: 'File e nome sono obbligatori' }, { status: 400 });
   }
+
+  const rifiuto = await verificaCaricamento(file.size);
+  if (rifiuto) return rifiuto;
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const placeholderKeys = await discoverPlaceholders(buffer);

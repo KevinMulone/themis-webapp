@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient, DOCUMENTS_BUCKET } from '@/lib/supabase/admin';
 import { encryptBuffer } from '@/lib/crypto/docEncryption';
+import { verificaCaricamento } from '@/lib/spazio';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -12,6 +13,9 @@ export async function POST(request: Request) {
   const file = form.get('file') as File | null;
   const requestId = form.get('request_id') as string | null;
   if (!file || !requestId) return NextResponse.json({ error: 'File e richiesta sono obbligatori' }, { status: 400 });
+
+  const rifiuto = await verificaCaricamento(file.size);
+  if (rifiuto) return rifiuto;
 
   // Rilettura con il client normale (non admin): se la RLS su
   // document_requests è corretta, il fatto che questa select trovi la riga

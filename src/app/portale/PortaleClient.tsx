@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { toIsoLocale } from '@/lib/dateUtils';
 import { useAggiornamentoLive } from '@/lib/useAggiornamentoLive';
+import { preparaFile } from '@/lib/preparaFile';
 
 const OFFSET_CHOICES: [number, string][] = [
   [15, '15 minuti prima'], [60, '1 ora prima'], [1440, '1 giorno prima'],
@@ -96,10 +97,12 @@ function PortalePageInner() {
     setRichieste(data || []);
   }
 
-  async function handleCaricaDocumento(richiestaId: string, file: File) {
+  async function handleCaricaDocumento(richiestaId: string, scelto: File) {
+    const preparato = await preparaFile(scelto);
+    if ('errore' in preparato) { setError(preparato.errore); return; }
     setCaricando(richiestaId);
     const form = new FormData();
-    form.append('file', file);
+    form.append('file', preparato.file);
     form.append('request_id', richiestaId);
     const res = await fetch('/api/document-requests/upload', { method: 'POST', body: form });
     setCaricando(null);
