@@ -110,7 +110,9 @@ function Colonna({ campo, etichetta, ordine, onClick }: {
 export default function PraticheePage() {
   const supabase = createClient();
   const router = useRouter();
-  const { studioId } = useStudio();
+  const { studioId, ruolo } = useStudio();
+  const [vista, setVista] = useState<'attive' | 'archiviate'>('attive');
+  const [nArchiviate, setNArchiviate] = useState(0);
   const [matters, setMatters] = useState<Matter[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,15 +133,17 @@ export default function PraticheePage() {
 
   async function load() {
     setLoading(true);
-    const [{ data }, { data: clientsData }, { data: membriData }] = await Promise.all([
-      supabase.from('matters')
-        .select('*, clients(id, tipo_soggetto, nome, cognome, ragione_sociale)')
-        .neq('stato', 'archiviata')
-        .order('updated_at', { ascending: false }),
+    const elenco = supabase.from('matters')
+      .select('*, clients(id, tipo_soggetto, nome, cognome, ragione_sociale)')
+      .order('updated_at', { ascending: false });
+    const [{ data }, { data: clientsData }, { data: membriData }, { count: archiviate }] = await Promise.all([
+      vista === 'archiviate' ? elenco.eq('stato', 'archiviata') : elenco.neq('stato', 'archiviata'),
       supabase.from('clients').select('id, tipo_soggetto, nome, cognome, ragione_sociale')
         .eq('archiviato', false).order('cognome'),
       supabase.from('studio_membri').select('user_id, nome, email'),
+      supabase.from('matters').select('id', { count: 'exact', head: true }).eq('stato', 'archiviata'),
     ]);
+    setNArchiviate(archiviate ?? 0);
     setMatters((data as Matter[]) || []);
     setClients(clientsData || []);
     // Il nome si risolve qui e non con una join: studio_membri non ha una
@@ -152,7 +156,7 @@ export default function PraticheePage() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [vista]);
   // Cambiando ricerca o filtri si torna alla prima pagina: restare su
   // pagina 4 quando i risultati sono diventati tre significa guardare una
   // tabella vuota e credere che non ci sia nulla.
@@ -169,6 +173,30 @@ export default function PraticheePage() {
       await supabase.from('sinistri').insert({ studio_id: studioId, matter_id: data.id });
     }
     setCreating(false);
+    load();
+  }
+
+  async function riapri(m: Matter) {
+    // Non si sa in che stato fosse prima dell'archiviazione: torna tra le pratiche aperte.
+    const { error } = await supabase.from('matters').update({ stato: 'aperta' }).eq('id', m.id);
+    if (error) { alert('Pratica non riaperta: riprova.'); return; }
+    load();
+  }
+
+  async function elimina(m: Matter) {
+    // Si mostra quanto verrà cancellato: "elimina" su una pratica con anni di documenti non è un clic da fare a occhi chiusi.
+    const conta = (tabella: string) => supabase.from(tabella).select('id', { count: 'exact', head: true }).eq('matter_id', m.id);
+    const [d, i, e] = await Promise.all([conta('documenti'), conta('incarichi'), conta('eventi')]);
+    const dettaglio = `${d.count ?? 0} documenti, ${i.count ?? 0} incarichi, ${e.count ?? 0} eventi`;
+    const nome = `${clientLabel(m.clients)} — ${labelFromOptions(TIPI_PRATICA, m.tipo_pratica)}`;
+    if (!confirm(
+      `Eliminare DEFINITIVAMENTE la pratica «${nome}»?\n\n` +
+      `Verranno cancellati per sempre: ${dettaglio}, con i relativi file.\n` +
+      'Non è reversibile. Se vuoi solo tenerla da parte, lasciala archiviata.',
+    )) return;
+    const r = await fetch(`/api/pratiche/${m.id}`, { method: 'DELETE' });
+    const dati = await r.json().catch(() => ({}));
+    if (!r.ok) { alert(dati.error || 'Pratica non eliminata: riprova.'); return; }
     load();
   }
 
@@ -261,6 +289,19 @@ export default function PraticheePage() {
           <p className="module-eyebrow">Fascicoli</p>
           <h1 className="font-display text-[28px] font-semibold tracking-tight text-neutral-900">Pratiche</h1>
           <p className="mt-1 text-sm text-neutral-500">Gestisci tutte le pratiche dello studio.</p>
+          <div className="mt-3 inline-flex rounded-full bg-neutral-100 p-1 text-sm" role="tablist" aria-label="Quali pratiche mostrare">
+            {([['attive', 'Attive'], ['archiviate', `Archiviate${nArchiviate ? ` (${nArchiviate})` : ''}`]] as const).map(([v, l]) => (
+              <button
+                key={v} type="button" role="tab" aria-selected={vista === v}
+                onClick={() => setVista(v)}
+                className={`premi rounded-full px-4 py-1.5 font-medium transition-colors ${
+                  vista === v ? 'bg-white text-bordeaux-700 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'
+                }`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
         </div>
         <button
           onClick={() => setCreating(true)}
@@ -349,12 +390,19 @@ export default function PraticheePage() {
         )}
       </div>
 
+      {vista === 'archiviate' ? (
+        <p className="mb-4 rounded-2xl bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
+          Pratiche archiviate: non compaiono nell&apos;elenco normale. Con <b>Riapri</b> tornano tra le aperte
+          {ruolo === 'titolare' ? '; con Elimina si cancellano per sempre, insieme a documenti, incarichi ed eventi.' : '. Solo il titolare può eliminarle definitivamente.'}
+        </p>
+      ) : (
       <div className="mb-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <TesseraConteggio icona="documento" tinta="bg-violet-50 text-violet-500" valore={conteggi.totali} etichetta="Totali" />
         <TesseraConteggio icona="incarichi" tinta="bg-emerald-50 text-emerald-500" valore={conteggi.aperte} etichetta="Aperte" />
         <TesseraConteggio icona="orologio" tinta="bg-amber-50 text-amber-500" valore={conteggi.attesa} etichetta="In attesa" />
         <TesseraConteggio icona="pratiche" tinta="bg-sky-50 text-sky-500" valore={conteggi.chiuse} etichetta="Chiuse" />
       </div>
+      )}
 
       {loading ? (
         <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] p-6 text-sm text-neutral-500">
@@ -364,9 +412,9 @@ export default function PraticheePage() {
         <div className="rounded-[24px] bg-white ring-1 ring-black/[0.04] py-16 text-center">
           <Icon nome="pratiche" className="mx-auto h-10 w-10 text-neutral-200" />
           <p className="mt-3 text-sm text-neutral-500">
-            {search || filtriAttivi ? 'Nessuna pratica corrisponde alla ricerca.' : 'Nessuna pratica ancora.'}
+            {search || filtriAttivi ? 'Nessuna pratica corrisponde alla ricerca.' : vista === 'archiviate' ? 'Nessuna pratica archiviata.' : 'Nessuna pratica ancora.'}
           </p>
-          {!search && !filtriAttivi && (
+          {!search && !filtriAttivi && vista === 'attive' && (
             <button onClick={() => setCreating(true)} className="mt-3 text-sm font-medium text-bordeaux-700 hover:underline">
               Crea la prima pratica
             </button>
@@ -383,6 +431,7 @@ export default function PraticheePage() {
                   <Colonna campo="stato" etichetta="Stato" ordine={ordine} onClick={cambiaOrdine} />
                   <Colonna campo="aggiornata" etichetta="Aggiornata" ordine={ordine} onClick={cambiaOrdine} />
                   <Colonna campo="assegnata" etichetta="Assegnata" ordine={ordine} onClick={cambiaOrdine} />
+                  {vista === 'archiviate' && <th className="px-4 py-3" />}
                 </tr>
               </thead>
               <tbody>
@@ -449,6 +498,24 @@ export default function PraticheePage() {
                             : <span className="text-neutral-400">Non assegnata</span>}
                         </span>
                       </td>
+                      {vista === 'archiviate' && (
+                        <td className="px-4 py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button" onClick={() => riapri(m)}
+                            className="premi rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-200"
+                          >
+                            Riapri
+                          </button>
+                          {ruolo === 'titolare' && (
+                            <button
+                              type="button" onClick={() => elimina(m)}
+                              className="premi ml-2 rounded-full px-3 py-1.5 text-xs font-semibold text-red-600 ring-1 ring-red-200 hover:bg-red-50"
+                            >
+                              Elimina
+                            </button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
