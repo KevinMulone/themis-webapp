@@ -37,6 +37,66 @@ const ICONE: Record<string, NomeIcona> = {
   '/impostazioni': 'impostazioni',
 };
 
+// Le due versioni del menu: ogni voce dell'aspetto sta qui, così il resto del componente non cambia.
+const TEMI = {
+  scuro: {
+    asideDesktop: 'sidebar-tek', asideMobile: 'sidebar-tek', barra: 'barra-tek',
+    logo: 'ring-1 ring-white/15', logoAlone: 'bg-bordeaux-500/40 blur-md',
+    titolo: 'text-[15px] font-bold uppercase tracking-[.18em] text-white',
+    studio: 'font-mono text-[10.5px] text-neutral-400',
+    cerca: 'border border-white/10 bg-white/[0.04] text-neutral-400 hover:border-bordeaux-400/60 hover:bg-white/[0.08] hover:text-neutral-200',
+    cercaIcona: 'text-neutral-500 group-hover:text-bordeaux-300',
+    kbd: 'border-white/15 bg-white/[0.06] font-mono text-neutral-400',
+    sezTitolo: 'font-mono text-[10px] font-medium tracking-[0.2em] text-neutral-500', sezNumero: 'text-bordeaux-400/80',
+    sezLinea: 'from-white/[0.12]',
+    voceAttiva: 'bg-gradient-to-r from-white/[0.10] to-white/[0.03] font-medium text-white ring-1 ring-white/10',
+    voceInattiva: 'text-neutral-400 hover:bg-white/[0.06] hover:text-white',
+    lineaAttiva: 'absolute -left-2 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-bordeaux-300 shadow-[0_0_14px_3px_rgba(219,139,160,.65)]',
+    tileAttiva: 'bg-gradient-to-br from-bordeaux-400 to-bordeaux-700 text-white shadow-[0_0_18px_-3px_rgba(191,81,112,.85)] ring-1 ring-white/20',
+    tileInattiva: 'text-neutral-500 group-hover:bg-white/[0.08] group-hover:text-bordeaux-300',
+    badgeAttivo: 'bg-bordeaux-500 text-white', badgeInattivo: 'bg-bordeaux-500/20 text-bordeaux-200 ring-1 ring-bordeaux-400/25',
+    badge: 'rounded-md font-mono',
+    piede: 'border-white/[0.07]',
+    abb: 'bg-white/[0.04] text-neutral-300 ring-white/10', abbRosso: 'bg-red-500/10 text-red-200 ring-red-400/30',
+    abbGiallo: 'bg-amber-500/10 text-amber-200 ring-amber-400/30',
+    abbIcona: 'text-gold-300', abbIconaRosso: 'text-red-300', abbIconaGiallo: 'text-amber-300', abbValore: 'font-mono',
+    esci: 'text-neutral-400 hover:bg-white/[0.07] hover:text-white', esciIcona: 'text-neutral-500',
+    beta: 'rounded-md border border-white/10 font-mono text-neutral-500',
+    tema: 'text-neutral-400 hover:bg-white/10 hover:text-white',
+    hamburger: 'text-neutral-300 hover:bg-white/10 hover:text-white', mobileTitolo: 'text-[14px] font-bold uppercase tracking-[.18em] text-white',
+    mobileLogo: 'ring-1 ring-white/15',
+  },
+  chiaro: {
+    asideDesktop: 'vetro lg:border-r lg:border-white/70 lg:shadow-[16px_0_55px_-48px_rgba(45,12,24,.38)]',
+    asideMobile: 'vetro border-r border-white/70', barra: 'vetro border-b border-black/[0.06]',
+    logo: 'shadow-[0_10px_22px_-12px_rgba(69,18,36,.85)]', logoAlone: 'hidden',
+    titolo: 'text-[16px] font-bold tracking-[-.03em] text-neutral-950',
+    studio: 'text-[11.5px] text-neutral-500',
+    cerca: 'bg-white/80 ring-1 ring-black/[0.06] text-neutral-500 hover:bg-white hover:ring-bordeaux-200',
+    cercaIcona: 'text-neutral-400 group-hover:text-bordeaux-600',
+    kbd: 'border-neutral-200 bg-white font-sans text-neutral-400',
+    sezTitolo: 'font-semibold tracking-[0.14em] text-neutral-400', sezNumero: 'hidden',
+    sezLinea: 'from-black/[0.07]',
+    voceAttiva: 'bg-gradient-to-r from-bordeaux-50 via-white/90 to-white/60 font-semibold text-bordeaux-900 shadow-[0_8px_22px_-16px_rgba(69,18,36,.55)] ring-1 ring-bordeaux-100/80',
+    voceInattiva: 'text-neutral-600 hover:bg-white/60 hover:text-neutral-900',
+    lineaAttiva: 'hidden',
+    tileAttiva: 'bg-bordeaux-600 text-white shadow-[0_6px_14px_-6px_rgba(124,36,64,.8)]',
+    tileInattiva: 'text-neutral-400 group-hover:bg-bordeaux-50 group-hover:text-bordeaux-600',
+    badgeAttivo: 'bg-bordeaux-600 text-white', badgeInattivo: 'bg-bordeaux-50 text-bordeaux-700',
+    badge: 'rounded-full',
+    piede: 'border-black/[0.05]',
+    abb: 'bg-gradient-to-r from-gold-50/80 to-white/70 text-neutral-700 ring-gold-100/80', abbRosso: 'bg-red-50 text-red-800 ring-red-100',
+    abbGiallo: 'bg-amber-50 text-amber-900 ring-amber-100',
+    abbIcona: 'text-gold-600', abbIconaRosso: 'text-red-600', abbIconaGiallo: 'text-amber-600', abbValore: '',
+    esci: 'text-neutral-600 hover:bg-white/70 hover:text-neutral-900', esciIcona: 'text-neutral-400',
+    beta: 'rounded-full bg-neutral-100 text-neutral-400',
+    tema: 'text-neutral-500 hover:bg-white/80 hover:text-bordeaux-700',
+    hamburger: 'text-neutral-700 hover:bg-white/70', mobileTitolo: 'text-[15px] font-semibold tracking-tight text-neutral-900',
+    mobileLogo: '',
+  },
+} as const;
+type Tema = keyof typeof TEMI;
+
 const GRUPPI: { titolo: string; hrefs: string[] }[] = [
   { titolo: 'Studio', hrefs: ['/dashboard', '/clienti', '/pratiche', '/themis', '/incarichi'] },
   { titolo: 'Comunicazioni', hrefs: ['/calendario', '/pec'] },
@@ -44,9 +104,18 @@ const GRUPPI: { titolo: string; hrefs: string[] }[] = [
   { titolo: 'Account', hrefs: ['/attivita', '/collaboratori', '/impostazioni', '/studi', '/domande-frequenti'] },
 ];
 
-export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
-  navItems: NavItem[]; nomeStudio: string; abbonamentoLabel: string | null;
+export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel, temaIniziale = 'scuro' }: {
+  navItems: NavItem[]; nomeStudio: string; abbonamentoLabel: string | null; temaIniziale?: Tema;
 }) {
+  const [tema, setTema] = useState<Tema>(temaIniziale);
+  const t = TEMI[tema];
+  const scuro = tema === 'scuro';
+  function cambiaTema() {
+    const nuovo: Tema = scuro ? 'chiaro' : 'scuro';
+    setTema(nuovo);
+    // Ricordato un anno su questo computer; il server lo legge e disegna subito il menu giusto.
+    document.cookie = `themis-menu=${nuovo}; path=/; max-age=31536000; samesite=lax`;
+  }
   const [open, setOpen] = useState(false);
   const [ricercaAperta, setRicercaAperta] = useState(false);
   const [query, setQuery] = useState('');
@@ -136,24 +205,24 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
     <>
       <div className="mx-2 mt-1 flex items-center gap-3 px-2 py-2">
         <span className="relative">
-          <span className="absolute -inset-1 rounded-[14px] bg-bordeaux-500/40 blur-md" aria-hidden="true" />
-          <Image src="/icon.svg" alt="" width={36} height={36} className="relative rounded-[11px] ring-1 ring-white/15" />
+          <span className={`absolute -inset-1 rounded-[14px] ${t.logoAlone}`} aria-hidden="true" />
+          <Image src="/icon.svg" alt="" width={36} height={36} className={`relative rounded-[11px] ${t.logo}`} />
         </span>
         <div className="min-w-0 flex-1">
-          <h1 className="text-[15px] font-bold uppercase leading-tight tracking-[.18em] text-white">Themis</h1>
-          <p className="truncate font-mono text-[10.5px] leading-tight text-neutral-400">{nomeStudio || 'il tuo studio'}</p>
+          <h1 className={`leading-tight ${t.titolo}`}>Themis</h1>
+          <p className={`truncate leading-tight ${t.studio}`}>{nomeStudio || 'il tuo studio'}</p>
         </div>
-        <NotificheCampanella scuro />
+        <NotificheCampanella scuro={scuro} />
       </div>
 
       <button
         type="button"
         onClick={() => setRicercaAperta(true)}
-        className="group mx-2 mb-3 mt-1 flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-left text-[12.5px] text-neutral-400 transition hover:border-bordeaux-400/60 hover:bg-white/[0.08] hover:text-neutral-200"
+        className={`group mx-2 mb-3 mt-1 flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[12.5px] transition ${t.cerca}`}
       >
-        <Icon nome="cerca" className="h-4 w-4 text-neutral-500 transition group-hover:text-bordeaux-300" />
+        <Icon nome="cerca" className={`h-4 w-4 transition ${t.cercaIcona}`} />
         <span className="flex-1">Cerca nello studio</span>
-        <kbd className="rounded-md border border-white/15 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-neutral-400">⌘K</kbd>
+        <kbd className={`rounded-md border px-1.5 py-0.5 text-[10px] ${t.kbd}`}>⌘K</kbd>
       </button>
 
       <nav
@@ -165,10 +234,10 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
       >
         {sezioni.map((sezione, idx) => (
           <div key={`${sezione.titolo}-${idx}`}>
-            <p className="flex items-center gap-2 px-3 pb-1 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-500">
-              <span className="text-bordeaux-400/80">{String(idx + 1).padStart(2, '0')}</span>
+            <p className={`flex items-center gap-2 px-3 pb-1 text-[10px] uppercase ${t.sezTitolo}`}>
+              <span className={t.sezNumero}>{String(idx + 1).padStart(2, '0')}</span>
               {sezione.titolo}
-              <span className="h-px flex-1 bg-gradient-to-r from-white/[0.12] to-transparent" aria-hidden="true" />
+              <span className={`h-px flex-1 bg-gradient-to-r to-transparent ${t.sezLinea}`} aria-hidden="true" />
             </p>
             <div className="flex flex-col gap-0.5">
               {sezione.voci.map((item) => {
@@ -180,31 +249,18 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
                     onClick={() => setOpen(false)}
                     aria-current={attiva ? 'page' : undefined}
                     className={`premi group relative flex items-center gap-2.5 rounded-xl px-2 py-[6px] text-[13px] tracking-tight transition [@media(max-height:820px)]:py-[4px] ${
-                      attiva
-                        ? 'bg-gradient-to-r from-white/[0.10] to-white/[0.03] font-medium text-white ring-1 ring-white/10'
-                        : 'text-neutral-400 hover:bg-white/[0.06] hover:text-white'
+                      attiva ? t.voceAttiva : t.voceInattiva
                     }`}
                   >
-                    {attiva && (
-                      <span
-                        className="absolute -left-2 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-bordeaux-300 shadow-[0_0_14px_3px_rgba(219,139,160,.65)]"
-                        aria-hidden="true"
-                      />
-                    )}
-                    <span
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${
-                        attiva
-                          ? 'bg-gradient-to-br from-bordeaux-400 to-bordeaux-700 text-white shadow-[0_0_18px_-3px_rgba(191,81,112,.85)] ring-1 ring-white/20'
-                          : 'text-neutral-500 group-hover:bg-white/[0.08] group-hover:text-bordeaux-300'
-                      }`}
-                    >
+                    {attiva && <span className={t.lineaAttiva} aria-hidden="true" />}
+                    <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${attiva ? t.tileAttiva : t.tileInattiva}`}>
                       {ICONE[item.href] && <Icon nome={ICONE[item.href]} className="h-[15px] w-[15px]" />}
                     </span>
                     <span className="flex-1 truncate">{item.label}</span>
                     {item.badge ? (
                       <span
-                        className={`min-w-[20px] rounded-md px-1.5 py-0.5 text-center font-mono text-[10px] font-semibold tabular-nums ${
-                          attiva ? 'bg-bordeaux-500 text-white' : 'bg-bordeaux-500/20 text-bordeaux-200 ring-1 ring-bordeaux-400/25'
+                        className={`min-w-[20px] px-1.5 py-0.5 text-center text-[10px] font-semibold tabular-nums ${t.badge} ${
+                          attiva ? t.badgeAttivo : t.badgeInattivo
                         }`}
                       >
                         {item.badge}
@@ -218,28 +274,35 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
         ))}
       </nav>
 
-      <div className="border-t border-white/[0.07] px-2 pb-1 pt-2">
+      <div className={`border-t px-2 pb-1 pt-2 ${t.piede}`}>
         {abbonamentoLabel && (
           <Link
             href="/impostazioni#abbonamento"
             onClick={() => setOpen(false)}
-            className={`rialzo mb-1.5 flex items-center gap-2 rounded-xl px-3 py-2 text-[12px] ring-1 ${
-              abbRosso ? 'bg-red-500/10 text-red-200 ring-red-400/30'
-                : abbGiallo ? 'bg-amber-500/10 text-amber-200 ring-amber-400/30'
-                : 'bg-white/[0.04] text-neutral-300 ring-white/10'
-            }`}
+            className={`rialzo mb-1.5 flex items-center gap-2 rounded-xl px-3 py-2 text-[12px] ring-1 ${abbRosso ? t.abbRosso : abbGiallo ? t.abbGiallo : t.abb}`}
           >
-            <Icon nome="abbonamento" className={`h-3.5 w-3.5 ${abbRosso ? 'text-red-300' : abbGiallo ? 'text-amber-300' : 'text-gold-300'}`} />
+            <Icon nome="abbonamento" className={`h-3.5 w-3.5 ${abbRosso ? t.abbIconaRosso : abbGiallo ? t.abbIconaGiallo : t.abbIcona}`} />
             <span className="font-medium">Abbonamento</span>
-            <span className="ml-auto font-mono text-[11px] opacity-80">{abbonamentoBreve}</span>
+            <span className={`ml-auto text-[11px] opacity-80 ${t.abbValore}`}>{abbonamentoBreve}</span>
           </Link>
         )}
         <div className="flex items-center justify-between">
-          <LogoutButton className="premi flex items-center gap-2 rounded-xl px-3 py-1.5 text-[13px] text-neutral-400 hover:bg-white/[0.07] hover:text-white">
-            <Icon nome="esci" className="h-4 w-4 text-neutral-500" />
+          <LogoutButton className={`premi flex items-center gap-2 rounded-xl px-3 py-1.5 text-[13px] ${t.esci}`}>
+            <Icon nome="esci" className={`h-4 w-4 ${t.esciIcona}`} />
             Esci
           </LogoutButton>
-          <span className="rounded-md border border-white/10 px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-[.14em] text-neutral-500">beta</span>
+          <span className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={cambiaTema}
+              title={scuro ? 'Passa al menu chiaro' : 'Passa al menu scuro'}
+              aria-label={scuro ? 'Passa al menu chiaro' : 'Passa al menu scuro'}
+              className={`premi flex h-7 w-7 items-center justify-center rounded-lg transition ${t.tema}`}
+            >
+              <Icon nome={scuro ? 'sole' : 'luna'} className="h-4 w-4" />
+            </button>
+            <span className={`px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-[.14em] ${t.beta}`}>beta</span>
+          </span>
         </div>
       </div>
     </>
@@ -247,18 +310,18 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
 
   return (
     <>
-      <div className="barra-tek flex items-center justify-between px-4 py-3 lg:hidden">
+      <div className={`flex items-center justify-between px-4 py-3 lg:hidden ${t.barra}`}>
         <div className="flex items-center gap-2">
-          <Image src="/icon.svg" alt="" width={24} height={24} className="rounded-[7px] ring-1 ring-white/15" />
-          <span className="text-[14px] font-bold uppercase tracking-[.18em] text-white">Themis</span>
+          <Image src="/icon.svg" alt="" width={24} height={24} className={`rounded-[7px] ${t.mobileLogo}`} />
+          <span className={t.mobileTitolo}>Themis</span>
         </div>
         <div className="flex items-center gap-1">
-          <NotificheCampanella scuro />
+          <NotificheCampanella scuro={scuro} />
           <button
             type="button"
             onClick={() => setOpen(true)}
             aria-label="Apri il menu"
-            className="premi rounded-full p-2 text-neutral-300 hover:bg-white/10 hover:text-white"
+            className={`premi rounded-full p-2 ${t.hamburger}`}
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <line x1="2" y1="5" x2="18" y2="5" />
@@ -272,13 +335,13 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/25 backdrop-blur-[2px]" onClick={() => setOpen(false)} aria-hidden="true" />
-          <aside className="sidebar-tek absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col py-2 shadow-2xl">
+          <aside className={`absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col py-2 shadow-2xl ${t.asideMobile}`}>
             {navContent}
           </aside>
         </div>
       )}
 
-      <aside className="sidebar-tek hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[276px] lg:flex-shrink-0 lg:flex-col lg:py-2">
+      <aside className={`hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[276px] lg:flex-shrink-0 lg:flex-col lg:py-2 ${t.asideDesktop}`}>
         {navContent}
       </aside>
 

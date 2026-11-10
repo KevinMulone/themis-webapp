@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { oggiIso } from '@/lib/dateUtils';
 import { contestoStudio, eCollaboratoreDisattivato } from '@/lib/studio/contesto';
@@ -87,6 +88,9 @@ export default async function StudioLayout({ children }: { children: React.React
     if (data) spazio = data as { storage_bytes: number; database_bytes: number };
   }
 
+  // Il tema del menu (chiaro o scuro) sta in un cookie, così il server lo disegna già giusto: nessun lampeggio al caricamento.
+  const temaMenu = (await cookies()).get('themis-menu')?.value === 'chiaro' ? 'chiaro' : 'scuro';
+
   const voci = [
     ...NAV,
     ...(ctx.ruolo === 'titolare' ? NAV_TITOLARE : []),
@@ -104,6 +108,7 @@ export default async function StudioLayout({ children }: { children: React.React
         <SidebarNav
           navItems={voci}
           nomeStudio={ctx.nomeStudio ?? ''}
+          temaIniziale={temaMenu}
           abbonamentoLabel={giorniRimanenti(ctx.subscriptionExpiresAt)}
         />
         <main className="studio-page relative flex-1 overflow-y-auto p-4 lg:p-8 xl:p-10">
