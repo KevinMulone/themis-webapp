@@ -26,7 +26,7 @@ function quando(iso: string): string {
   return new Date(iso).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
 }
 
-export default function NotificheCampanella() {
+export default function NotificheCampanella({ scuro = false }: { scuro?: boolean }) {
   const supabase = createClient();
   const router = useRouter();
   const { userId, ruolo } = useStudio();
@@ -145,7 +145,7 @@ export default function NotificheCampanella() {
         ref={bottone}
         onClick={() => { misura(); setAperto(!aperto); if (!aperto) load(); }}
         aria-label="Notifiche"
-        className="premi relative rounded-full p-2 text-neutral-500 transition hover:bg-gold-100 hover:text-bordeaux-800"
+        className={`premi relative rounded-full p-2 transition ${scuro ? 'text-neutral-400 hover:bg-white/10 hover:text-white' : 'text-neutral-500 hover:bg-gold-100 hover:text-bordeaux-800'}`}
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">

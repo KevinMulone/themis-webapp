@@ -135,22 +135,25 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
   const navContent = (
     <>
       <div className="mx-2 mt-1 flex items-center gap-3 px-2 py-2">
-        <Image src="/icon.svg" alt="" width={36} height={36} className="rounded-[11px] shadow-[0_10px_22px_-12px_rgba(69,18,36,.85)]" />
+        <span className="relative">
+          <span className="absolute -inset-1 rounded-[14px] bg-bordeaux-500/40 blur-md" aria-hidden="true" />
+          <Image src="/icon.svg" alt="" width={36} height={36} className="relative rounded-[11px] ring-1 ring-white/15" />
+        </span>
         <div className="min-w-0 flex-1">
-          <h1 className="text-[16px] font-bold leading-tight tracking-[-.03em] text-neutral-950">Themis</h1>
-          <p className="truncate text-[11.5px] leading-tight text-neutral-500">{nomeStudio || 'Il tuo studio'}</p>
+          <h1 className="text-[15px] font-bold uppercase leading-tight tracking-[.18em] text-white">Themis</h1>
+          <p className="truncate font-mono text-[10.5px] leading-tight text-neutral-400">{nomeStudio || 'il tuo studio'}</p>
         </div>
-        <NotificheCampanella />
+        <NotificheCampanella scuro />
       </div>
 
       <button
         type="button"
         onClick={() => setRicercaAperta(true)}
-        className="group mx-2 mb-3 mt-1 flex items-center gap-2.5 rounded-xl bg-white/80 px-3 py-2.5 text-left text-[12.5px] text-neutral-500 ring-1 ring-black/[0.06] transition hover:bg-white hover:ring-bordeaux-200"
+        className="group mx-2 mb-3 mt-1 flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2.5 text-left text-[12.5px] text-neutral-400 transition hover:border-bordeaux-400/60 hover:bg-white/[0.08] hover:text-neutral-200"
       >
-        <Icon nome="cerca" className="h-4 w-4 text-neutral-400 transition group-hover:text-bordeaux-600" />
+        <Icon nome="cerca" className="h-4 w-4 text-neutral-500 transition group-hover:text-bordeaux-300" />
         <span className="flex-1">Cerca nello studio</span>
-        <kbd className="rounded-md border border-neutral-200 bg-white px-1.5 py-0.5 font-sans text-[10px] text-neutral-400">⌘K</kbd>
+        <kbd className="rounded-md border border-white/15 bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-neutral-400">⌘K</kbd>
       </button>
 
       <nav
@@ -162,9 +165,10 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
       >
         {sezioni.map((sezione, idx) => (
           <div key={`${sezione.titolo}-${idx}`}>
-            <p className="flex items-center gap-2 px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+            <p className="flex items-center gap-2 px-3 pb-1 font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-neutral-500">
+              <span className="text-bordeaux-400/80">{String(idx + 1).padStart(2, '0')}</span>
               {sezione.titolo}
-              <span className="h-px flex-1 bg-gradient-to-r from-black/[0.07] to-transparent" aria-hidden="true" />
+              <span className="h-px flex-1 bg-gradient-to-r from-white/[0.12] to-transparent" aria-hidden="true" />
             </p>
             <div className="flex flex-col gap-0.5">
               {sezione.voci.map((item) => {
@@ -177,15 +181,21 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
                     aria-current={attiva ? 'page' : undefined}
                     className={`premi group relative flex items-center gap-2.5 rounded-xl px-2 py-[6px] text-[13px] tracking-tight transition [@media(max-height:820px)]:py-[4px] ${
                       attiva
-                        ? 'bg-gradient-to-r from-bordeaux-50 via-white/90 to-white/60 font-semibold text-bordeaux-900 shadow-[0_8px_22px_-16px_rgba(69,18,36,.55)] ring-1 ring-bordeaux-100/80'
-                        : 'text-neutral-600 hover:bg-white/60 hover:text-neutral-900'
+                        ? 'bg-gradient-to-r from-white/[0.10] to-white/[0.03] font-medium text-white ring-1 ring-white/10'
+                        : 'text-neutral-400 hover:bg-white/[0.06] hover:text-white'
                     }`}
                   >
+                    {attiva && (
+                      <span
+                        className="absolute -left-2 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-bordeaux-300 shadow-[0_0_14px_3px_rgba(219,139,160,.65)]"
+                        aria-hidden="true"
+                      />
+                    )}
                     <span
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition ${
                         attiva
-                          ? 'bg-bordeaux-600 text-white shadow-[0_6px_14px_-6px_rgba(124,36,64,.8)]'
-                          : 'text-neutral-400 group-hover:bg-bordeaux-50 group-hover:text-bordeaux-600'
+                          ? 'bg-gradient-to-br from-bordeaux-400 to-bordeaux-700 text-white shadow-[0_0_18px_-3px_rgba(191,81,112,.85)] ring-1 ring-white/20'
+                          : 'text-neutral-500 group-hover:bg-white/[0.08] group-hover:text-bordeaux-300'
                       }`}
                     >
                       {ICONE[item.href] && <Icon nome={ICONE[item.href]} className="h-[15px] w-[15px]" />}
@@ -193,8 +203,8 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
                     <span className="flex-1 truncate">{item.label}</span>
                     {item.badge ? (
                       <span
-                        className={`min-w-[20px] rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold tabular-nums ${
-                          attiva ? 'bg-bordeaux-600 text-white' : 'bg-bordeaux-50 text-bordeaux-700'
+                        className={`min-w-[20px] rounded-md px-1.5 py-0.5 text-center font-mono text-[10px] font-semibold tabular-nums ${
+                          attiva ? 'bg-bordeaux-500 text-white' : 'bg-bordeaux-500/20 text-bordeaux-200 ring-1 ring-bordeaux-400/25'
                         }`}
                       >
                         {item.badge}
@@ -208,28 +218,28 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
         ))}
       </nav>
 
-      <div className="border-t border-black/[0.05] px-2 pb-1 pt-2">
+      <div className="border-t border-white/[0.07] px-2 pb-1 pt-2">
         {abbonamentoLabel && (
           <Link
             href="/impostazioni#abbonamento"
             onClick={() => setOpen(false)}
             className={`rialzo mb-1.5 flex items-center gap-2 rounded-xl px-3 py-2 text-[12px] ring-1 ${
-              abbRosso ? 'bg-red-50 text-red-800 ring-red-100'
-                : abbGiallo ? 'bg-amber-50 text-amber-900 ring-amber-100'
-                : 'bg-gradient-to-r from-gold-50/80 to-white/70 text-neutral-700 ring-gold-100/80'
+              abbRosso ? 'bg-red-500/10 text-red-200 ring-red-400/30'
+                : abbGiallo ? 'bg-amber-500/10 text-amber-200 ring-amber-400/30'
+                : 'bg-white/[0.04] text-neutral-300 ring-white/10'
             }`}
           >
-            <Icon nome="abbonamento" className={`h-3.5 w-3.5 ${abbRosso ? 'text-red-600' : abbGiallo ? 'text-amber-600' : 'text-gold-600'}`} />
+            <Icon nome="abbonamento" className={`h-3.5 w-3.5 ${abbRosso ? 'text-red-300' : abbGiallo ? 'text-amber-300' : 'text-gold-300'}`} />
             <span className="font-medium">Abbonamento</span>
-            <span className="ml-auto text-[11px] opacity-75">{abbonamentoBreve}</span>
+            <span className="ml-auto font-mono text-[11px] opacity-80">{abbonamentoBreve}</span>
           </Link>
         )}
         <div className="flex items-center justify-between">
-          <LogoutButton className="premi flex items-center gap-2 rounded-xl px-3 py-1.5 text-[13px] text-neutral-600 hover:bg-white/70 hover:text-neutral-900">
-            <Icon nome="esci" className="h-4 w-4 text-neutral-400" />
+          <LogoutButton className="premi flex items-center gap-2 rounded-xl px-3 py-1.5 text-[13px] text-neutral-400 hover:bg-white/[0.07] hover:text-white">
+            <Icon nome="esci" className="h-4 w-4 text-neutral-500" />
             Esci
           </LogoutButton>
-          <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[.12em] text-neutral-400">Beta</span>
+          <span className="rounded-md border border-white/10 px-1.5 py-0.5 font-mono text-[9px] font-medium uppercase tracking-[.14em] text-neutral-500">beta</span>
         </div>
       </div>
     </>
@@ -237,18 +247,18 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
 
   return (
     <>
-      <div className="vetro flex items-center justify-between border-b border-black/[0.06] px-4 py-3 lg:hidden">
+      <div className="barra-tek flex items-center justify-between px-4 py-3 lg:hidden">
         <div className="flex items-center gap-2">
-          <Image src="/icon.svg" alt="" width={24} height={24} className="rounded-[7px]" />
-          <span className="text-[15px] font-semibold tracking-tight text-neutral-900">Themis</span>
+          <Image src="/icon.svg" alt="" width={24} height={24} className="rounded-[7px] ring-1 ring-white/15" />
+          <span className="text-[14px] font-bold uppercase tracking-[.18em] text-white">Themis</span>
         </div>
         <div className="flex items-center gap-1">
-          <NotificheCampanella />
+          <NotificheCampanella scuro />
           <button
             type="button"
             onClick={() => setOpen(true)}
             aria-label="Apri il menu"
-            className="premi rounded-full p-2 text-neutral-700 hover:bg-white/70"
+            className="premi rounded-full p-2 text-neutral-300 hover:bg-white/10 hover:text-white"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <line x1="2" y1="5" x2="18" y2="5" />
@@ -262,13 +272,13 @@ export default function SidebarNav({ navItems, nomeStudio, abbonamentoLabel }: {
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/25 backdrop-blur-[2px]" onClick={() => setOpen(false)} aria-hidden="true" />
-          <aside className="vetro absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col border-r border-white/70 py-2 shadow-2xl">
+          <aside className="sidebar-tek absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col py-2 shadow-2xl">
             {navContent}
           </aside>
         </div>
       )}
 
-      <aside className="vetro hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[276px] lg:flex-shrink-0 lg:flex-col lg:border-r lg:border-white/70 lg:py-2 lg:shadow-[16px_0_55px_-48px_rgba(45,12,24,.38)]">
+      <aside className="sidebar-tek hidden lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-[276px] lg:flex-shrink-0 lg:flex-col lg:py-2">
         {navContent}
       </aside>
 
