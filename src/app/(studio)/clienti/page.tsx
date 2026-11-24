@@ -1,6 +1,7 @@
 'use client';
 
 import CampoComune from './CampoComune';
+import AssociaTagRfid from './AssociaTagRfid';
 
 import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -104,6 +105,10 @@ export default function ClientiPage() {
   const [search, setSearch] = useState('');
   const [mostraArchiviati, setMostraArchiviati] = useState(false);
   const [editing, setEditing] = useState<Partial<Client> | null>(null);
+  // "Salva e aggiungi tag RFID": dopo il salvataggio si apre la finestra per associare l'etichetta al cliente.
+  const formRef = useRef<HTMLFormElement | null>(null);
+  const rfidDopoSalvataggio = useRef(false);
+  const [rfidCliente, setRfidCliente] = useState<{ id: string; nome: string } | null>(null);
   const [saveError, setSaveError] = useState('');
   const [conflitti, setConflitti] = useState<Client[]>([]);
   const [confermaDuplicato, setConfermaDuplicato] = useState(false);
@@ -268,6 +273,8 @@ export default function ClientiPage() {
   async function handleSave(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setSaveError('');
+    const conRfid = rfidDopoSalvataggio.current;
+    rfidDopoSalvataggio.current = false;
     const form = new FormData(e.currentTarget);
     const payload: Record<string, unknown> = {};
     form.forEach((value, key) => { payload[key] = typeof value === 'string' && value.trim() === '' ? null : value; });
@@ -303,14 +310,19 @@ export default function ClientiPage() {
     }
 
     let error = null;
+    let idSalvato = editing?.id ?? null;
     if (editing?.id) {
       ({ error } = await supabase.from('clients').update(payload).eq('id', editing.id));
     } else {
-      ({ error } = await supabase.from('clients').insert({ ...payload, studio_id: studioId }));
+      const { data: nuovo, error: errInsert } = await supabase.from('clients')
+        .insert({ ...payload, studio_id: studioId }).select('id').single();
+      error = errInsert;
+      idSalvato = nuovo?.id ?? null;
     }
     if (error) { setSaveError(error.message); return; }
     setEditing(null);
     load();
+    if (conRfid && idSalvato) setRfidCliente({ id: idSalvato, nome: clientLabel(candidato) });
   }
 
   async function handleArchive(id: string) {
@@ -676,7 +688,7 @@ export default function ClientiPage() {
             <h2 className="mb-4 text-lg font-bold text-neutral-900">
               {editing.id ? 'Modifica cliente' : 'Nuovo cliente'}
             </h2>
-            <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-3" noValidate>
+            <form ref={formRef} onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-3" noValidate>
               <div className="col-span-2">
                 <label className="mb-1 block text-xs text-neutral-500">Tipo soggetto</label>
                 <select
@@ -820,10 +832,23 @@ export default function ClientiPage() {
                 >
                   Salva
                 </button>
+                {/* type="button": premendo Invio si salva soltanto; il tag si aggiunge solo con questo pulsante */}
+                <button
+                  type="button"
+                  onClick={() => { rfidDopoSalvataggio.current = true; formRef.current?.requestSubmit(); }}
+                  className="premi flex items-center gap-1.5 rounded-full bg-bordeaux-50 px-4 py-2 text-sm font-semibold text-bordeaux-800 ring-1 ring-bordeaux-200 hover:bg-bordeaux-100"
+                >
+                  <Icon nome="etichetta" className="h-4 w-4" />
+                  Salva e aggiungi tag RFID
+                </button>
               </div>
             </form>
           </div>
         </div>
+      )}
+
+      {rfidCliente && (
+        <AssociaTagRfid clienteId={rfidCliente.id} nomeCliente={rfidCliente.nome} onChiudi={() => setRfidCliente(null)} />
       )}
 
       {inviteModal && (
